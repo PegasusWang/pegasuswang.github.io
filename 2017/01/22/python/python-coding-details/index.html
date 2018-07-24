@@ -1,0 +1,386 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>注重细节:代码排版，命名与注释 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="注重细节:代码排版，命名与注释"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2017-01-22T13:52:38.000Z"><a href="/2017/01/22/python/python-coding-details/">周日, 1月 22 2017, 9:52:38 晚上</a></time>
+
+  
+    <h1 class="title">注重细节:代码排版，命名与注释</h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>“Any fool can write code that a computer can understand. Good programmers write code that humans can understand.” – Martin Fowler, “Refactoring: Improving the Design of Existing Code”</p>
+</blockquote>
+<p>可能又要被说吹毛求疵或者有代码洁癖了，但是最近协作的时候感觉代码风格不统一，看代码的时候很不方便。实际上良好的代码排版，包括何时分行，何时使用括号都是有讲究的。<br>良好的代码排版给人看下去的欲望，同时还能让人分清主次重点，方便快速理解代码。讲一下自己对一些编程细节的看法。</p>
+<a id="more"></a>
+<h2 id="为什么版式是重要的"><a href="#为什么版式是重要的" class="headerlink" title="为什么版式是重要的?"></a>为什么版式是重要的?</h2><blockquote>
+<p>因为太丑的版式我压根不想看啊！！！</p>
+</blockquote>
+<p>我们看一个简单的例子就明白了:</p>
+<pre><code># 分行之前的一行代码，我经常见过一个屏幕装不下一行的
+daily_report_data = db.session.query(FinanceData.event_date, func.sum(FinanceData.revenue).label(&apos;revenue&apos;), func.sum(FinanceData.payout).label(&apos;payout&apos;)).filter(FinanceData.tag != FinanceData.TagEnum.arbitrage).filter(FinanceData.event_date &lt; self._next_month_date).filter(FinanceData.event_date &gt;= self._this_month_date).filter(FinanceData.finance_type == FinanceData.TypeEnum.normal).group_by(FinanceData.event_date).all()
+
+# 分行之后
+daily_report_data = db.session.query(
+    FinanceData.event_date,
+    func.sum(FinanceData.revenue).label(&apos;revenue&apos;),
+    func.sum(FinanceData.payout).label(&apos;payout&apos;)
+).filter(
+    FinanceData.tag != FinanceData.TagEnum.arbitrage
+).filter(
+    FinanceData.event_date &lt; self._next_month_date
+).filter(
+    FinanceData.event_date &gt;= self._this_month_date
+).filter(
+    FinanceData.finance_type == FinanceData.TypeEnum.normal
+).group_by(
+    FinanceData.event_date
+).all()
+
+if a_long_variable_name and b_long_variable_name and c_variable_name:
+</code></pre><p>你看看大概各需要几秒才能分别理解上边的代码。这些都是真实的例子，只是想说明一下为什么排版有时候是很重要的。第一行你光是移动编辑器指针就得花上几秒时间，你用vim，emacs等还好，有些编辑器还需要你用鼠标啪啪点击下。下边短代码就能迅速理解代码的大致意图，大大降低理解成本。而且有些程序员很喜欢分屏（比如我），经常一个大屏幕会打开多个文件，碰见这种超长的代码就很无语。而且长代码还有个缺点，对于合并代码来说很不友好，你要来回左右切换找代码的diff。下边是我个人一点经验:</p>
+<ul>
+<li>不要使用太长的行(尽量别超出120列)，否则分屏查看或合并代码的时候很不方便 ，你得来回移动编辑器指针，对笔者这种喜欢分屏的简直就是灾难。</li>
+<li>尽量遵守pep8，除了行长度可以适当放宽，比如django使用120列。</li>
+<li>合理使用 换行和括号 使代码更易理解，同时更美观。</li>
+<li>合理使用 空行 对代码块逻辑进行分隔，使层次清晰。</li>
+</ul>
+<p>下边是我一些常用的分行方式，对于长代码你可以试试:</p>
+<pre><code>daily_report_data = db.session.query(
+    FinanceData.event_date,
+    func.sum(FinanceData.revenue).label(&apos;revenue&apos;),
+    func.sum(FinanceData.payout).label(&apos;payout&apos;)
+).filter(
+    FinanceData.tag != FinanceData.TagEnum.arbitrage
+).filter(
+    FinanceData.event_date &lt; self._next_month_date
+).filter(
+    FinanceData.event_date &gt;= self._this_month_date
+).filter(
+    FinanceData.finance_type == FinanceData.TypeEnum.normal
+).group_by(
+    FinanceData.event_date
+).all()
+
+
+from some_module import (
+    a_long_variable_name, b_long_variable_name, c_long_variable_name,
+    d_long_variable_name
+)
+
+if a_long_variable_name and b_long_variable_name and c_variable_name \
+        and d_variable:
+    # 更推荐使用括号而不是反斜线来分行
+    pass
+
+
+if (a_long_variable_name and b_long_variable_name
+    and c_long_variable_name and d_long_variable_name):
+
+    pass
+
+
+a_long_list_comprehension = [person.name
+                            for person in db.session.query(Person.name)]
+
+
+a_long_dict_comprehension = {
+    person.id: person.name
+    for person in db.session.query(Person.name, Person.id)
+}
+
+
+employee_id_list = [
+    ins.id for ins in Employee.get_role_team_members(
+        role_int, team_int, [&apos;id&apos;]
+    )
+]
+
+
+def long_variable_function_name_and_function_params(a_long_variable_name,
+                                                    b_long_variable_name,
+                                                    c_long_variable_name,
+                                                    d_long_variable_name):
+    pass
+
+
+
+def long_variable_function_name_and_function_params(
+    a_long_variable_name,
+    b_long_variable_name,
+    c_long_variable_name,
+    d_long_variable_name
+):
+    pass
+
+
+return {
+    &apos;code&apos;: ErrorCode.OPERATOR_FAILED_NEED_TOKEN,
+    &apos;msg&apos;: ErrorCode.OPERATOR_FAILED_NEED_TOKEN_MSG,
+    &apos;data&apos;: {}
+}, status_codes.unauthorized
+
+
+new_employee = Employee.get_by_id(new_employee_id)
+(
+    changed_advertiser_ids,
+    changed_account_ids
+) = assign_employee_advertiser_and_account(employee, new_employee)
+
+
+result = a_very_very_very_very_very_very_very_very_long_function_name(
+    a_long_variable_name, b_long_variable_name,
+    c_long_variable_name, d_long_variable_name
+)
+</code></pre><hr>
+<h2 id="为什么命名是重要的"><a href="#为什么命名是重要的" class="headerlink" title="为什么命名是重要的?"></a>为什么命名是重要的?</h2><blockquote>
+<p>因为我经常看代码的时候搞不清当前变量的含义和类型啊！！！</p>
+</blockquote>
+<p>首先你要遵守pep8的规定，使用惯用法来命名。或者根据你们公司的python编码规范（如果你们公司有的话）</p>
+<ul>
+<li>joined_lower for functions, methods, attributes</li>
+<li>ALL_CAPS for constants</li>
+<li>StudlyCaps for classes</li>
+</ul>
+<p>另外注意动态语言因为没有类型声明，所以在阅读源代码的时候，如果名称起的不好，很难推测出代码中间变量的数据结构，给阅读代码带来障碍。比如一个字典列表，或者嵌套字典等，笔者维护过python代码，深感其中坑太多。我个人的经验就是适度在命名中加入一些类型提示，比如使用nums, cnts等作为后缀很容易知道是数值类型，复数单词或者some_list等很容易知道是序列，some_mapper或者some_dict, some_set等基本从命名就知道什么数据类型了。当然这只是我的经验，有些人会反对这种命名方式，老实说如果代码写得是自解释的，可以不用这么来，但是我个人感觉这种方式虽然冗余，但是确实给我维护和阅读代码带来了便利。</p>
+<p>python3中加入了type hint特性，所以我觉得类型声明对于维护代码来说还是非常便利的。但是注意，动态语言有鸭子类型的概念，所以有时候名称中的类型提示并不代表就是该类型，很可能造成歧义，这也是很多人反对在python中使用类似匈牙利命名法的原因。老实说我不怎么使用鸭子类型，我感觉鸭子类型是很多错误的来源，如果它真的很有用，python3也不用加上类型注解了，甚至mypy都加上类型检测了（python3中的注解只是为IDE工具提供便利，并没有真正的类型检查）。我觉得对于软件工程重视不够的团队最好不要使用动态语言开发后台，坑比较多。</p>
+<ul>
+<li>注意词性。比如函数用动词，数据变量使用名词，布尔数据经常使用is等作为前缀。这样很容易推断出变量含义，给阅读代码带来便利</li>
+<li>适当使用”匈牙利”命名法。比如一个变量明显是字典或者集合，加上后缀可能会更易理解。（个人经验，有争议，不过我确实感觉这种代码更容易阅读理解）</li>
+<li>含义精确。不要使用诸如data，info等概念太广泛的词汇给变量命名。</li>
+</ul>
+<hr>
+<h2 id="为什么注释与docstring是重要的"><a href="#为什么注释与docstring是重要的" class="headerlink" title="为什么注释与docstring是重要的?"></a>为什么注释与docstring是重要的?</h2><blockquote>
+<p>因为你代码写的不好看我连传入参数是啥类型都不知道啊！！！</p>
+</blockquote>
+<pre><code>def function_with_types_in_docstring(param1, param2):
+&quot;&quot;&quot;Example function with types documented in the docstring.
+
+`PEP 484`_ type annotations are supported. If attribute, parameter, and
+return types are annotated according to `PEP 484`_, they do not need to be
+included in the docstring:
+
+Args:
+    param1 (int): The first parameter.
+    param2 (str): The second parameter.
+
+Returns:
+    bool: The return value. True for success, False otherwise.
+
+.. _PEP 484:
+    https://www.python.org/dev/peps/pep-0484/
+
+&quot;&quot;&quot;
+</code></pre><p>这个是google的docstring示例,是我比较推崇的一种格式。还是那个问题，动态语言没有类型声明，所以复杂函数要在docstring里写清楚传入参数和返回值的描述和类型。良好的docstring能让维护代码的人一眼就看明白这个函数是怎么使用的，即使内部很复杂，也尽量保持接口简单，容易使用。经常有人传出个嵌套字典（dict的key是主键，每个key对应的value里还有字典），这种相对复杂的数据结构还不注释，每次看这种函数都要打断点看返回结构。这种就是典型的接口易用性差，只在意实现功能，完全不管别人使用，合作起来比较心累。</p>
+<ul>
+<li>Docstrings = How to use code</li>
+<li>Comments = Why &amp; how code works</li>
+</ul>
+<p>Docstring应该包括什么?接口易用性</p>
+<ul>
+<li>意图(目的)。解释为什么需要它？有些对你来说很明显的东西对其他人来说不一定很明显。</li>
+<li>描述参数，返回值和会抛出的异常。我举个简单的例子， <code>def f(date): pass</code> ，仅仅看date这个参数你不知道传入str还是datetime.date，如果传入字符串又有很多格式的字符串，需要哪种格式？所以这个时候一个简单的描述 <code>date (str): &#39;YYYY-MM-DD&#39;</code> 就能让使用函数的人一下子明白了。当然如果有单元测试实际上测试代码也是很好的文档，我们通过单元测试就知道怎么传值。另外使用了 <code>**kwargs</code> 如果都不说明就太不厚道了</li>
+<li>使用注意事项。复杂的使用可以有demo示例说明。</li>
+<li>需求文档或者github, stackoverflow等链接。比如有个很trick的实现是你查阅 stackoverflow解决的，可以附上地址帮助阅读代码的人找到出处。</li>
+</ul>
+<p>注释怎么写?</p>
+<ul>
+<li>当然，好代码 &gt; 差代码+好注释，自解释的代码最好。</li>
+<li>适当注释，仔细衡量，不要隐晦也不要多余。</li>
+<li>及时更新。</li>
+<li>注释代码中一些tricky的技巧或者特殊的业务逻辑。</li>
+</ul>
+<p>很多东西都需要自己斟酌，不要矫枉过正，比如说需要注释你就写一堆没必要的冗余的注释，说遵守pep8尽量不超过80列你连url都要拆成两行，我。。。。。。如果有些规范相冲突，你就以代码的可读性为标准，所有标准都是为了良好的代码设计的。我最怕和随意的程序员一起干活，随意就是写个函数print下就觉得正确了，没有docstring和注释，写的接口让别人难以使用。公司项目毕竟不是自己过家家，我现在就是自己的小项目也会注重规范（自己维护起来也方便，不要相信你的记忆力）。很多用python的小公司就是很不规范，维护起来真心累。也希望所有看到这里的python学习者可以把规范重视起来(很多知名开源项目文档都相当不错)，这也是一个职业程序员应该具备的素养。毕竟大部分人不是造轮子的人，能把业务逻辑实现地简单优雅易维护也是一种能力。代码就是一点一滴的小细节组成的，尽量在细节之处做好提升代码的易读性和可维护性。</p>
+<hr>
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref:"></a>Ref:</h2><p><a href="http://python-web-guide.readthedocs.io/zh/latest/codingstyle/codingstyle.html" target="_blank" rel="noopener">《编码之前碎碎念》</a> - 没事我就更(tu)新(cao)点</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2017/01/25/python/simple-python-metaclass/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2017/01/06/python/getting-started-with-pyparsing/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

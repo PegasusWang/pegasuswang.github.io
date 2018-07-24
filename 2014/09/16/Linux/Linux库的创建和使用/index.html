@@ -1,0 +1,252 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Linux库的创建和使用 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Linux库的创建和使用"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2014-09-16T14:46:10.000Z"><a href="/2014/09/16/Linux/Linux库的创建和使用/">周二, 9月 16 2014, 10:46:10 晚上</a></time>
+
+  
+    <h1 class="title">Linux库的创建和使用</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/Linux/">Linux</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/Linux/">Linux</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>####Linux库的概念<br>库是一种软件组建技术，里面封装了数据和函数，提供给用户程序调用。使用库可以使程序模块化，提高编译速度，实现代码重用，易于升级。Windows系统提供了大量静态链接库(.lib)和动态链接库(.dll)文件。在Linux中，库文件放在/usr/lib或/lib目录下，Linux库文件名由前缀lib，库名以及后缀三部分组成，动态库以.so作为后缀，静态库以.a作为后缀。<br><a id="more"></a></p>
+<hr>
+<p>####静态库的特点<br>静态库的代码在编译时就拷贝到程序中，多个程序同时引用一个静态库函数时，内存中将会有调用函数的多个副本。静态库节省编译时间，但是导致代码量膨胀。优点是编译后的执行程序不需要外部函数库支持，但是如果静态函数库改变了，程序需要重新编译。<br>静态库的创建和使用<br>步骤:</p>
+<ol>
+<li>在一个头文件中声明静态库所导出的函数。</li>
+<li>在一个源文件中实现静态库所导出的函数。</li>
+<li>编译源文件，生成可执行代码。</li>
+<li>将可执行代码所在的目标文件加入到某个静态库中，并将静态库拷贝到系统默认存放库文件的目录下。(如果不拷贝则需要用命令行选项指定库文件所在目录）<br>实例:</li>
+</ol>
+<pre><code>
+/* mylib.h */
+#ifndef _MYLIB_H
+#define _MYLIB_H
+void welcome();
+void print_string(const char *str);
+#endif
+
+/* mylib.c */
+#include &quot;mylib.h&quot;
+#include &lt;stdio.h&gt;
+void welcome()
+{
+    printf(&quot;Welcome to libmylib\n&quot;);
+}
+void print_string(const char *str)
+{
+    if (str != NULL)
+        printf(&quot;%s\n&quot;, str);
+}
+</code></pre><p>编译mylib.c生成目标文件:<br><code>gcc -o mylib.o -c mylib.c</code><br>将目标文件加入到静态库中，静态库为libmylib.a<br><code>ar rcs libmylib.a mylib.o</code><br>rcs命令行是选项,含义请参考man手册<br>将静态库拷贝到Linux的库目录/usr/lib或/lib下:<br><code>cp libmylib.a /usr/lib/libmylib.a</code></p>
+<pre><code>/* test.c */
+#include &quot;mylib.h&quot;
+#include &lt;stdio.h&gt;
+int main(void)
+{
+    welcome();
+    print_string(&quot;It&apos;s successful&quot;);
+    return 0;
+}
+
+</code></pre><p>编译并且执行:<br><code>gcc -o test test.c -lmylib</code><br>-l为选项，mylib是库名，省略前后缀<br><code>./test</code><br>如果前面没有拷贝到Linux的库目录，需要指定静态库文件的路径<br><code>gcc -o test test.c -L. -lmylib</code><br>-L.表示库文件在当前路径。<br>更多ar命令请参考man ar手册。</p>
+<hr>
+<p>####动态库的特点<br>动态库在程序开始运行后调用库函数时才被载入，被调函数在内存中只有一个副本，且可以在程序运行期间释放动态库所占的内存。目前Linux中使用动态库居多，因为升级方便。<br>动态库的创建和使用<br>把mylib.c创建成动态库的命令:<br><code>gcc -fPIC -o mylib.o -c mylib.c</code><br><code>gcc -shared -o mylib.so mylib.o</code><br>或者<br><code>gcc -fPIC -shared -o mylib.so mylib.c</code><br>使用动态库:<br><code>gcc -o test test.c ./mylib.so</code><br><code>./test</code><br>另一种方法是通过调用系统函数使用动态链接库，具体参考<br><code>void* dlopen(const char *filename, int flag)</code>系列函数。</p>
+<hr>
+<p>#####参考<br>《Linux C编程实战》,添加部分内容，修改了部分代码。</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2014/09/16/c++/为什么c-不提倡使用宏/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2014/09/16/c++/char-s-VS-char-s/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>django+sae微信开发－简单的鹦鹉学舌功能 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="django+sae微信开发－简单的鹦鹉学舌功能"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-02-09T02:39:23.000Z"><a href="/2015/02/09/python/django-sae微信开发－简单的鹦鹉学舌功能/">周一, 2月 9 2015, 10:39:23 上午</a></time>
+
+  
+    <h1 class="title">django+sae微信开发－简单的鹦鹉学舌功能</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/django/">django</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>网上已经有一些优秀的教程了，但是大多数基于web.py，最近学了点django，就用django写个简单的demo。</p>
+<hr>
+<p>###准备工作<br>基础的python知识，基础的django框架知识。<br>申请sae，申请微信公众平台。看一下sae和微信平台开发文档。<br>可以参考以下几个教程有个大致的了解：(包括申请sae，微信平台，url设置等步骤）<br><a href="http://my.oschina.net/yangyanxing/blog/159215" target="_blank" rel="noopener">使用python一步一步搭建微信公众平台（一）</a><br><a href="http://www.nilday.com/%E5%88%A9%E7%94%A8sae%E6%90%AD%E5%BB%BA%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%B9%B3%E5%8F%B0%EF%BC%88%E4%BA%8C%EF%BC%89%E5%BE%AE%E4%BF%A1%E7%9A%84%E9%AA%8C%E8%AF%81%E5%92%8C%E8%87%AA%E5%8A%A8/" target="_blank" rel="noopener">利用SAE搭建微信公众平台（二）微信的验证和自动回复</a><br><a href="http://blog.csdn.net/liushuaikobe/article/details/8453716" target="_blank" rel="noopener">微信机器人：小蜗牛有道翻译小助手——Django + SAE + 微信公众帐号自动回复开放接口</a></p>
+<hr>
+<a id="more"></a>
+<p>###建立项目及配置<br>建立项目：<code>django-admin.py startproject mysite</code><br>按照sae要求更名为版本1：<code>mv mysite 1</code><br>编写配置文件：config.yaml</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">libraries:</span><br><span class="line">- name: &quot;django&quot;</span><br><span class="line">  version: &quot;1.4&quot;</span><br><span class="line"></span><br><span class="line">- name: lxml</span><br><span class="line">  version: &quot;2.3.4&quot;</span><br></pre></td></tr></table></figure>
+<p>编写index.wsgi:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">import sae</span><br><span class="line">from mysite import wsgi</span><br><span class="line"></span><br><span class="line">application = sae.create_wsgi_app(wsgi.application)</span><br></pre></td></tr></table></figure>
+<p>这时候文件夹1下应该有4个文件(夹):<br>config.yaml index.wsgi manage.py mysite<br>切换到mysite文件夹下，建立一个templates文件夹:<br><code>cd mysite; mkdir templates</code><br>修改settings.py：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">TIME_ZONE = &apos;Asia/Shanghai&apos;</span><br><span class="line">LANGUAGE_CODE = &apos;zh-cn&apos;</span><br><span class="line"># 添加模板文件夹</span><br><span class="line">TEMPLATE_DIRS = (</span><br><span class="line">    &apos;./mysite/templates&apos;,</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<hr>
+<p>###编写views.py</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"># -*- coding: utf-8 -*-</span><br><span class="line">from django.http import HttpResponse</span><br><span class="line">import hashlib</span><br><span class="line">import time</span><br><span class="line">import os</span><br><span class="line">import urllib2,json</span><br><span class="line">from lxml import etree</span><br><span class="line">from django.views.generic.base import View</span><br><span class="line">from django.shortcuts import render</span><br><span class="line"></span><br><span class="line">class WeixinInterfaceView(View):</span><br><span class="line"></span><br><span class="line">    def get(self, request):</span><br><span class="line">        #得到GET内容</span><br><span class="line">        signature = request.GET.get(&apos;signature&apos;, None)</span><br><span class="line">        timestamp = request.GET.get(&apos;timestamp&apos;, None)</span><br><span class="line">        nonce = request.GET.get(&apos;nonce&apos;, None)</span><br><span class="line">        echostr = request.GET.get(&apos;echostr&apos;, None)</span><br><span class="line">        #自己的token</span><br><span class="line">        token = &apos;yourtoken&apos; #这里改写你在微信公众平台里输入的token</span><br><span class="line">        #字典序排序</span><br><span class="line">        tmpList = [token, timestamp, nonce]</span><br><span class="line">        tmpList.sort()</span><br><span class="line">        tmpstr = &apos;%s%s%s&apos; % tuple(tmpList)</span><br><span class="line">        #sha1加密算法</span><br><span class="line">        tmpstr = hashlib.sha1(tmpstr).hexdigest()</span><br><span class="line">        </span><br><span class="line">        #如果是来自微信的请求，则回复echostr</span><br><span class="line">        if tmpstr == signature:</span><br><span class="line">            return render(request, &apos;get.html&apos;, &#123;&apos;str&apos;: echostr&#125;,</span><br><span class="line">                          content_type=&apos;text/plain&apos;)</span><br><span class="line"></span><br><span class="line">    def post(self, request):</span><br><span class="line">        str_xml = request.body.decode(&apos;utf-8&apos;)    #use body to get raw data</span><br><span class="line">        xml = etree.fromstring(str_xml)    #进行XML解析</span><br><span class="line">        </span><br><span class="line">        toUserName = xml.find(&apos;ToUserName&apos;).text</span><br><span class="line">        fromUserName = xml.find(&apos;FromUserName&apos;).text</span><br><span class="line">        createTime = xml.find(&apos;CreateTime&apos;).text</span><br><span class="line">        msgType = xml.find(&apos;MsgType&apos;).text</span><br><span class="line">        content = xml.find(&apos;Content&apos;).text   #获得用户所输入的内容</span><br><span class="line">        msgId = xml.find(&apos;MsgId&apos;).text</span><br><span class="line">        return render(request, &apos;reply_text.xml&apos;,</span><br><span class="line">                      &#123;&apos;toUserName&apos;: fromUserName,</span><br><span class="line">                       &apos;fromUserName&apos;: toUserName,</span><br><span class="line">                       &apos;createTime&apos;: time.time(),</span><br><span class="line">                       &apos;msgType&apos;: msgType,</span><br><span class="line">                       &apos;content&apos;: content,</span><br><span class="line">                       &#125;,</span><br><span class="line">                       content_type = &apos;application/xml&apos;</span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+<p>在这里使用了视图类，实现了get和post方法来处理这两种请求。get方法用来验证，验证方法在微信开发文档里有描述。post方法实现消息回复，xml解析得到相应内容，xml内容详见微信开发文档，需要严格按照格式回复。</p>
+<hr>
+<p>###编写templates:<br>进入mysite里的templates文件夹，建立两个模版文件get.html和reply_text.xml：<br>get.html内容很简单，直接定义一个变量str就可以：</p>
+<p>在views.py的get方法里，<br><code>return render(request, &#39;get.html&#39;, {&#39;str&#39;: echostr},
+                          content_type=&#39;text/plain&#39;)</code><br>render后str会被替换成echostr返回。</p>
+<p>reply_text.xml:</p>
+<p><img src="http://pegasus.qiniudn.com/django_sae.png" alt=""></p>
+<p>在这个xml模版里定义了一些变量，然后我们在post方法里使用这个模板，实际上也就是文档里定义的xml文件，把需要替换的地方用自己定义的变量替换。然后在render方法里，把变量替换为需要的信息，我们把’content’: content直接用content返回，就可以直接回复收到的内容。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">return render(request, &apos;reply_text.xml&apos;,</span><br><span class="line">                      &#123;&apos;toUserName&apos;: fromUserName,</span><br><span class="line">                       &apos;fromUserName&apos;: toUserName,</span><br><span class="line">                       &apos;createTime&apos;: time.time(),</span><br><span class="line">                       &apos;msgType&apos;: msgType,</span><br><span class="line">                       &apos;content&apos;: content,</span><br><span class="line">                       &#125;,</span><br><span class="line">                       content_type = &apos;application/xml&apos;</span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+<hr>
+<p>###编写urls.py</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">from django.conf.urls import patterns, include, url</span><br><span class="line">from mysite.views import WeixinInterfaceView</span><br><span class="line">from django.views.decorators.csrf import csrf_exempt    #remove csrf</span><br><span class="line"></span><br><span class="line">urlpatterns = patterns(&apos;&apos;,</span><br><span class="line">    url(r&apos;^weixin/&apos;, csrf_exempt(WeixinInterfaceView.as_view())),</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>在这里用csrf_exempt方法去除csrf验证。</p>
+<p>###本机测试<br>一开始不清怎么调试，官方给的调试也很鸡肋，只能返回出错结果，看不到具体信息。后来想到了用curl这个命令发送post请求（也可以用python模拟发送post请求）<br><code>curl -X POST -d @post.xml http://127.0.0.1:8000/weixin/ &gt; result.html</code><br>curl的用法可以自行搜索，post.xml就是我们要发送的xml文件，格式参考微信开发文档。把结果重定向到一个result.html文件里边，用浏览器打开就可以查看是什么错误了。<br>如果使用python发送post请求可以安装requests模块：<br><code>sudo pip install requests</code></p>
+<p>然后用python代码发送post请求，查看返回结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">import requests</span><br><span class="line">import codecs</span><br><span class="line"></span><br><span class="line">f = codecs.open(u&apos;post.xml&apos;, u&apos;r&apos;, u&apos;utf-8&apos;)</span><br><span class="line">content = u&apos;&apos;.join(f.readlines())</span><br><span class="line">f.close()</span><br><span class="line"></span><br><span class="line">res = requests.post(u&apos;http://2.pegasuswang.sinaapp.com/wechat/&apos;, data=content.encode(u&apos;utf-8&apos;))</span><br><span class="line">print res.text</span><br></pre></td></tr></table></figure>
+<hr>
+<p>###部署<br>可以使用svn直接commit到sae上即可。</p>
+<p><img src="http://pegasus.qiniudn.com/django_sae01.png" alt="演示效果"></p>
+<embed src="http://www.xiami.com/widget/0_1773875709/singlePlayer.swf" type="application/x-shockwave-flash" width="257" height="33" wmode="transparent">
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/02/21/python/django-python微信开发之一－准备工作/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/01/12/c++/Qt递归非递归遍历文件/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

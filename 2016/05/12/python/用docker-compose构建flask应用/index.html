@@ -1,0 +1,311 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>用docker-compose构建flask应用 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="用docker-compose构建flask应用"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-05-12T15:38:36.000Z"><a href="/2016/05/12/python/用docker-compose构建flask应用/">周四, 5月 12 2016, 11:38:36 晚上</a></time>
+
+  
+    <h1 class="title">用docker-compose构建flask应用</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/docker/">docker</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>灵活性被过分高估–约束才是解放。- Ruby on Rails作者汉森。</p>
+</blockquote>
+<p>最近没事的时候折腾docker，发现用docker-compose构建个flask小应用真的是炒鸡方便。一步一步来。<br>系统用的是ubuntu14.04。如果没有docker的话先装docker，然后装docker-compose，这个工具是python开发的，所以可以用pip安装。<br><a id="more"></a></p>
+<pre><code># 方法1
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates
+sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+echo &apos;deb https://apt.dockerproject.org/repo ubuntu-trusty main&apos; | sudo tee /etc/apt/sources.list.d/docker.list
+sudo apt-get update
+sudo apt-get purge lxc-docker
+sudo apt-cache policy docker-engine
+sudo apt-get install -y docker-engine
+sudo service docker start
+sudo pip install docker-compose
+
+# 方法2
+# https://get.daocloud.io 或者用国内的daocloud装docker
+curl -sSL https://get.daocloud.io/docker | sh
+curl -L https://get.daocloud.io/docker/compose/releases/download/1.7.1/docker-compose-`uname -s`-`uname -m` &gt; /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+</code></pre><hr>
+<p>之后可以随便创建一个目录，比如flask_compose, 目录结构如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">flask_compose</span><br><span class="line">├─- app.py</span><br><span class="line">├── docker-compose.yml</span><br><span class="line">├── Dockerfile</span><br><span class="line">├── requirements.txt</span><br><span class="line">└── templates</span><br><span class="line">    └── todo.html</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="app-py-创建个简单的路由文件"><a href="#app-py-创建个简单的路由文件" class="headerlink" title="app.py 创建个简单的路由文件"></a>app.py 创建个简单的路由文件</h3><pre><code>#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+
+from flask import Flask, render_template, url_for, request, redirect
+from pymongo import MongoClient
+from redis import Redis
+
+r = Redis(host=&apos;redis&apos;, port=6379)
+app = Flask(__name__)
+
+m = MongoClient(&apos;mongo&apos;, 27017)
+db = m.tododb
+
+@app.route(&apos;/&apos;)
+def todo():
+    _items = db.tododb.find()
+    items = [item for item in _items]
+    return render_template(&apos;todo.html&apos;, items=items)
+
+
+@app.route(&apos;/new&apos;, methods=[&apos;POST&apos;])
+def new():
+    item_doc = {
+        &apos;name&apos;: request.form[&apos;name&apos;],
+        &apos;description&apos;: request.form[&apos;description&apos;]
+    }
+    db.tododb.insert_one(item_doc)
+    return redirect(url_for(&apos;todo&apos;))
+
+
+@app.route(&apos;/redis&apos;)
+def hello():
+    r.incr(&apos;hits&apos;)
+    return &apos;I have been seen %s times&apos; % r.get(&apos;hits&apos;)
+
+if __name__ == &apos;__main__&apos;:
+    app.run(host=&apos;0.0.0.0&apos;, debug=True)
+</code></pre><hr>
+<h3 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h3><pre><code>FROM python:2.7
+ADD . /flask_compose
+WORKDIR /flask_compose
+RUN pip install -r requirements.txt
+</code></pre><hr>
+<h3 id="docker-compose-yml-这里应用连接到redis和mongodb非常容易，配置下就好："><a href="#docker-compose-yml-这里应用连接到redis和mongodb非常容易，配置下就好：" class="headerlink" title="docker-compose.yml 这里应用连接到redis和mongodb非常容易，配置下就好："></a>docker-compose.yml 这里应用连接到redis和mongodb非常容易，配置下就好：</h3><pre><code>web:
+    build: .
+    command: python -u app.py
+    ports:
+        - &quot;5000:5000&quot;
+    volumes:
+        - .:/flask_compose
+    links:
+        - mongo
+        - redis
+mongo:
+    image: mongo:3.0.2
+
+redis:
+    image: redis
+</code></pre><hr>
+<h3 id="requirements-txt"><a href="#requirements-txt" class="headerlink" title="requirements.txt"></a>requirements.txt</h3><pre><code>flask
+redis
+pymongo
+</code></pre><hr>
+<h3 id="templates-todo-html"><a href="#templates-todo-html" class="headerlink" title="templates/todo.html"></a>templates/todo.html</h3>
+    <form action="/new" method="POST">
+      <input type="text" name="name">
+      <input type="text" name="description">
+      <input type="submit">
+    </form>
+    {% for item in items %}
+      <h1> {{ item.name }} </h1>
+      <p> {{ item.description }} </p><p>
+    {% endfor %}
+
+<hr>
+</p><h3 id="构建"><a href="#构建" class="headerlink" title="构建"></a>构建</h3><p>上边文件都有了，一个基本的使用redis和mongodb的flask页面就有了，接下来用docker-compose命令构建:<br><code>sudo docker-compose build</code><br>这一步可以能会花很长时间，包括下载镜像和构建。完成后运行:<br><code>sudo docker-compose up</code><br>访问本地<a href="http://localhost:5000" target="_blank" rel="noopener">http://localhost:5000</a> 就可以看见页面了, 访问<a href="http://localhost:5000/redis" target="_blank" rel="noopener">http://localhost:5000/redis</a> 可以看见redis读取的效果。<br>注:写这个博客遇到了一个小问题，templates/todo.html里的jinja2模板语言for循环标签和hexo的冲突，可以用raw标签包含html代码，这样就可以正确显示了</p>
+<hr>
+<h3 id="Ref"><a href="#Ref" class="headerlink" title="Ref:"></a>Ref:</h3><p><a href="https://docs.docker.com/v1.5/compose/" target="_blank" rel="noopener">https://docs.docker.com/v1.5/compose/</a><br><a href="http://containertutorials.com/docker-compose/flask-mongo-compose.html" target="_blank" rel="noopener">http://containertutorials.com/docker-compose/flask-mongo-compose.html</a><br><a href="https://hexo.io/docs/tag-plugins.html#Code-Block" target="_blank" rel="noopener">https://hexo.io/docs/tag-plugins.html#Code-Block</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/07/12/psychology/改变自己-积极心理学入门推荐/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/05/12/Linux/ubuntu常用工具和python虚拟环境安装脚本/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

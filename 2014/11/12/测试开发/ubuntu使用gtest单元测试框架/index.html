@@ -1,0 +1,232 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>ubuntu使用gtest单元测试框架 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="ubuntu使用gtest单元测试框架"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2014-11-12T15:15:21.000Z"><a href="/2014/11/12/测试开发/ubuntu使用gtest单元测试框架/">周三, 11月 12 2014, 11:15:21 晚上</a></time>
+
+  
+    <h1 class="title">ubuntu使用gtest单元测试框架</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/测试开发/">测试开发</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/ubuntu/">ubuntu</a>, <a href="/tags/c/">c++</a>, <a href="/tags/gtest/">gtest</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>gtest是google的开源c++单元测试框架,下面是在ubuntu上的使用步骤。</p>
+<hr>
+<p>####安装 gtest development package:</p>
+<p><code>sudo apt-get install libgtest-dev</code></p>
+<p>注意这一步只是安装源代码到/usr/src/gtest，需要用cmake构建Makefile然后再make生成静态库。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install cmake    #安装cmake</span><br><span class="line">cd /usr/src/gtest</span><br><span class="line">sudo cmake CMakeLists.txt</span><br><span class="line">sudo make</span><br><span class="line"></span><br><span class="line">sudo cp *.a /usr/lib/    #拷贝生成的库到/usr/lib/</span><br></pre></td></tr></table></figure></p>
+<a id="more"></a>
+<hr>
+<p>####写一个简单的测试代码testgcd.cpp<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">//testgcd.cpp</span><br><span class="line">#include &lt;gtest/gtest.h&gt;</span><br><span class="line"></span><br><span class="line">int Gcd(int a, int b)    //计算最大公约数</span><br><span class="line">&#123;</span><br><span class="line">    return 0 == b ? a : Gcd(b, a % b); </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">TEST(GcdTest, IntTest)</span><br><span class="line">&#123;</span><br><span class="line">    EXPECT_EQ(1, Gcd(2, 5));</span><br><span class="line">    EXPECT_EQ(2, Gcd(2, 5));</span><br><span class="line">    EXPECT_EQ(2, Gcd(2, 4));</span><br><span class="line">    EXPECT_EQ(3, Gcd(6, 9));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(int argc, char **argv)</span><br><span class="line">&#123;</span><br><span class="line">    testing::InitGoogleTest(&amp;argc, argv);</span><br><span class="line">    return RUN_ALL_TESTS();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>接着用g++编译，注意要链接的库(也可以用cmake构建,这只是个简单的示例):</p>
+<p><code>g++ testgcd.cpp -lgtest_main -lgtest -lpthread</code></p>
+<p>执行下</p>
+<p><code>./a.out</code></p>
+<p>看看输出结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[==========] Running 1 test from 1 test case.</span><br><span class="line">[----------] Global test environment set-up.</span><br><span class="line">[----------] 1 test from GcdTest</span><br><span class="line">[ RUN      ] GcdTest.IntTest</span><br><span class="line">testgcd.cpp:11: Failure</span><br><span class="line">Value of: Gcd(2, 5)</span><br><span class="line">  Actual: 1</span><br><span class="line">Expected: 2</span><br><span class="line">[  FAILED  ] GcdTest.IntTest (0 ms)</span><br><span class="line">[----------] 1 test from GcdTest (0 ms total)</span><br><span class="line"></span><br><span class="line">[----------] Global test environment tear-down</span><br><span class="line">[==========] 1 test from 1 test case ran. (0 ms total)</span><br><span class="line">[  PASSED  ] 0 tests.</span><br><span class="line">[  FAILED  ] 1 test, listed below:</span><br><span class="line">[  FAILED  ] GcdTest.IntTest</span><br><span class="line"></span><br><span class="line">1 FAILED TEST</span><br></pre></td></tr></table></figure>
+<p>输出结果也比较容易看懂。关于gtest更多文档和使用可以参考官方手册。</p>
+<hr>
+<p>####工程下的测试<br>当测试项目比较多的时候，一般会分离头文件和实现文件，然后可以用cmake构建。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">//!gcd.h</span><br><span class="line">#ifndef GCD_H</span><br><span class="line">#define GCD_H</span><br><span class="line">int Gcd(int a, int b); </span><br><span class="line">#endif</span><br><span class="line">//!gcd.cpp</span><br><span class="line">#include &quot;gcd.h&quot;</span><br><span class="line">int Gcd(int a, int b)</span><br><span class="line">&#123;</span><br><span class="line">    return 0 == b ? a : Gcd(b, a % b); </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//!testgcd.cpp</span><br><span class="line">#include &quot;gcd.h&quot;</span><br><span class="line">#include &lt;gtest/gtest.h&gt;</span><br><span class="line"></span><br><span class="line">TEST(GcdTest, IntTest)</span><br><span class="line">&#123;</span><br><span class="line">    EXPECT_EQ(1, Gcd(2, 5));</span><br><span class="line">    EXPECT_EQ(2, Gcd(2, 5));</span><br><span class="line">    EXPECT_EQ(2, Gcd(2, 4));</span><br><span class="line">    EXPECT_EQ(3, Gcd(6, 9));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(int argc, char **argv)</span><br><span class="line">&#123;</span><br><span class="line">    testing::InitGoogleTest(&amp;argc, argv);</span><br><span class="line">    return RUN_ALL_TESTS();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接下来写一个CMakeLists.txt:(具体信息参考cmake的文档）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cmake_minimum_required(VERSION 2.6)</span><br><span class="line">    # Locate GTest</span><br><span class="line">    find_package(GTest REQUIRED)include_directories($&#123;GTEST_INCLUDE_DIRS&#125;) </span><br><span class="line">    # Link testgcd with what we want to test and the GTest and pthread </span><br><span class="line">    libraryadd_executable(testgcd testgcd.cpp gcd.cpp)</span><br><span class="line">    target_link_libraries(testgcd $&#123;GTEST_LIBRARIES&#125; pthread)</span><br></pre></td></tr></table></figure>
+<p>执行:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cmake CMakeLists.txt</span><br><span class="line">make</span><br><span class="line">./testgcd</span><br></pre></td></tr></table></figure>
+<p>可以看到相同的执行结果。</p>
+<hr>
+<p>#####参考<br><a href="https://code.google.com/p/googletest/" target="_blank" rel="noopener">Google C++ Testing Framework</a><br><a href="http://www.thebigblob.com/getting-started-with-google-test-on-ubuntu/" target="_blank" rel="noopener">Getting started with Google Test (GTest) on Ubuntu</a><br><a href="http://www.ibm.com/developerworks/aix/library/au-googletestingframework.html" target="_blank" rel="noopener">A quick introduction to the Google C++ Testing Framework</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2014/12/03/tools/Linux开发工具集/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2014/11/02/Linux/vim常用命令/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

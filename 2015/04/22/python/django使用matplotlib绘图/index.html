@@ -1,0 +1,358 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>django使用matplotlib绘统计图 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="django使用matplotlib绘统计图"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-04-22T13:27:08.000Z"><a href="/2015/04/22/python/django使用matplotlib绘图/">周三, 4月 22 2015, 9:27:08 晚上</a></time>
+
+  
+    <h1 class="title">django使用matplotlib绘统计图</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/django/">django</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>毕业设计需要用matplotlib画图，记录一下学习过程吧。之前已经记录过关于matplotlib的安装和使用。这次将要在django里的views函数中使用。完整的代码在<a href="https://github.com/PegasusWang/Physics_web.git" target="_blank" rel="noopener">https://github.com/PegasusWang/Physics_web.git</a>，顺便再熟悉下git的使用吧。</p>
+<p>###简介<br>挺简单的一个小项目，首先在安卓端设计登录和注册窗口，以及题目显示Activity，安卓的后台用的是django，获取题目信息用get方法，用django返回json格式的数据。登录和注册用post发送用户名和密码，然后在views函数中验证。用户提交题目答案后，在web端接收后更新数据库，之后用matplotlib绘制答案统计图。<br><a id="more"></a></p>
+<p>###设计matplotlibUtil模块<br>我需要用到俩种图，一种是柱状图(histogram)，一种是饼图(pie chart),之前写过如何参考官方demo修改成自己需要的格式。为了方便就把这两个函数写进去一个python文件里：matplotlibUtil.py</p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+&quot;&quot;&quot;
+Bar chart demo with pairs of bars grouped for easy comparison.
+&quot;&quot;&quot;
+import numpy as np
+import matplotlib as mpl
+mpl.use(&apos;Agg&apos;)    # for backend without gui
+import matplotlib.pyplot as plt
+plt.rcParams[&apos;font.sans-serif&apos;] = [&apos;SimHei&apos;]    # set default font for mac
+
+
+def draw_histogram(a_num, b_num, c_num, d_num, n_groups, path):
+    &quot;&quot;&quot;Draw result.
+
+    :param a_num: tuple of select A users.
+                  eg: (12, 2, 34, 12, 78, 13).
+    :param n_groups: The length of tuple a_num.
+    :param path: The path images would save.
+    &quot;&quot;&quot;
+    fig, ax = plt.subplots()
+    index = np.arange(n_groups)
+    bar_width = 0.2
+    opacity = 0.4
+    error_config = {&apos;ecolor&apos;: &apos;0.3&apos;}
+
+    rects1 = plt.bar(index, a_num, bar_width,
+                     alpha=opacity,
+                     color=&apos;b&apos;,
+                     error_kw=error_config,
+                     label=&apos;A&apos;)
+
+    rects2 = plt.bar(index + bar_width, b_num, bar_width,
+                     alpha=opacity,
+                     color=&apos;r&apos;,
+                     error_kw=error_config,
+                     label=&apos;B&apos;)
+
+    rects3 = plt.bar(index+bar_width*2, c_num, bar_width,
+                     alpha=opacity,
+                     color=&apos;b&apos;,
+                     error_kw=error_config,
+                     label=&apos;C&apos;)
+
+    rects4 = plt.bar(index+bar_width*3, d_num, bar_width,
+                     alpha=opacity,
+                     color=&apos;g&apos;,
+                     error_kw=error_config,
+                     label=&apos;D&apos;)
+
+    def autolabel(rects):
+        # attach some text labels
+        for rect in rects:
+            height = rect.get_height()
+            ax.text(rect.get_x()+rect.get_width()/2.0, 1.05*height,
+                    &apos;%d&apos;%int(height), ha=&apos;center&apos;, va=&apos;bottom&apos;)
+    autolabel(rects1)
+    autolabel(rects2)
+    autolabel(rects3)
+    autolabel(rects4)
+
+
+    plt.xlabel(u&apos;题号&apos;)
+    plt.ylabel(u&apos;人数&apos;)
+    plt.title(u&apos;答题结果统计&apos;)
+    #plt.xticks(index + bar_width, (&apos;1&apos;, &apos;2&apos;, &apos;3&apos;, &apos;4&apos;, &apos;5&apos;, &apos;6&apos;))
+    plt.xticks(index + bar_width, tuple(map(str, range(1, n_groups+1))))
+    ax.set_ybound(0, 40)
+
+    plt.tight_layout()
+    #plt.show()
+    plt.savefig(path)
+    plt.clf()    # note: remember plt.clf() to clear buffer
+    plt.close()
+
+
+def draw_piechart(question_info, explode, path):
+    &quot;&quot;&quot;Draw pie chart of each question.
+
+    :param: question_info is a list of users.  eg: [12, 23, 43, 13]
+            means 12 people select A, 23 select B, 43 C, 13 D.
+    &quot;&quot;&quot;
+    labels = &apos;A&apos;, &apos;B&apos;, &apos;C&apos;, &apos;D&apos;
+    colors = [&apos;yellowgreen&apos;, &apos;gold&apos;, &apos;lightskyblue&apos;, &apos;lightcoral&apos;]
+    #explode = (0, 0.1, 0, 0) # only &quot;explode&quot; the 2nd slice (i.e. &apos;Hogs&apos;)
+
+    plt.pie(question_info, explode=explode, labels=labels, colors=colors,
+                    autopct=&apos;%1.1f%%&apos;, shadow=True)
+    # Set aspect ratio to be equal so that pie is drawn as a circle.
+    plt.axis(&apos;equal&apos;)
+
+    #plt.show()
+    plt.savefig(path)
+    plt.clf()    # note: remember plt.clf() to clear buffer
+    plt.close()
+</code></pre><p>已经把函数封装成了需要的形式，现在开始在views里边使用。</p>
+<p>###在views函数中绘图<br>现在有了绘图模块就可以在views.py中直接调用了。</p>
+<pre><code>def show_result(request):
+    &quot;&quot;&quot;draw result image&quot;&quot;&quot;
+    import matplotlibUtil
+    from mysite.settings import MEDIA_ROOT
+
+    # draw histogram
+    n_groups = Question.objects.all().count()
+    options = (&apos;A&apos;, &apos;B&apos;, &apos;C&apos;, &apos;D&apos;)
+    nums = []
+    for option in options:
+        num = []
+        for tid in range(1, n_groups + 1):
+            cnt = Result.objects.filter(t_id=tid, my_option=option).count()
+            num.append(cnt)
+        nums.append(num)
+    histogram_path = MEDIA_ROOT + &apos;images/results/&apos; + &apos;0.png&apos;
+    print histogram_path
+    try:
+    matplotlibUtil.draw_histogram(nums[0], nums[1], nums[2], nums[3], 
+                                  n_groups, histogram_path)
+    except:
+        return render(request, &apos;physics/result_image.html&apos;, {&apos;images&apos;: None})
+
+
+    # draw pie chart
+    for tid in range(1, n_groups+1):
+        explode = [0.0, 0.0, 0.0, 0.0]
+        answer_num = ord(Question.objects.get(t_id=tid).t_answer.upper()) - ord(&apos;A&apos;)
+        explode[answer_num] = 0.1
+        explode = tuple(explode)
+
+        question_info = []
+        for each in options:
+            cnt = Result.objects.filter(t_id=tid, my_option=each).count()
+            question_info.append(cnt)
+
+        chart_path = MEDIA_ROOT + &apos;images/results/&apos; + str(tid) + &apos;.png&apos;
+        print chart_path
+        try:
+            matplotlibUtil.draw_piechart(question_info, explode, chart_path)
+        except:
+            return render(request, &apos;physics/result_image.html&apos;, {&apos;images&apos;: None})
+
+
+    images = []
+    for i in range(n_groups+1):
+        images.append(&apos;/media/images/results/&apos;+str(i)+&apos;.png&apos;)
+    return render(request, &apos;physics/result_image.html&apos;,
+                  {&apos;images&apos;: images})
+</code></pre><p>然后就是模板中使用了，直接引用就可以了。我用的是一个模板自己改了一下。<br>最后的效果如下：</p>
+<p><img src="http://pegasus.qiniudn.com/django_matplotlib.png" alt=""></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/06/02/psychology/乐观与悲观的心理学/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/04/17/python/用matplotlib绘制柱状图和饼图/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

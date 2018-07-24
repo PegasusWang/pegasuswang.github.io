@@ -1,0 +1,320 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Linux/Unix用valgrind检测内存泄漏 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Linux/Unix用valgrind检测内存泄漏"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2014-09-16T16:06:36.000Z"><a href="/2014/09/17/tools/Linux-unix用valgrind检测内存泄漏/">周三, 9月 17 2014, 12:06:36 凌晨</a></time>
+
+  
+    <h1 class="title">Linux/Unix用valgrind检测内存泄漏</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/tools/">tools</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/Linux/">Linux</a>, <a href="/tags/valgrind/">valgrind</a>, <a href="/tags/memoryleak/">memoryleak</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>c\c++编程中，内存管理是比较头疼的问题，一不小心就会造成内存泄漏，除了养成良好的编程习惯外(使用智能指针等），使用工具也能帮助检测内存泄漏，valgrind是Unix\Linux下一款不错的工具。(mac下暂时有bug)</p>
+<hr>
+<p>#####Valgrind 安装</p>
+<ol>
+<li>到<a href="http://www.valgrind.org下载最新版valgrind-3.2.3.tar.bz2" target="_blank" rel="noopener">www.valgrind.org下载最新版valgrind-3.2.3.tar.bz2</a></li>
+<li>解压安装包：tar –jxvf valgrind-3.2.3.tar.bz2</li>
+<li>解压后生成目录valgrind-3.2.3</li>
+<li>cd valgrind-3.2.3</li>
+<li>运行./autogen.sh设置环境（需要标准的autoconf工具）（可选）</li>
+<li>./configure;配置Valgrind，生成MakeFile文件，具体参数信息详见INSTALL文件。一般只需要设置—prefix=/where/you/want/it/installed</li>
+<li>Make；编译Valgrind</li>
+<li>make install；安装Valgrind</li>
+</ol>
+<p>ubuntu 直接用命令     <code>sudo apt-get install valgrind</code>安装<br>Valgrind包含的工具<br>Valgrind支持很多工具:memcheck，addrcheck，cachegrind，Massif，helgrind和Callgrind等。在运行Valgrind时，你必须指明想用的工具,如果省略工具名，默认运行memcheck。<br><a id="more"></a></p>
+<p>####1、memcheck<br>memcheck探测程序中内存管理存在的问题。它检查所有对内存的读/写操作，并截取所有的malloc/new/free/delete调用。因此memcheck工具能够探测到以下问题：<br>1）使用未初始化的内存<br>2）读/写已经被释放的内存<br>3）读/写内存越界<br>4）读/写不恰当的内存栈空间<br>5）内存泄漏<br>6）使用malloc/new/new[]和free/delete/delete[]不匹配。<br>7）src和dst的重叠</p>
+<p>####2、cachegrind<br>cachegrind是一个cache剖析器。它模拟执行CPU中的L1, D1和L2 cache，因此它能很精确的指出代码中的cache未命中。如果你需要，它可以打印出cache未命中的次数，内存引用和发生cache未命中的每一行代码，每一个函数，每一个模块和整个程序的摘要。如果你要求更细致的信息，它可以打印出每一行机器码的未命中次数。在x86和amd64上， cachegrind通过CPUID自动探测机器的cache配置，所以在多数情况下它不再需要更多的配置信息了。</p>
+<p>####3、helgrind<br>helgrind查找多线程程序中的竞争数据。helgrind查找内存地址，那些被多于一条线程访问的内存地址，但是没有使用一致的锁就会被查出。这表示这些地址在多线程间访问的时候没有进行同步，很可能会引起很难查找的时序问题。<br>它主要用来检查多线程程序中出现的竞争问题。Helgrind 寻找内存中被多个线程访问，而又没有一贯加锁的区域，这些区域往往是线程之间失去同步的地方，而且会导致难以发掘的错误。Helgrind实现了名为”Eraser” 的竞争检测算法，并做了进一步改进，减少了报告错误的次数。</p>
+<p>####4、Callgrind<br>Callgrind收集程序运行时的一些数据，函数调用关系等信息，还可以有选择地进行cache 模拟。在运行结束时，它会把分析数据写入一个文件。callgrind_annotate可以把这个文件的内容转化成可读的形式。<br>一般用法:<br>$valgrind –tool=callgrind ./sec_infod<br>会在当前目录下生成callgrind.out.[pid], 如果我们想结束程序, 可以<br>$killall callgrind<br>然后我们可以用<br>$callgrind_annotate –auto=yes callgrind.out.[pid] &gt; log<br>$vi log</p>
+<p>####5、Massif<br>堆栈分析器，它能测量程序在堆栈中使用了多少内存，告诉我们堆块，堆管理块和栈的大小。Massif能帮助我们减少内存的使用，在带有虚拟内存的现代系统中，它还能够加速我们程序的运行，减少程序停留在交换区中的几率。</p>
+<p>####6、lackey<br>lackey是一个示例程序，以其为模版可以创建你自己的工具。在程序结束后，它打印出一些基本的关于程序执行统计数据。</p>
+<p>####Valgrind的参数<br>用法: valgrind [options] prog-and-args [options]: 常用选项，适用于所有####Valgrind工具<br>—tool=<br>最常用的选项。运行 valgrind中名为toolname的工具。默认memcheck。<br>-h —help<br>显示所有选项的帮助，包括内核和选定的工具两者。<br>—version<br>显示valgrind内核的版本，每个工具都有各自的版本。<br>-q —quiet<br>安静地运行，只打印错误信息。<br>—verbose<br>更详细的信息。<br>—trace-children=<br>跟踪子线程? [default: no]<br>—track-fds=<br>跟踪打开的文件描述？[default: no]<br>—time-stamp=<br>增加时间戳到LOG信息? [default: no]<br>—log-fd=<br>输出LOG到描述符文件 [2=stderr]<br>—log-file=<br>将输出的信息写入到filename.PID的文件里，PID是运行程序的进行ID<br>—log-file-exactly=<br>输出LOG信息到 file<br>LOG信息输出<br>—xml=yes<br>将信息以xml格式输出，只有memcheck可用<br>—num-callers=<br>show callers in stack traces [12]<br>—error-exitcode=<br>如果发现错误则返回错误代码 [0=disable]<br>—db-attach=<br>当出现错误，valgrind会自动启动调试器gdb。[default: no]<br>—db-command=<br>启动调试器的命令行选项[gdb -nw %f %p]<br>适用于Memcheck工具的相关选项：<br>—leak-check=<br>要求对leak给出详细信息? Leak是指，存在一块没有被引用的内存空间，或没有被释放的内存空间，如summary，只反馈一些总结信息，告诉你有多少个malloc，多少个free 等；如果是full将输出所有的leaks，也就是定位到某一个malloc/free。 [default: summary]<br>—show-reachable=<br>如果为no，只输出没有引用的内存leaks，或指向malloc返回的内存块中部某处的leaks [default: no]<br>更详细的参数指令见附录A。<br>Valgrind的使用<br>首先，在编译程序的时候打开调试模式（gcc编译器的-g选项）。如果没有调试信息，即使最好的valgrind工具也将中能够猜测特定的代码是属于哪一个函数。打开调试选项进行编译后再用valgrind检查，valgrind将会给你的个详细的报告，比如哪一行代码出现了内存泄漏。<br>当检查的是C++程序的时候，还应该考虑另一个选项 -fno-inline。它使得函数调用链很清晰，这样可以减少你在浏览大型C++程序时的混乱。比如在使用这个选项的时候，用memcheck检查openoffice就很容易。当然，你可能不会做这项工作，但是使用这一选项使得valgrind生成更精确的错误报告和减少混乱。<br>一些编译优化选项(比如-O2或者更高的优化选项)，可能会使得memcheck提交错误的未初始化报告，因此，为了使得valgrind的报告更精确，在编译的时候最好不要使用优化选项。<br>如果程序是通过脚本启动的，可以修改脚本里启动程序的代码，或者使用—trace-children=yes选项来运行脚本。<br>下面是用memcheck检查sample.c的例子<br>这里用到的示例程序文件名为：sample.c（如下所示）,选用的编译器为gcc。</p>
+<pre><code>/* sample.c */
+#include &lt;stdlib.h&gt;
+void fun()
+{
+    int *p = (int*)malloc(10*sizeof(int));
+    p[10] = 0;
+}
+int main(void)
+{
+    fun();
+    return 0;
+}
+
+</code></pre><p>生成可执行程序<br><code>gcc –g sample.c –o sample</code><br>运行Valgrind<br><code>valgrind --tool=memcheck ./sample</code><br>以下是运行上述命令后的输出<br>==23913== Memcheck, a memory error detector<br>==23913== Copyright (C) 2002-2013, and GNU GPL’d, by Julian Seward et al.<br>==23913== Using Valgrind-3.10.0.SVN and LibVEX; rerun with -h for copyright info<br>==23913== Command: ./sample<br>==23913==<br>==23913== Invalid write of size 4<br>==23913== at 0x8048438: fun (sample.c:6)<br>==23913== by 0x804844A: main (sample.c:11)<br>==23913== Address 0x4204050 is 0 bytes after a block of size 40 alloc’d<br>==23913== at 0x402A17C: malloc (in /usr/lib/valgrind/vgpreload_memcheck-x86-linux.so)<br>==23913== by 0x804842E: fun (sample.c:5)<br>==23913== by 0x804844A: main (sample.c:11)<br>==23913==<br>==23913==<br>==23913== HEAP SUMMARY:<br>==23913== in use at exit: 40 bytes in 1 blocks<br>==23913== total heap usage: 1 allocs, 0 frees, 40 bytes allocated<br>==23913==<br>==23913== LEAK SUMMARY:<br>==23913== definitely lost: 40 bytes in 1 blocks<br>==23913== indirectly lost: 0 bytes in 0 blocks<br>==23913== possibly lost: 0 bytes in 0 blocks<br>==23913== still reachable: 0 bytes in 0 blocks<br>==23913== suppressed: 0 bytes in 0 blocks<br>==23913== Rerun with —leak-check=full to see details of leaked memory<br>==23913==<br>==23913== For counts of detected and suppressed errors, rerun with: -v<br>==23913== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)<br>左边显示类似行号的数字（23913）表示的是 Process ID。<br>最上面的红色方框表示的是 valgrind 的版本信息。<br>中间的红色方框表示 valgrind 通过运行被测试程序，发现的内存问题。通过阅读这些信息，可以发现：<br>l 这是一个对内存的非法写操作，非法写操作的内存是4 bytes。<br>l 发生错误时的函数堆栈，以及具体的源代码行号。<br>l 非法写操作的具体地址空间。<br>最下面的红色方框是对发现的内存问题和内存泄漏问题的总结。内存泄漏的大小（40 bytes）也能够被检测出来。<br>Valgrind的示例<br>例1．使用未初始化的内存<br>代码:</p>
+<pre><code>#include &lt;stdio.h&gt;
+int main()
+{
+    int x;
+    if(x == 0)
+    {
+    printf(&quot;X is zero&quot;);
+    }
+    return 0;
+}
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Valgrind提示如下==14222== Conditional jump or move depends on uninitialised value(s)==14222== at 0x400484: main (sample2.c:6)X is zero==14222====14222== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 1)==14222== malloc/free: in use at exit: 0 bytes in 0 blocks.==14222== malloc/free: 0 allocs, 0 frees, 0 bytes allocated.==14222== For counts of detected errors, rerun with: -v==14222== All heap blocks were freed — no leaks are possible.例2．内存读写越界代码如下:</span><br></pre></td></tr></table></figure>
+
+
+#include &lt;stdlib.h&gt;
+#include &lt;stdio.h&gt;
+int main(int argc,char *argv[])
+{
+    int len=5;
+    int i;
+    int *pt=(int*)malloc(len*sizeof(int));
+    int *p=pt;
+    for(i=0;i&lt;len;i++)
+    {p++;}
+    *p=5;
+    printf(“%d”,*p);
+    return;
+}
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Valgrind提示如下==23045== Invalid write of size 4==23045== at 0x40050A: main (sample2.c:11)==23045== Address 0x4C2E044 is 0 bytes after a block of size 20 alloc’d==23045== at 0x4A05809: malloc (vg_replace_malloc.c:149)==23045== by 0x4004DF: main (sample2.c:7)==23045====23045== Invalid read of size 4==23045== at 0x400514: main (sample2.c:12)==23045== Address 0x4C2E044 is 0 bytes after a block of size 20 alloc’d==23045== at 0x4A05809: malloc (vg_replace_malloc.c:149)==23045== by 0x4004DF: main (sample2.c:7)5==23045====23045== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 5 from 1)==23045== malloc/free: in use at exit: 20 bytes in 1 blocks.==23045== malloc/free: 1 allocs, 0 frees, 20 bytes allocated.==23045== For counts of detected errors, rerun with: -v==23045== searching for pointers to 1 not-freed blocks.==23045== checked 66,584 bytes.==23045====23045== LEAK SUMMARY:==23045== definitely lost: 20 bytes in 1 blocks.==23045== possibly lost: 0 bytes in 0 blocks.==23045== still reachable: 0 bytes in 0 blocks.==23045== suppressed: 0 bytes in 0 blocks.==23045== Use —leak-check=full to see details of leaked memory.例3．src和dst内存覆盖代码如下:</span><br><span class="line">```#include &lt;stdlib.h&gt;#include &lt;stdio.h&gt;#include &lt;string.h&gt;int main(int argc,char *argv[])&#123;     char x[50];    int i;    for(i=0;i&lt;50;i++)    &#123;x[i]=i;&#125;    strncpy(x+20,x,20); //Good    strncpy(x+20,x,21); //Overlap    x[39]=’\0’;    strcpy(x,x+20); //Good    x[39]=40;    x[40]=’\0’;    strcpy(x,x+20); //Overlap    return 0;&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+Valgrind提示如下
+==24139== Source and destination overlap in strncpy(0x7FEFFFC09, 0x7FEFFFBF5, 21)
+==24139== at 0x4A0724F: strncpy (mc_replace_strmem.c:116)
+==24139== by 0x400527: main (sample3.c:10)
+==24139==
+==24139== Source and destination overlap in strcpy(0x7FEFFFBE0, 0x7FEFFFBF4)
+==24139== at 0x4A06E47: strcpy (mc_replace_strmem.c:106)
+==24139== by 0x400555: main (sample3.c:15)
+==24139==
+==24139== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 5 from 1)
+==24139== malloc/free: in use at exit: 0 bytes in 0 blocks.
+==24139== malloc/free: 0 allocs, 0 frees, 0 bytes allocated.
+==24139== For counts of detected errors, rerun with: -v
+==24139== All heap blocks were freed — no leaks are possible.
+例4．动态内存管理错误
+常见的内存分配方式分三种：静态存储，栈上分配，堆上分配。全局变量属于静态存储，它们是在编译时就被分配了存储空间，函数内的局部变量属于栈上分配，而最灵活的内存使用方式当属堆上分配，也叫做内存动态分配了。常用的内存动态分配函数包括：malloc, alloc, realloc, new等，动态释放函数包括free, delete。
+一旦成功申请了动态内存，我们就需要自己对其进行内存管理，而这又是最容易犯错误的。常见的内存动态管理错误包括：
+l 申请和释放不一致
+由于 C++ 兼容 C，而 C 与 C++ 的内存申请和释放函数是不同的，因此在 C++ 程序中，就有两套动态内存管理函数。一条不变的规则就是采用 C 方式申请的内存就用 C 方式释放；用 C++ 方式申请的内存，用 C++ 方式释放。也就是用 malloc/alloc/realloc 方式申请的内存，用 free 释放；用 new 方式申请的内存用 delete 释放。在上述程序中，用 malloc 方式申请了内存却用 delete 来释放，虽然这在很多情况下不会有问题，但这绝对是潜在的问题。
+l 申请和释放不匹配
+申请了多少内存，在使用完成后就要释放多少。如果没有释放，或者少释放了就是内存泄露；多释放了也会产生问题。上述程序中，指针p和pt指向的是同一块内存，却被先后释放两次。
+l 释放后仍然读写
+本质上说，系统会在堆上维护一个动态内存链表，如果被释放，就意味着该块内存可以继续被分配给其他部分，如果内存被释放后再访问，就可能覆盖其他部分的信息，这是一种严重的错误，上述程序第16行中就在释放后仍然写这块内存。
+下面的一段程序，就包括了内存动态管理中常见的错误.
+
+</code></pre><p>#include &lt;stdlib.h&gt;</p>
+<p>#include &lt;stdio.h&gt;<br>int main(int argc,char <em>argv[])<br>{<br>    char </em>p=(char<em>)malloc(10);<br>    char </em>pt=p;<br>    int i;<br>    for(i=0;i&lt;10;i++)<br>    {p[i]=’z’;}<br>    delete p;<br>    p[1]=’a’;<br>    free(pt);<br>    return 0;<br>}</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Valgrind提示如下==25811== Mismatched free() / delete / delete []==25811== at 0x4A05130: operator delete(void*) (vg_replace_malloc.c:244)==25811== by 0x400654: main (sample4.c:9)==25811== Address 0x4C2F030 is 0 bytes inside a block of size 10 alloc’d==25811== at 0x4A05809: malloc (vg_replace_malloc.c:149)==25811== by 0x400620: main (sample4.c:4)==25811====25811== Invalid write of size 1==25811== at 0x40065D: main (sample4.c:10)==25811== Address 0x4C2F031 is 1 bytes inside a block of size 10 free’d==25811== at 0x4A05130: operator delete(void*) (vg_replace_malloc.c:244)==25811== by 0x400654: main (sample4.c:9)==25811====25811== Invalid free() / delete / delete[]==25811== at 0x4A0541E: free (vg_replace_malloc.c:233)==25811== by 0x400668: main (sample4.c:11)==25811== Address 0x4C2F030 is 0 bytes inside a block of size 10 free’d==25811== at 0x4A05130: operator delete(void*) (vg_replace_malloc.c:244)==25811== by 0x400654: main (sample4.c:9)==25811====25811== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 5 from 1)==25811== malloc/free: in use at exit: 0 bytes in 0 blocks.==25811== malloc/free: 1 allocs, 2 frees, 10 bytes allocated.==25811== For counts of detected errors, rerun with: -v==25811== All heap blocks were freed — no leaks are possible.例5．内存泄漏代码如下:</span><br><span class="line">```#include &lt;stdlib.h&gt;int main()&#123;    char *x = (char*)malloc(20);    char *y = (char*)malloc(20);    x=y;    free(x);    free(y);    return 0;&#125;</span><br></pre></td></tr></table></figure>
+<p>Valgrind提示如下<br>==19013== Invalid free() / delete / delete[]<br>==19013== at 0x4A0541E: free (vg_replace_malloc.c:233)<br>==19013== by 0x4004F5: main (sample5.c:8)<br>==19013== Address 0x4C2E078 is 0 bytes inside a block of size 20 free’d<br>==19013== at 0x4A0541E: free (vg_replace_malloc.c:233)<br>==19013== by 0x4004EC: main (sample5.c:7)<br>==19013==<br>==19013== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 1)<br>==19013== malloc/free: in use at exit: 20 bytes in 1 blocks.<br>==19013== malloc/free: 2 allocs, 2 frees, 40 bytes allocated.<br>==19013== For counts of detected errors, rerun with: -v<br>==19013== searching for pointers to 1 not-freed blocks.<br>==19013== checked 66,584 bytes.<br>==19013==<br>==19013== LEAK SUMMARY:<br>==19013== definitely lost: 20 bytes in 1 blocks.<br>==19013== possibly lost: 0 bytes in 0 blocks.<br>==19013== still reachable: 0 bytes in 0 blocks.<br>==19013== suppressed: 0 bytes in 0 blocks.<br>==19013== Use —leak-check=full to see details of leaked memory.<br>例6．非法写/读<br>代码如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int main()&#123;    int i, *x;    x = (int *)malloc(10*sizeof(int));    for (i=0; i&lt;11; i++)        x[i] = i;    free(x);&#125;</span><br></pre></td></tr></table></figure>
+<p>Valgrind提示如下<br>==21483== Invalid write of size 4<br>==21483== at 0x4004EA: main (sample6.c:6)<br>==21483== Address 0x4C2E058 is 0 bytes after a block of size 40 alloc’d<br>==21483== at 0x4A05809: malloc (vg_replace_malloc.c:149)<br>==21483== by 0x4004C9: main (sample6.c:4)<br>==21483==<br>==21483== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 1)<br>==21483== malloc/free: in use at exit: 0 bytes in 0 blocks.<br>==21483== malloc/free: 1 allocs, 1 frees, 40 bytes allocated.<br>==21483== For counts of detected errors, rerun with: -v<br>==21483== All heap blocks were freed — no leaks are possible.<br>例7．无效指针<br>代码如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdlib.h&gt;int main()&#123;    char *x = malloc(10);    x[10] = &apos;a&apos;;    free(x);    return 0;&#125;</span><br></pre></td></tr></table></figure>
+<p>Valgrind提示如下<br>==15262== Invalid write of size 1<br>==15262== at 0x4004D6: main (sample7.c:5)<br>==15262== Address 0x4C2E03A is 0 bytes after a block of size 10 alloc’d<br>==15262== at 0x4A05809: malloc (vg_replace_malloc.c:149)<br>==15262== by 0x4004C9: main (sample7.c:4)<br>==15262==<br>==15262== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 1)<br>==15262== malloc/free: in use at exit: 0 bytes in 0 blocks.<br>==15262== malloc/free: 1 allocs, 1 frees, 10 bytes allocated.<br>==15262== For counts of detected errors, rerun with: -v<br>==15262== All heap blocks were freed — no leaks are possible.<br>例8．重复释放<br>代码:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdlib.h&gt;int main()&#123;    char *x = malloc(10);    free(x);    free(x);    return 0;&#125;</span><br></pre></td></tr></table></figure>
+<p>Valgrind提示如下<br>==15005== Invalid free() / delete / delete[]<br>==15005== at 0x4A0541E: free (vg_replace_malloc.c:233)<br>==15005== by 0x4004DF: main (sample8.c:6)<br>==15005== Address 0x4C2E030 is 0 bytes inside a block of size 10 free’d<br>==15005== at 0x4A0541E: free (vg_replace_malloc.c:233)<br>==15005== by 0x4004D6: main (sample8.c:5)<br>==15005==<br>==15005== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 5 from 1)<br>==15005== malloc/free: in use at exit: 0 bytes in 0 blocks.<br>==15005== malloc/free: 1 allocs, 2 frees, 10 bytes allocated.<br>==15005== For counts of detected errors, rerun with: -v<br>==15005== All heap blocks were freed — no leaks are possible.</p>
+<p>####Valgrind的局限<br>l Valgrind不对静态数组(分配在栈上)进行边界检查。如果在程序中声明了一个数组:</p>
+<pre><code>int main()
+{
+    char x[10];
+    x[11] = &apos;a&apos;;
+}
+
+</code></pre><p>Valgrind则不会警告你，你可以把数组改为动态在堆上分配的数组，这样就可能进行边界检查了。这个方法好像有点得不偿失的感觉。<br>l Valgrind占用了更多的内存—可达两倍于你程序的正常使用量。如果你用Valgrind来检测使用大量内存的程序就会遇到问题，它可能会用很长的时间来运行测试。大多数情况下，这都不是问题，即使速度慢也仅是检测时速度慢，如果你用Valgrind来检测一个正常运行时速度就很慢的程序，这下问题就大了。 Valgrind不可能检测出你在程序中犯下的所有错误—如果你不检查缓冲区溢出，Valgrind也不会告诉你代码写了它不应该写的内存。</p>
+<hr>
+<p>#####参考：<br>Valgrind User Manual<br>应用Valgrind发现Linux程序的内存问题</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2014/09/18/c++/c-c-内存分配方式/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2014/09/16/c++/为什么c-不提倡使用宏/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

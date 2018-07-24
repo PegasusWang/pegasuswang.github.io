@@ -1,0 +1,239 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>为什么void main()是错的! | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="为什么void main()是错的!"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2014-09-16T13:11:44.000Z"><a href="/2014/09/16/c++/为什么void-main-是错的/">周二, 9月 16 2014, 9:11:44 晚上</a></time>
+
+  
+    <h1 class="title">为什么void main()是错的!</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/c/">c++</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/c/">c++</a>, <a href="/tags/c/">c</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>很多人甚至市面上的一些书籍，都使用了void main( )，其实这是错误的。C/C++中从来没有定义过void main( )。C++之父Bjarne Stroustrup在他的主页上的FAQ中明确地写着</p>
+<blockquote>
+<p>The definition void main( ) { / … / } is not and never has            been C++, nor has it even been C.<br><a id="more"></a><br>( void main( )从来就不存在于C++或者C)。</p>
+</blockquote>
+<p>下面分别说一下C和C++标准中对main函数的定义。</p>
+<p>####一、 C语言中的main()<br>　　在C89中，main( )是可以接受的。Brian W. Kernighan和Dennis M. Ritchie的经典巨著The C programming Language 2e(《C 程序设计语言第二版》)用的就是main( )。不过在最新的C99标准中，只有以下两种定义方式是正确的：</p>
+<ul>
+<li>int main(void)</li>
+<li>int main(int argc, char *argv[])</li>
+</ul>
+<p>(参考资料：ISO/IEC 9899:1999 (E) Programming languages ? C 5.1.2.2.1 Program startup)<br>　　当然，我们也可以做一点小小的改动。例如：char *argv[]可以写成char *<em>argv；argv和argc可以改成别的变量名(如intval和charval)，不过一定要符合变量的命名规则。<br>　　如果不需要从命令行中获取参数，请用int main(void)；否则请用int main(int argc, char \</em>argv[])。<br>　　main函数的返回值类型必须是int，这样返回值才能传递给程序的调用者(如操作系统)。<br>　　如果main函数的最后没有写return语句的话，C99规定编译器要自动在生成的目标文件中(如exe文件)加入return 0;表示程序正常退出。不过，我还是建议你最好在main函数的最后加上return语句，虽然没有这个必要，但这是一个好的习惯。注意，vc6不会在目标文件中加入return 0;，大概是因为vc6是98年的产品，所以才不支持这个特性。现在明白我为什么建议你最好加上return语句了吧！不过，gcc3.2(Linux下的C编译器)会在生成的目标文件中加入return 0;。</p>
+<hr>
+<p>####二、 C++中的main()<br>　　C++98中定义了如下两种main函数的定义方式：</p>
+<ul>
+<li>int main( )</li>
+<li>int main(int argc, char *argv[])
+　　</li>
+</ul>
+<p>参考资料：ISO/IEC 14882(1998-9-01)Programming languages ? C++ 3.6 Start and termination<br>　　int main( )等同于C99中的int main(void)；int main(int argc, char *argv[])的用法也和C99中定义的一样。同样，main函数的返回值类型也必须是int。如果main函数的末尾没写return语句，C++98规定编译器要自动在生成的目标文件中加入return 0;。同样，vc6也不支持这个特性，但是g++3.2支持。</p>
+<hr>
+<p>####三、 关于void main()<br>　　在C和C++中，不接收任何参数也不返回任何信息的函数原型为“void foo(void);”。可能正是因为这个，所以很多人都误认为如果不需要程序返回值时可以把main函数定义成void main(void)。然而这是错误的！main函数的返回值应该定义为int类型，C和C++标准中都是这样规定的。虽然在一些编译器中，void main可以通过编译(如vc6)，但并非所有编译器都支持void main，因为标准中从来没有定义过void main。g++3.2中如果main函数的返回值不是int类型，就根本通不过编译。而gcc3.2则会发出警告。所以，如果你想你的程序拥有很好的可移植性，请一定要用int main。<br>　　不要用“我的老师告诉我这么做是对的”之类的话来为自己开脱；老师们总是习惯犯错误(teachers have a bad habit of being wrong)。写安全的，合乎标准的代码，大家就可以专注于你程序中其它的问题而不是在这种规范方面的东西上浪费时间。<br>　　应当指出：在某些系统中，若程序使用void main定义或没有return值，则可能导致堆栈异常从而导致系统故障。(详见后面英文部分)</p>
+<hr>
+<p>####四、返回值的作用<br>　　main函数的返回值用于说明程序的退出状态。如果返回0，则代表程序正常退出；返回其它数字的含义则由系统决定。通常，返回非零代表程序异常退出。下面我们在winxp环境下做一个小实验。首先编译下面的程序：</p>
+<pre><code class="c"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span>
+<span class="function"></span>{
+    <span class="keyword">return</span> <span class="number">0</span>;
+}
+
+</code></pre>
+<p>　　然后打开附件里的“命令提示符”，在命令行里运行刚才编译好的可执行文件，然后输入“echo %ERRORLEVEL%”，回车，就可以看到程序的返回值为0。假设刚才编译好的文件是a.exe，如果输入“a &amp;&amp; dir”，则会列出当前目录下的文件夹和文件。但是如果改成“return -1”，或者别的非0值，重新编译后输入“a &amp;&amp; dir”，则dir不会执行。因为&amp;&amp;的含义是：如果&amp;&amp;前面的程序正常退出，则继续执行&amp;&amp;后面的程序，否则不执行。也就是说，利用程序的返回值，我们可以控制要不要执行下一个程序。这就是int main的好处。如果你有兴趣，也可以把main函数的返回值类型改成非int类型(如float)，重新编译后执行“a &amp;&amp; dir”，看看会出现什么情况，想想为什么会出现那样的情况。顺便提一下，如果输入a || dir的话，则表示如果a异常退出，则执行dir。</p>
+<hr>
+<p>####五、那么int main(int argc, char *argv[], char *envp[])呢？<br>　　这当然也不是标准C/C++里面定义的东西！char *envp[]是某些编译器提供的扩展功能，用于获取系统的环境变量。因为不是标准，所以并非所有编译器都支持，故而移植性差，不推荐使用——除非你的程序是专门设计用于工作在特定的环境中而且需要获取系统的环境变量。<br>最后再多说几句最近看到的：ANSIC规定函数在声明空参数表时必须用void，比如用void get(void)而不是void get()，你可能会看到根据c99标准写的程序主函数都是<br>int main(void)　{ }//c99标准，最好这么写，虽然现在很多人不这么写。(注意这是标准c，不是c++)<br>但是c++标准却没有这种规定，在c++11标准中可以用void get()这种方式声明，而且c++为了兼容c也可以用void get(void)。所以c++一般都是用int main() { } //c++11标准</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2014/09/16/c++/c语言不用变量交换两个数分析/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2014/09/16/tools/markdown简明语法/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

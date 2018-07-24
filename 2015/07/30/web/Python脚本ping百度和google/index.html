@@ -1,0 +1,267 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Python脚本ping百度和google | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Python脚本ping百度和google"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-07-30T03:45:27.000Z"><a href="/2015/07/30/web/Python脚本ping百度和google/">周四, 7月 30 2015, 11:45:27 中午</a></time>
+
+  
+    <h1 class="title">Python脚本ping百度和google</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/web/">web</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/ping/">ping</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>###什么是Ping服务<br>ping 是基于 XML_RPC 标准协议的更新通告服务，用于Blog把内容更新快速通知给搜索引擎，以便搜索引擎及时进行抓取和更新。</p>
+<p>计算机就相当于 RPC Client ，用于向 RPC Server 发起请求，并接受方法的执行结果。</p>
+<hr>
+<p>###Python实现方法<br>Python 内置了 XMLRPClib ，可以很方便地处理XMLRPC协议，免去了封包解包的麻烦。</p>
+<p>用法很简单，首先导入库：</p>
+<p><code>import xmlrpclib</code><br>生成xmlrpc服务器对象：<br><a id="more"></a><br><code>sever = xmlrpclib.ServerProxy(ServerProxy)</code><br>其中 ServerProxy 是搜索引擎的RPC服务器端点地址。</p>
+<p>然后便可以执行RPC服务器的方法了，以百度为例：<br><code>result = server.weblogUpdates.extendedPing(blog_name,index_addr,new_post_addr,rss_addr)</code><br>weblogUpdates.extendedPing 是需要执行的方法，其中括号中的四个参数是 百度ping服务页面 上所要求的。 result 是方法返回的执行结果。</p>
+<hr>
+<p>###封装代码<br>在ping_all函数里放上需要ping的链接就可以了，参数按照需求传。</p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+import json
+import xmlrpclib
+from db import redis
+
+
+def ping(ping_url, *args, **kwds):
+    &quot;&quot;&quot;args: site_name, site_host, post_url, rss_url.&quot;&quot;&quot;
+    rpc_server = xmlrpclib.ServerProxy(ping_url)
+    result = rpc_server.weblogUpdates.extendedPing(*args)
+    print result
+
+
+def ping_all(*args, **kwds):
+    ping_url_list = [
+        &apos;http://ping.baidu.com/ping/RPC2&apos;,
+        &apos;http://rpc.pingomatic.com/&apos;,
+        &apos;http://blogsearch.google.com/ping/RPC2&apos;,
+    ]
+    for url in ping_url_list:
+        ping(url, *args, **kwds)
+
+
+def main():
+    client = redis.pubsub()
+    client.subscribe([&apos;ping&apos;])
+    while True:
+        for item in client.listen():
+            if item[&apos;type&apos;] == &apos;message&apos;:
+                msg = item[&apos;data&apos;]
+                if msg:
+                    post = json.loads(msg)
+                    print post
+                    ping_all(post.get(&apos;site_name&apos;), post.get(&apos;site_host&apos;),
+                             post.get(&apos;post_url&apos;), post.get(&apos;rss_url&apos;))
+
+
+def test():
+    site_name = &quot;tech2ipo&quot;
+    site_host = &quot;http://alpha.tech2ipo.com&quot;
+    post_url = &apos;http://alpha.tech2ipo.com/100855&apos;
+    rss_url = &quot;http://alpha.tech2ipo.com/rss/alpha.tech2ipo.com&quot;
+    ping_all(site_name, site_host, post_url, rss_url)
+
+
+if __name__ == &apos;__main__&apos;:
+    main()
+</code></pre><hr>
+<p>ref:<br><a href="http://zhanzhang.baidu.com/tools/ping" target="_blank" rel="noopener">http://zhanzhang.baidu.com/tools/ping</a><br><a href="http://cheukyin.github.io/jekyll/python/2014-08/ping-service.html" target="_blank" rel="noopener">http://cheukyin.github.io/jekyll/python/2014-08/ping-service.html</a><br><a href="http://www.cnpythoner.com/post/182.html" target="_blank" rel="noopener">http://www.cnpythoner.com/post/182.html</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/08/01/python/做一个树莓派微博机器人/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/07/28/web/网页静态化SEO/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

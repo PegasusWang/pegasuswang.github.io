@@ -1,0 +1,386 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>python缓存模块的一些用法 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="python缓存模块的一些用法"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-01-31T02:43:16.000Z"><a href="/2016/01/31/python/python缓存的一些用法/">周日, 1月 31 2016, 10:43:16 上午</a></time>
+
+  
+    <h1 class="title">python缓存模块的一些用法</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/cache/">cache</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Caches are bugs waiting to happen.- Rob Pike.</p>
+</blockquote>
+<p>最近接触了几个关于python缓存模块的一些用法，记录一下。</p>
+<hr>
+<p>###python3.2的@functools.lru_cache<br><a href="https://docs.python.org/3/library/functools.html" target="_blank" rel="noopener">functools</a> 模块在python3.2以后新加入了这个装饰器，用来缓存一些耗时的IO请求结果或者周期调用的函数结果，如果缓存数据超出maxsize的值，就是用LRU（最近最少使用算法）清除一些缓存结果。<br>官方文档给出了几个示例:<br><a id="more"></a></p>
+<pre><code>@lru_cache(maxsize=32)
+def get_pep(num):
+    &apos;Retrieve text of a Python Enhancement Proposal&apos;
+    resource = &apos;http://www.python.org/dev/peps/pep-%04d/&apos; % num
+    try:
+        with urllib.request.urlopen(resource) as s:
+            return s.read()
+    except urllib.error.HTTPError:
+        return &apos;Not Found&apos;
+
+&gt;&gt;&gt; for n in 8, 290, 308, 320, 8, 218, 320, 279, 289, 320, 9991:
+...     pep = get_pep(n)
+...     print(n, len(pep))
+
+&gt;&gt;&gt; get_pep.cache_info()
+CacheInfo(hits=3, misses=8, maxsize=32, currsize=8)
+</code></pre><p>还有最常见的斐波那契数列，没有优化过的递归算法时间复杂度是<a href="http://www.gocalf.com/blog/calc-fibonacci.html" target="_blank" rel="noopener">O(1.618 ^ n)</a>，如果用数组记录之前计算过的值或者用缓存就是O(n)的时间复杂度。</p>
+<pre><code>@lru_cache(maxsize=None)
+def fib(n):
+    if n &lt; 2:
+        return n
+    return fib(n-1) + fib(n-2)
+
+&gt;&gt;&gt; [fib(n) for n in range(16)]
+[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610]
+
+&gt;&gt;&gt; fib.cache_info()
+CacheInfo(hits=28, misses=16, maxsize=None, currsize=16)
+</code></pre><hr>
+<p>###<a href="http://pythonhosted.org/cachetools/" target="_blank" rel="noopener">cachetools模块</a><br><a href="http://pythonhosted.org/cachetools/" target="_blank" rel="noopener">cachetools</a>模块帮我们实现了很多缓存失效方式，包括:</p>
+<ul>
+<li>LFUCache(Least Frequently Used (LFU) cache implementation.)</li>
+<li>LRUCache(Least Recently Used (LRU) cache implementation.)</li>
+<li>RRCache(Random Replacement (RR) cache implementation.)</li>
+<li>TTLCAche(LRU Cache implementation with per-item time-to-live (TTL) value.)</li>
+</ul>
+<pre><code># pip install cachetools
+import time
+from cachetools import ttl_cache, cached
+
+
+@ttl_cache(ttl=5)
+def get(n):
+    print(&apos;from function&apos;)    # 标记结果是从函数得到，而不是从缓存
+    return n
+
+
+for i in range(3):
+    print(get(10))
+
+time.sleep(6)
+
+for i in range(3):
+    print(get(10))
+</code></pre><p>可以看见结果输出如下:</p>
+<pre><code>from function
+10
+10
+10
+from function
+10
+10
+10
+</code></pre><hr>
+<p>###redis，memcached等内存数据库缓存</p>
+<p>这个就不细说了，网上很多例子。可以使用数据库提供的python api操作数据库实现缓存，不过一般需要自己实现失效策略，也可以直接给redis设置超时过期参数使缓存失效。一般数据量比较大的时候考虑用内存数据库。<br>最近学习flask的时候发现werkzeug.contrib.cache模块实现了MemcachedCache和RedisCache，可以直接拿来用，实现参考源码。</p>
+<hr>
+<p>###实现原理<br>一般就是设置一个字典，第一次计算的时候结果存入字典，以后每次就可以从字典里取得计算结果，如果需要超时就可以再设置一个字典保存对应结果计算的时期，每次计算比对这个时间，超时就重新计算。注意参数要是可以hash的，也就是可当做字典的key的。</p>
+<pre><code>def cache(func):
+    memo = {}
+
+    @wraps(func)
+    def _wrapper(*args):
+        res = memo.get(args, None)
+        if res is not None:
+            return res
+        else:
+            res = func(*args)
+            memo[args] = res
+        return res
+    return _wrapper
+
+
+@cache
+def fib(n):
+    if n &lt;= 1:
+        return n
+    else:
+        return fib(n-1) + fib(n-2)
+
+print([fib(i) for i in list(range(31))])
+</code></pre><p>另外也可以用class来实现类似缓存，比如实现一个能够缓存网页爬虫结果的类：</p>
+<pre><code>import time
+import requests
+
+class CacheFetch:
+    __slots__ = (&apos;url&apos;, &apos;timeout&apos;, &apos;last_time&apos;, &apos;_response&apos;)
+
+    def __init__(self, url, timeout=None):
+        self.url = url
+        self.timeout = timeout or 3
+        self.last_time = time.time()
+        self._response = None
+
+    @property
+    def response(self):
+        if not self._response or (time.time()-self.last_time &gt; self.timeout):
+            print(&apos;fetch page&apos;)
+            self._response = requests.get(self.url)
+            self.last_time = time.time()
+        return self._response
+
+
+url = &apos;http://www.baidu.com&apos;
+fetcher = CacheFetch(url, 1)
+
+for i in range(3):
+    st = time.time()
+    print(fetcher.response.status_code)
+    print(time.time()-st)
+
+time.sleep(5)
+
+for i in range(3):
+    st = time.time()
+    print(fetcher.response.status_code)
+    print(time.time()-st)
+</code></pre><p>执行可以看到一开始的for循环第一次是请求的网站数据，后面两次是直接从缓存取得的。之间sleep一下，然后再一次的for循环第一次还是要请求原来的网页，因为已经超时了，后两次循环就是直接从缓存取了。<br>最近看别人的代码还见到了这个cache_property，从flask里边抠出来如下，思想也差不多:</p>
+<pre><code>class _Missing(object):
+    def __repr__(self):
+        return &apos;no value&apos;
+
+    def __reduce__(self):
+        return &apos;_missing&apos;
+
+
+_missing = _Missing()    # 伪单例
+
+
+class cached_property(object):
+    def __init__(self, func, name=None, doc=None):
+        self.__name__ = name or func.__name__
+        self.__module__ = func.__module__
+        self.__doc__ = doc or func.__doc__
+        self.func = func
+
+    def __get__(self, obj, type=None):
+        if obj is None:
+            return self
+        value = obj.__dict__.get(self.__name__, _missing)
+        if value is _missing:
+            value = self.func(obj)
+            obj.__dict__[self.__name__] = value
+        print(value)
+        return value
+
+
+class TestCache():
+    @cached_property
+    def get(self):
+        print(&apos;from function&apos;)
+        return time.time()
+
+
+def test():
+    t = TestCache()
+    print(t.get)
+    print(t.get)
+
+test()
+</code></pre><p>执行后可以看到get只计算了一次，后两个的time.time()函数并没有执行。所以缓存不适用这种每次都返回不同值的函数。</p>
+<hr>
+<p>###Ref<br><a href="https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize" target="_blank" rel="noopener">https://wiki.python.org/moin/PythonDecoratorLibrary#Memoize</a> - 总结了几乎所有python装饰器的用法<br><a href="http://voidy.net/cache" target="_blank" rel="noopener">缓存算法</a><br><a href="http://mp.weixin.qq.com/s?__biz=MjM5ODI5Njc2MA==&amp;mid=2655808314&amp;idx=1&amp;sn=cda7204789e5f7787694595bf8c4b708&amp;chksm=bd7426ed8a03affbe644260e294a32f617c1f260f148233901de5b10e80c3c746ab8fe26ab70&amp;mpshare=1&amp;scene=23&amp;srcid=1123fkHRAuETKxTL0B9OwuDI#rd" target="_blank" rel="noopener">缓存更新的 Design Pattern，让我们多一点套路！</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/03/07/python/python-requests-tor-crawler/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/01/27/python/tornado写博客碰到的一些问题/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Qt递归非递归遍历文件 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Qt递归非递归遍历文件"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-01-11T16:00:11.000Z"><a href="/2015/01/12/c++/Qt递归非递归遍历文件/">周一, 1月 12 2015, 12:00:11 凌晨</a></time>
+
+  
+    <h1 class="title">Qt递归非递归遍历文件</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/c/">c++</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/c/">c++</a>, <a href="/tags/Qt/">Qt</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>qt最大的优势在于跨平台，虽然都说qt设计优良，文档丰富，但是qt一直不温不火的。不过跨平台确实可以节省不少人力物力，”一次编写，到处编译“，对于短期搭建框架也有优势.</p>
+<pre><code>#include &lt;QDebug&gt;
+#include &lt;QDir&gt;
+#include &lt;QFile&gt;
+#include &lt;QFileInfo&gt;
+#include &lt;QFileInfoList&gt;
+#include &lt;QQueue&gt;
+#include &lt;QString&gt;
+#include &lt;QStringList&gt;
+#include &lt;QVector&gt;
+
+QVector&lt;QString&gt; all_files;
+
+void DfsCollectFiles(const QString&amp; filepath)    // not recommended for deep directory
+{
+
+    QFileInfo curFileInfo(filepath);
+    if (!curFileInfo.isDir())
+        return;
+    QDir curDir(filepath);
+
+    QFileInfoList curFileInfoList(curDir.entryInfoList());
+    if (curFileInfoList.empty())
+        return;
+
+    QFileInfoList::const_iterator it;
+    for (it = curFileInfoList.begin(); it != curFileInfoList.end(); ++it) {
+        if (it-&gt;isDir() &amp;&amp; it-&gt;fileName() != &quot;.&quot;  &amp;&amp; it-&gt;fileName() != &quot;..&quot;) {
+            DfsCollectFiles(it-&gt;absoluteFilePath());    //recursively
+        } else if (!it-&gt;isDir()) {
+            all_files.push_back(it-&gt;absoluteFilePath());
+        }
+    }
+
+}
+
+void BfsCollectFiles(const QString&amp; filepath)     // bfs traverse
+{
+    QFileInfo cur_fileinfo(filepath);
+    QQueue&lt;QFileInfo&gt; fileinfo_queue;    // queue
+    QDir cur_dir(filepath);
+
+    fileinfo_queue.enqueue(cur_fileinfo);
+    while (!fileinfo_queue.isEmpty()) {
+        cur_dir = fileinfo_queue.head().absoluteFilePath();
+        fileinfo_queue.dequeue();
+        QFileInfoList cur_fileinfolist = cur_dir.entryInfoList();
+
+        QFileInfoList::const_iterator it;
+        for (it = cur_fileinfolist.cbegin(); it != cur_fileinfolist.cend(); ++it) {
+            if (it-&gt;isDir() &amp;&amp; it-&gt;fileName() != &quot;.&quot; &amp;&amp; it-&gt;fileName() != &quot;..&quot;) {    // jump &quot;.&quot; and &quot;..&quot;
+                fileinfo_queue.enqueue(it-&gt;absoluteFilePath());    // enqueue unresolved directories
+            } else if (!it-&gt;isDir()){
+                all_files.push_back(it-&gt;absoluteFilePath());
+            }
+        }
+    }
+
+}
+</code></pre><a id="more"></a>
+<p>测试代码：</p>
+<pre><code>int main()
+{
+    QString  filepath(&quot;/home/wnn/tmp&quot;);
+    QVector&lt;QString&gt;::const_iterator it;
+
+    DfsCollectFiles(filepath);
+    qDebug() &lt;&lt; all_files.size();
+    for (it = all_files.cbegin(); it != all_files.cend(); ++it)
+        qDebug() &lt;&lt; *it;
+    qDebug() &lt;&lt; endl;
+
+    all_files.clear();
+
+    BfsCollectFiles(filepath);
+    for (it = all_files.cbegin(); it != all_files.cend(); ++it)
+            qDebug() &lt;&lt; *it;
+    qDebug() &lt;&lt; all_files.size();
+
+    return 0;
+}
+</code></pre><p>关于上面代码命名的约定，类名和函数名用<a href="http://baike.baidu.com/view/1165629.htm" target="_blank" rel="noopener">驼峰命名法</a>，类的成员函数和qt一样用“小驼峰命名法”， 非成员函数用“大驼峰命名法”，变量名统一用小写字母加下划线，这样从名称就可以判定一个成员是什么类别。遍历完所有文件就可以自行根据绝对路径处理了。</p>
+<p>类似用shell列出文件：<br><code>ls -R | egrep &quot;*.pdf&quot;    #列出所有pdf文件</code></p>
+<p>不过还是python简单粗暴：</p>
+<pre><code>import os
+
+def cur_walk(curDir):
+    for parent, dirnames, filenames in os.walk(curDir):
+        for filename in filenames:    #files
+            print os.path.abspath(os.path.join(parent, filename))
+    for dirname in dirnames:    #directory
+        print os.path.abspath(os.path.join(parent, dirname))
+
+curDir = &apos;/home/wnn/tmp&apos;
+cur_walk(curDir)
+</code></pre><hr>
+<p>来一首二哥的新歌:</p>
+<embed src="http://www.xiami.com/widget/0_1773845116/singlePlayer.swf" type="application/x-shockwave-flash" width="257" height="33" wmode="transparent">
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/02/09/python/django-sae微信开发－简单的鹦鹉学舌功能/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/01/03/psychology/超越自卑/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

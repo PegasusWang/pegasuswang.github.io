@@ -1,0 +1,421 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>python项目免坑指南 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="python项目免坑指南"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-08-20T03:24:14.000Z"><a href="/2016/08/20/python/fuck-python/">周六, 8月 20 2016, 11:24:14 上午</a></time>
+
+  
+    <h1 class="title">python项目免坑指南</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/规范/">规范</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>我不是个伟大的程序员，我只是个有着一些优秀习惯的好程序员”。 —Kent Beck</p>
+</blockquote>
+<p>因为之前实习和工作的经历都是做新项目，对于维护老项目和阅读旧代码也没太多经验，踩了一些坑。笔者在还没有彻底了解业务的情况下就重构代码，导致延误了项目进度。so naive啊。。。。。。<br>最近感受最深的就是项目规范化很必要，尤其是多人协作的时候。人多了的时候，不同人的水平和代码风格差异很大，如果没有统一的规范，不同的人写的代码太个人化，有时候还有很多坏味道，导致协作和他人上手很困难，项目进度也会受到影响。<br>另外就是程序员需要的技能还是很多的，除了写代码实现需求，还需要能够很好地理解业务，和PM，测试，其他开发人员的沟通也很重要(甚至深刻理解业务需求比编码都难，我发现我的很多做法还没摆脱典型的学生思维，囧…)。随便记录一些东西吧：</p>
+<a id="more"></a>
+<hr>
+<h2 id="如何阅读别人的代码？"><a href="#如何阅读别人的代码？" class="headerlink" title="如何阅读别人的代码？"></a>如何阅读别人的代码？</h2><p>笔者的感觉就是，阅读别人的代码比自己写难多了。之前的项目没什么注释和文档，也没有代码规范，过去的需求文档也没有，看起来比较吃力。要理解代码只能一行行读，打断点单步执行。坑爹的是python这种动态语言没有类型声明，看一个变量完全不知道是个什么类型的玩意。总的感觉就是动态语言维护和理解起来比静态语言吃力，即便是python这种标榜像伪代码的语言。</p>
+<ul>
+<li>通读代码。</li>
+<li>中间涉及到的变量的含义，复杂数据结构最好记录下来。</li>
+<li>涉及到哪些数据库表，字段，含义是什么。</li>
+<li>断点调试，单步执行。</li>
+<li>查找文档和需求。</li>
+<li>像写代码的人请教。</li>
+</ul>
+<hr>
+<h2 id="python代码坏味道"><a href="#python代码坏味道" class="headerlink" title="python代码坏味道"></a>python代码坏味道</h2><ul>
+<li>不pythonic，写得很业余，真就信了半天学会python</li>
+<li>上来就整一个不知道啥意思的magic number，大学老师没教你不要滥用幻数？</li>
+<li>上来就from shit import *</li>
+<li>复杂函数没有docstring，传入了一个嵌套字典都不注释，娘来</li>
+<li>变量名乱起，看不出类型，加重理解负担。我在想是不是动态语言用匈牙利命名法要好一些</li>
+<li>不遵守pep8，没有pylint检测，打开代码一堆语法警告，老子的编辑器满眼都是warnning，编辑器用不好就老老实实用pycharm，用编辑器就老老实实装好语法检测和pylint检测插件，没有插件请考虑换一个editor</li>
+<li>没有单元测试，不知道怎么写测试（print大法好？）</li>
+<li>超长函数，没有复用和拆分，我智商低，不能理解好几屏都翻不完的，见谅。这么长居然还tm能工作，牛逼</li>
+<li>到处print，debug的时候加上，上线再删除（累不累亲？），logging模块很受冷落</li>
+<li>上来就try/except了，把异常都捕获了，吞掉异常导致排错困难</li>
+<li>没注意可变类型和非可变类型，传入可变类型并在函数里修改了参数，坑。。。</li>
+<li>没有逻辑分块，没有美感（这个就算了），就算不限制一行超过80列，也不能写一行写几百列吧，左右转头脑瓜子疼</li>
+<li>该注释没注释，代码如果不fancy基本就靠个注释和docstring理解了，要不看着真心费事</li>
+<li>隐晦。上来一段不止所云的代码段，也不注释是干什么用的，美其名曰『这是业务逻辑，就是这个样子的』，于是我养成一个习惯，代码的docstring我会把需求文档地址附上，方便自己和接手的人了解业务和代码。</li>
+<li>几乎没有任何注释和文档，以后你会碰到各种坑坑坑。。。。。。</li>
+<li>没有单元测试，几乎无法重构，风险太大。技术债太多<br>。。。。。。<br>嗯，一开始就开启pep8和pylint检测能显著提升代码质量，各种错误和警告提示逼着你写出来高质量代码。</li>
+</ul>
+<hr>
+<h2 id="教训："><a href="#教训：" class="headerlink" title="教训："></a>教训：</h2><ul>
+<li>动态语言真心不好维护，看不出变量类型，或者遇到了坑队友。(没注释，没文档，风格混乱，维护起来比较吃力)</li>
+<li>打断点单步执行是理解代码的一种比较好的方式。</li>
+<li>项目规范化。一定要制定自己公司的代码规范，避免代码腐化，导致以后维护和修改成本巨大。</li>
+<li>千万不要一上来就重构你觉得不好的东西，没有单元测试的代码重构起来风险极大，很有可能得不偿失。把你的想法和规范慢慢用到新的代码中，旧的代码涉及到的时候再尝试慢慢修改其中不好的地方。</li>
+<li>注释和文档化很重要（或者代码即文档），降低别人理解和上手你的代码的难度。代码除了实现需求外，最重要的就是理解和维护。是个人都能写出可以实现功能的烂代码，难的是怎么更好地应对需求变更。</li>
+<li>对于不太明白怎么做的地方（比如docstring怎么写），看看知名的开源项目人家是怎么做的。</li>
+<li>代码要清晰易于理解和维护，项目都是人堆出来的，写代码的时间经常远少于理解和修改它的时间，尤其是和别人协作的时候。大部分人往往实现功能就满足了，而不重视可维护性。</li>
+<li>code review很必要。搭建一个Phabricator，code review神器。</li>
+<li>良好的代码有时候靠的是自律、规范和review，而不仅仅是技术。</li>
+<li>动态语言只是写起来爽，维护起来费劲，对人的要求应该更加严格，否则并不适合做大型项目。（pthon三大恶心点：性能，编码和导入机制）</li>
+</ul>
+<hr>
+<h3 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h3><ul>
+<li>机器性能好的话强烈推荐pycharm，非常多实用功能。</li>
+<li>请在你的IDE或者编辑器里找到pep8和pylint检测插件，务必打开。pylint能帮你消除很多代码坏味道。</li>
+<li>使用的开发工具应该具有代码高亮，批量注释，pep8检测，pylint检测，自动生成docstring等功能。</li>
+<li>vim请使用python-mode插件，集成了众多实用python插件。</li>
+</ul>
+<hr>
+<h3 id="编码风格"><a href="#编码风格" class="headerlink" title="编码风格"></a>编码风格</h3><p>请遵循pep8标准，行长度可以适当放宽，但请不要超过120列，请使用格式优美的分行方式。<br>好的代码命名，排版，分块，风格都是有讲究的，让人看着愉悦。<br>google的代码风格也可以参考。</p>
+<p><a href="https://www.python.org/dev/peps/pep-0008/" target="_blank" rel="noopener">《PEP 8 – Style Guide for Python Code》</a></p>
+<p><a href="http://zh-google-styleguide.readthedocs.io/en/latest/google-python-styleguide/contents/" target="_blank" rel="noopener">Google开源项目风格指南-Python风格指南》 </a></p>
+<hr>
+<h3 id="命名规范"><a href="#命名规范" class="headerlink" title="命名规范"></a>命名规范</h3><ul>
+<li>按照pep8规则命名</li>
+<li>注意函数动词和变量名词词性的区分</li>
+<li>因为python没有类型声明，可以适当加上后缀比如url_list, info_dict等作为区分。动态语言里头良好的命名非常重要。</li>
+<li>学好英语单词能为命名增色</li>
+<li>名称能够精确描述该变量或者函数等的意义，具有表现力</li>
+</ul>
+<p><a href="http://www.zlovezl.cn/articles/python-using-variables-well/" target="_blank" rel="noopener">Python 工匠：善用变量来改善代码质量</a></p>
+<hr>
+<h3 id="为什么动态语言的命名这么恶心？？？"><a href="#为什么动态语言的命名这么恶心？？？" class="headerlink" title="为什么动态语言的命名这么恶心？？？"></a>为什么动态语言的命名这么恶心？？？</h3><p>最近做和报表相关的项目时遇到了大量的日期处理问题，好在python轮子多，倒也不是难事。不过遇到了几处坑爹的bug都是由于类型不对导致的。 因为不同的人处理日期时候，特别喜欢用date来命名，但是第一眼看到这个date时候你很难知道它是datetime.date还是个类似’2016-10-01’的字符串， 多次都是最后运行到程序抛出异常才知道是什么类型， 你又不能到处都加上个isinstance判断(我严重怀疑所谓的鸭子类型，嘎嘎嘎)。后来我不得不用恶心的date_obj和date_str命名来区分这两种不同的类型。 以至于我养成了一种习惯，比如非常喜欢这样命名，date_str_list, date_str_dict, date_obj_tuple, date_str_set等这种风格，虽然丑了点又冗余了点，但是我能容易 看出其类型，提升了可维护性，也更易于阅读代码。 有时候我就想python这种动态语言如果能用『匈牙利命名法』是否好维护些呢？有时候感觉这种动态语言只有通过良好的编码规范和文档才能具有可维护性，否则项目大了真是灾难。 怪不得python3费了这么大劲要加上type hint。 我现在的做法就是，尽量用一眼就能看出类型的命名方式给变量命名，降低代码阅读和维护难度，同时保证docstring的书写，复杂的函数尽量给出传入传出参数示例，尽量不用一行行阅读代码就能理解是做什么的，良好的单元测试代码其实可以当做代码调用示例。当然如果你有关于python维护性的好的实践，也可以交流下。维护起来真和逼你吃shit一样。</p>
+<hr>
+<h3 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h3><ul>
+<li>你可以写得很屎，但是请把docsting写好，让别人知道传入啥，传出啥，怎么用。切记切记，我不想每次调用一个接口都要重头到尾读一遍shit一样的源码。</li>
+<li>保持精简，注意复用，一次只做一件事。当需求变更时候，颗粒度细的代码更容易更改和适应变更。</li>
+<li>注意函数的副作用，python的可变和非可变类型作为参数传入。</li>
+<li>Think about future, design with flexibility, but only implement for production. 不要过度和超前设计，不要预测未来，仅需保持精简以便适应将来需求变更。</li>
+<li>代码的写法应当使别人理解它所需的时间最小化</li>
+<li>注意逻辑分块，增加可读性</li>
+<li>设计模式啥的俺不懂，俺只知道长了就拆，重了就复用，容易维护,修改和测试比啥都重要</li>
+<li>写代码容易，读代码难。及时小规模重构不好的代码，千万别放任代码腐化</li>
+<li>灵活引入assert使代码快速失败</li>
+<li>不要写超长函数，最好不要超过几屏。</li>
+<li>语义化，如果一个函数逻辑超长，可以通过内部函数拆分逻辑块，并且给每个块函数合理命名。</li>
+<li>慎重使用<em>args和**kwargs，方便的代价就是不够清晰（传入参数不直观)，有些小白学到手后到处用，维护起来和吃</em>一样，还有就是经常参数传入个dict没有注释有啥字段一样</li>
+</ul>
+<hr>
+<h3 id="docstring书写"><a href="#docstring书写" class="headerlink" title="docstring书写"></a>docstring书写</h3><p>对于<strong>复杂</strong>函数应该有良好的docstring注释，现统一使用google格式的docstring（这个看团队爱好自行决定），pycharm默认支持。<br>以下是示例：</p>
+<ul>
+<li>函数的意图和功能的精确描述，如果名称可以自解释可以省略。应当声明函数的意图和使用注意事项。虽然有时候一行行阅读代码也可以看懂，但是很多时候并不想看代码而是想立马知道该函数的功能。</li>
+<li>需要说明的参数含义和类型，对于动态语言，不能自解释的参数类型应予以说明，并且复杂的传入参数比如嵌套字典应该有相应的示例。</li>
+<li>返回值的含义和类型。复杂返回值应该有示例说明。</li>
+<li>非开源项目并且无老外参与可以使用中文，某些英文注释理解困难。</li>
+<li>对于调用三方api的函数，最好把参数和返回值格式注释好，尤其是比较复杂的值。</li>
+<li>强烈建议你把jira，需求文档，github地址，stackoverflow等地址附上，可以帮助阅读代码的人快速上手。（文档类最好有专门的工具或者归档，方便接手的人了解之前的需求）</li>
+<li>执行过程或步骤。甚至对于一些复杂的逻辑流程，我会把步骤用自然语言写下来，每个步骤用空行逻辑分块，代码就会美观许多，也更容易理解和维护。</li>
+</ul>
+<pre><code># http://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html#example-google
+def function_with_types_in_docstring(param1, param2):
+    &quot;&quot;&quot;Example function with types documented in the docstring.
+
+    `PEP 484`_ type annotations are supported. If attribute, parameter, and
+    return types are annotated according to `PEP 484`_, they do not need to be
+    included in the docstring:
+
+    Args:
+        param1 (int): The first parameter.
+        param2 (str): The second parameter.
+
+    Returns:
+        bool: The return value. True for success, False otherwise.
+
+    .. _PEP 484:
+        https://www.python.org/dev/peps/pep-0484/
+    &quot;&quot;&quot;
+</code></pre><hr>
+<h3 id="注释："><a href="#注释：" class="headerlink" title="注释："></a>注释：</h3><p>良好的代码最好是自解释的，但有时候避免不了一些额外说明。</p>
+<ul>
+<li>好代码&gt;差代码+好注释，不要留下『黑洞』</li>
+<li>解释为什么，而不是怎么样。怎么样你已经在代码里展现了，但是有些时候我不明白你为什么要这么干（业务逻辑吗？）</li>
+<li>注释什么？不要重复代码实现。费解的地方需要注释你的想法。</li>
+<li>什么时候注释？你自己回头都得需要一定时间才能理解的地方。</li>
+<li>注释应当及时更新，防止和代码不匹配。</li>
+<li>注释意想不到的内容， 比如我遇到了变态的bug，我会简单记录并且附上帮我解决了问题的stackoverflow链接。</li>
+<li>对于比较tricky的实现应当予以注释。</li>
+<li>相应的github、stackoverflow、jira、需求文档地址等如果必要也可以注释</li>
+<li>数据库字段需要注释其含义。</li>
+<li>以可读性为标准，不要隐晦（代码费解），也不要冗余（过度注释）。</li>
+<li>踩到的坑最好也要有注释记录。</li>
+<li>如果有些地方都是绞尽脑汁才想出来的，你不注释下别人理解起来就跟吃*一样，这就不太厚道了</li>
+</ul>
+<hr>
+<h3 id="异常"><a href="#异常" class="headerlink" title="异常"></a>异常</h3><ul>
+<li>不要直接用try/except捕获所有异常，这样会捕获BaseException，请先参考python异常层级。</li>
+<li>异常发生的时候注意现场记录，可以把相应的locals()变量输出便于排查问题。记录调用点</li>
+<li>合理使用logger调试中间信息</li>
+<li>可以使用Sentry等工具收集错误，更好排查bug</li>
+</ul>
+<hr>
+<h3 id="数据库"><a href="#数据库" class="headerlink" title="数据库"></a>数据库</h3><ul>
+<li>优先使用ORM，除非遇到性能问题，sql语句相对不好维护，同时有注入风险</li>
+<li>合理使用ORM框架优化查询</li>
+<li>合理使用redis、memcached等缓存数据库优化</li>
+</ul>
+<hr>
+<h3 id="单元测试"><a href="#单元测试" class="headerlink" title="单元测试"></a>单元测试</h3><p>嗯，你可能要告诉我你们根本不写单元测试，就和你不写注释和文档一样。TDD（测试驱动开发）可能没有必要，但是单元测试是很有必要的，这是项目质量和重构的基本保证。但是很多还停留在写个函数print下，正确了就感觉没问题的地步。实际上你只需要把期望看到的结果不是print而是写下来，然后加几个assert语句，以后就能重复验证了，难吗？</p>
+<p>嗯，我没时间写。。。但是我的经验表明，有单元测试的代码有时候反而会节省编码时间，因为无论你修改了啥都能快速验证之前代码的正确性(能节省很多调试时间，大项目修复错误代价出奇地高)，当然这只是我的意淫。<br>不过很多时候你以为会节省时间的地方，考虑到未来维护和修改的成本，实际上是不会节省时间的（往往刚入门的人注意不到这一点，老菜鸟也是）。</p>
+<p>嗯，我水平高，没必要写。可惜不是所有开发人员水平都很高，良莠不齐的，还是单元测试有保障。再说了，俺看那些github大神级程序员人家的代码都有单元测试，要不要PK下水平？或许水平特别高的人比较适合自由职业，<br>而不是参与项目协作吧。</p>
+<p>就算你懒，好吧，复杂函数和关键模块的单元测试最好写下吧，让写个测试怎么都跟求爷爷求祖宗似的？<br>除了保证代码逻辑，其实单元测试还能充当文档作用，一般看一眼测试代码，就知道怎么传递参数，会返回什么值。要不动态语言开发省的那点时间全TM用在修改bug和维护上了。<br>另外，良好的单元测试还能避免你写出shit一样的代码，一般shit一样的代码是极难测试的。最后，如果你实在是懒，就在最主要和最易出错的地方使用单元测试吧。</p>
+<hr>
+<h3 id="CodeReview"><a href="#CodeReview" class="headerlink" title="CodeReview"></a>CodeReview</h3><p>有必要吗，我觉得有。除非项目组里人人都是自律的技术高手，否则很有必要。即使是高手，如果写出来的代码难以维护，对后来接手的人来说也是灾难。<br>我眼中的高手是能把复杂的东西变简单的，即使内部实现复杂，提供的接口依然是简单优雅的。没有哪个高手写出的轮子是别人难以使用的。</p>
+<ul>
+<li>需要修改的：代码坏味道、不pythonic、不遵守代码规范、不合理设计实现、过于复杂难以维护的实现、该注释的没注释等等</li>
+</ul>
+<hr>
+<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><ul>
+<li>Python业余选手太多，正规军比较少，尤其是小公司，当然大公司俺没待过，不知道。对于业余选手应该通过培训让其快速进入正规军行列。</li>
+<li>新人上手一个旧项目的时候看到恶心的代码总想重构，在没有资源和单元测试的情况下，不要那么做。</li>
+<li>小步迭代，及时重构，不要让代码腐化。</li>
+<li>强烈建议小白无论学啥语言都用好lint工具，帮助你写出规范漂亮的代码。应强制开发人员开启pep8和pylint检测。</li>
+<li>代码是给人看的，以可读性和可维护性为标准。</li>
+<li>我现在对好代码的理解就是：几乎无bug；规范、易读、易维护，有单元测试。如果你阅读过google的编码规范，你会注意到他们使用的是编程语言的子集，很多费解和易出错的特性都刻意避免使用。</li>
+<li>规范很重要，否则项目大了会出现难维护、新人难以上手、改了旧的bug引入新bug等很多错误。</li>
+<li>代码习惯很重要，否则就算是高手，如果写出来的代码难以维护，对项目来说也是灾难。好在老鸟写出来的代码反而比菜鸟更易读（不是老菜鸟）</li>
+<li>不用vim/emacs的都是异教徒，好吧，你可以用sublime或者pycharm等，但是请打开pep8和pylint。</li>
+<li>即使翻译需求也请用代码翻译地漂亮点。</li>
+<li>产品经理应该阅读下《人月神话》等软件项目管理之类的书</li>
+<li>小公司经常为了求快导致很多程序员牺牲了应有的原则（文档，注释，单元测试等），得失我现在也没有太多经验衡量，但是我不会因为求速度牺牲原则。</li>
+<li>即使技术不算牛逼，只要遵守良好的规范（pep8,pylint,unittest），表现专业(保证单元测试和良好的文档)，基本上不会写出太烂的代码。</li>
+</ul>
+<hr>
+<h3 id="python项目免坑建议"><a href="#python项目免坑建议" class="headerlink" title="python项目免坑建议"></a>python项目免坑建议</h3><ul>
+<li>良好的代码目录结构</li>
+<li>单元测试(py.test, unittest)</li>
+<li>codereview(Phabricator)</li>
+<li>异常追踪和排错(Sentry, jira)</li>
+<li>log记录(logging,coloredlog模块, fluentd)</li>
+<li>良好的编程工具(Pycharm, vim, pylint, pep8check)控制代码质量</li>
+<li>避免代码坏味道，及时小规模重构</li>
+<li>良好的代码docstring，代码即文档。需求文档，jira地址等在相关代码里附上，方便后人接手。</li>
+<li>最重要的是招合格的人，坑队友可以有效地减少你的寿命</li>
+</ul>
+<hr>
+<h3 id="改善代码的12个步骤-来自《Joel说软件》中的建议）"><a href="#改善代码的12个步骤-来自《Joel说软件》中的建议）" class="headerlink" title="改善代码的12个步骤(来自《Joel说软件》中的建议）"></a>改善代码的12个步骤(来自《Joel说软件》中的建议）</h3><p>最近看了Joel写的《软件随想录》，他本人是stackoverflow联合创始人，曾经担任过微软项目经理，在书中他提出了12个保证软件项目质量的衡量方式，避免了软件工程中极其复杂的项目评估方式。<br>下边是具体列表，我在括号里附上了相应工具:</p>
+<ol>
+<li>使用版本控制吗？(git)</li>
+<li>能一步完成编译部署吗？(运维脚本)</li>
+<li>能每日持续集成吗？（jenkins）</li>
+<li>有故障信息数据库吗?(五字段关系表：重现步骤；预期功能；观察到的行为；分配给谁；是否修复）(jira)</li>
+<li>编写新代码之前修复故障吗？零故障数目(py.test)</li>
+<li>有最新的进度表吗？</li>
+<li>有规格说明书吗?人人都认为是好事情，可就是没人做。没有规则说明书就没有代码。功能规格（使用者角度）和技术规格（代码角度）(gitbook,sphinx)</li>
+<li>程序员拥有安静的工作环境嘛？</li>
+<li>你用了最好的工具吗？</li>
+<li>有测试人员吗？</li>
+<li>新聘人员在试用期间写代码吗？面试期间手写代码(白板编程)</li>
+<li>进行走廊可用性测试了吗？随便找一个人让他尝试使用你所编写的代码，如果5个人经过了这类测试，就可以了解隐藏在代码中95%可用性问题。</li>
+</ol>
+<hr>
+<h3 id="额外参考："><a href="#额外参考：" class="headerlink" title="额外参考："></a>额外参考：</h3><p><a href="https://book.douban.com/subject/1477390/" target="_blank" rel="noopener">《代码大全》</a> 编程小白迅速进入职业程序员行列的板砖书，吐血推荐这块板砖书，大而全，算是笔者的启蒙书吧。<br>我觉得关于命名、排版、很多工程性的东西还是很讲究的。和《编程匠艺》类似(倚天屠龙)，可以挑一本像小说一样读读。</p>
+<p><a href="https://book.douban.com/subject/10797189/" target="_blank" rel="noopener">《编写可读代码的艺术》</a> 小白请看看</p>
+<p><a href="https://book.douban.com/subject/4262627/" target="_blank" rel="noopener">《重构，改善既有代码设计》</a></p>
+<p><a href="http://www.cnblogs.com/MeteorSeed/archive/2012/04/08/2427966.html" target="_blank" rel="noopener">《软件项目免坑指南》</a></p>
+<p><a href="http://www.cnblogs.com/MeteorSeed/archive/2012/03/21/2404656.html" target="_blank" rel="noopener">软件项目质量保证——编码规范</a></p>
+<p><a href="http://python-web-guide.readthedocs.io/zh/latest/codingstyle/codingstyle.html" target="_blank" rel="noopener">《python-web-guide》</a> 这个我会当做笔记本，把想法和坑记录上去。 最后就是推荐新手同学看看《clean code》《代码大全》之类的书，学习一下如何编写出更易于理解的代码.</p>
+<p><a href="http://www.kancloud.cn/kancloud/sina-boot-camp/64003" target="_blank" rel="noopener">《编写优雅代码》</a> 新浪培训的课程文章，还有他写的《烂代码的那些事》，对新手很有用</p>
+<p><a href="https://www.zhihu.com/question/36805695/answer/132529576?group_id=793607256708104192" target="_blank" rel="noopener">要学 Python 需要怎样的基础？(找工作用)</a>我在知乎破几百的回答</p>
+<p><a href="http://python-web-guide.readthedocs.io/zh/latest/codingstyle/codingstyle.html" target="_blank" rel="noopener">《python codingstyle》</a> 我的一些总(tu)结(cao)</p>
+<p><a href="https://zhuanlan.zhihu.com/p/22338225" target="_blank" rel="noopener">《好好写代码》</a> 在知乎上说想了解豆瓣工程文化，然后董伟明先生写的文章。</p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MjM5MDE0Mjc4MA==&amp;mid=2650994555&amp;idx=1&amp;sn=b196e2dfb293ec7829523011316a7e06&amp;chksm=bdbf0f288ac8863e014eae215469f4bbc0b8e88fa286c3cd38b467348466c663415ffed0e4ca#rd" target="_blank" rel="noopener">关于Code Review，你「必须」了解的一些关键点……</a></p>
+<p>[《Joel说软件》], stackoverflow创始人谈软件工程。</p>
+<p>[《梦断代码》- 你越懂软件，越不会做软件]，像是一本小说，描述了一群牛人做出了一个失败项目的历程，书中贯穿了很多计算机界的奇闻轶事。如果你是个喜欢小说的程序员，不妨看看这本书。</p>
+<p><a href="http://stackoverflow.com/questions/236407/how-can-i-use-python-for-large-scale-development" target="_blank" rel="noopener">http://stackoverflow.com/questions/236407/how-can-i-use-python-for-large-scale-development</a></p>
+<p><a href="https://www.infoq.com/articles/nuxeo_python_to_java" target="_blank" rel="noopener">https://www.infoq.com/articles/nuxeo_python_to_java</a></p>
+<p><a href="http://stackoverflow.com/questions/4841226/how-do-i-keep-python-code-under-80-chars-without-making-it-ugly" target="_blank" rel="noopener">http://stackoverflow.com/questions/4841226/how-do-i-keep-python-code-under-80-chars-without-making-it-ugly</a></p>
+<p><a href="http://softwareengineering.stackexchange.com/questions/221615/why-do-dynamic-languages-make-it-more-difficult-to-maintain-large-codebases" target="_blank" rel="noopener">http://softwareengineering.stackexchange.com/questions/221615/why-do-dynamic-languages-make-it-more-difficult-to-maintain-large-codebases</a><br><a href="http://blog.thedigitalcatonline.com/blog/2016/11/14/clean-architectures-in-python-a-step-by-step-example/#.WDb_xWR962z" target="_blank" rel="noopener">Clean architectures in Python: a step-by-step example</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/08/27/python/python单元测试/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/07/12/psychology/改变自己-积极心理学入门推荐/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

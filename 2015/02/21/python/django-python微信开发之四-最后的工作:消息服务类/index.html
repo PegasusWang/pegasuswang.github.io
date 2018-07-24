@@ -1,0 +1,469 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>django+python微信开发之四-最后的工作:消息服务类实现自动回复机器人 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="django+python微信开发之四-最后的工作:消息服务类实现自动回复机器人"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-02-21T01:51:19.000Z"><a href="/2015/02/21/python/django-python微信开发之四-最后的工作:消息服务类/">周六, 2月 21 2015, 9:51:19 上午</a></time>
+
+  
+    <h1 class="title">django+python微信开发之四-最后的工作:消息服务类实现自动回复机器人</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/django/">django</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>###消息服务类wechatService.py<br>之前的工作都差不多了，包括配置服务器，三种消息类型封装和对消息的处理（解析xml和转换成xml），最后是要根据不同的消息类型来作出反应了。<br><a id="more"></a></p>
+<pre><code># -*- coding:utf-8 -*-
+&quot;&quot;&quot;
+# Author: Pegasus Wang (pegasuswang@qq.com, http://ningning.today)
+# Created Time : Fri Feb 20 21:38:57 2015
+
+# File Name: wechatService.py
+# Description:
+
+# :copyright: (c) 2015 by Pegasus Wang.
+# :license: MIT, see LICENSE for more details.
+&quot;&quot;&quot;
+
+import time
+from wechatUtil import MessageUtil
+from wechatReply import TextReply
+
+
+class WechatService(object):
+    &quot;&quot;&quot;process request&quot;&quot;&quot;
+    @staticmethod
+    def processRequest(request):
+        &quot;&quot;&quot;process different message types.
+
+        :param request: post request message
+        :return: None
+        &quot;&quot;&quot;
+        requestMap = MessageUtil.parseXml(request)
+        fromUserName = requestMap.get(u&apos;FromUserName&apos;)
+        toUserName = requestMap.get(u&apos;ToUserName&apos;)
+        createTime = requestMap.get(u&apos;CreateTime&apos;)
+        msgType = requestMap.get(u&apos;MsgType&apos;)
+        msgId = requestMap.get(u&apos;MsgId&apos;)
+
+        textReply = TextReply()
+        textReply.setToUserName(fromUserName)
+        textReply.setFromUserName(toUserName)
+        textReply.setCreateTime(time.time())
+        textReply.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_TEXT)
+
+        if msgType == MessageUtil.REQ_MESSAGE_TYPE_TEXT:
+            content = requestMap.get(&apos;Content&apos;).decode(&apos;utf-8&apos;)
+            respContent = u&apos;您发送的是文本消息: &apos; + content
+        elif msgType == MessageUtil.REQ_MESSAGE_TYPE_IMAGE:
+            respContent = u&apos;您发送的是图片消息！&apos;
+        elif msgType == MessageUtil.REQ_MESSAGE_TYPE_VOICE:
+            respContent = u&apos;您发送的是语音消息！&apos;
+        elif msgType == MessageUtil.REQ_MESSAGE_TYPE_VIDEO:
+            respContent = u&apos;您发送的是视频消息！&apos;
+        elif msgType == MessageUtil.REQ_MESSAGE_TYPE_LOCATION:
+            respContent = u&apos;您发送的是地理位置消息！&apos;
+        elif msgType == MessageUtil.REQ_MESSAGE_TYPE_LINK:
+            respContent = u&apos;您发送的是链接消息！&apos;
+        elif msgType == MessageUtil.REQ_MESSAGE_TYPE_EVENT:
+            eventType = requestMap.get(u&apos;Event&apos;)
+            if eventType == MessageUtil.EVENT_TYPE_SUBSCRIBE:
+                respContent = u&apos;^_^谢谢您的关注!&apos;
+            elif eventType == MessageUtil.EVENT_TYPE_UNSUBSCRIBE:
+                pass
+            elif eventType == MessageUtil.EVENT_TYPE_SCAN:
+                # TODO
+                pass
+            elif eventType == MessageUtil.EVENT_TYPE_LOCATION:
+                # TODO
+                pass
+            elif eventType == MessageUtil.EVENT_TYPE_CLICK:
+                # TODO
+                pass
+
+        textReply.setContent(respContent)
+        respXml = MessageUtil.class2xml(textReply)
+
+        return respXml
+</code></pre><p>代码也非常简单，就是根据不同的消息类型进行处理。<br>最近又发现了一个好玩的自动回复<a href="http://www.tuling123.com/openapi/cloud/proexp.jsp" target="_blank" rel="noopener">图灵机器人</a>,我们可以调用它的接口实现我们的文本消息自动回复，比如回复个“笑话”它就会给你发送一个笑话，要注意的是它经常发一些少儿不宜的笑话。更改后的代码如下（改动的地方代码中会说明):</p>
+<pre><code># -*- coding:utf-8 -*-
+&quot;&quot;&quot;
+# Author: Pegasus Wang (pegasuswang@qq.com, http://ningning.today)
+# Created Time : Fri Feb 20 21:38:57 2015
+
+# File Name: wechatService.py
+# Description:
+
+# :copyright: (c) 2015 by Pegasus Wang.
+# :license: MIT, see LICENSE for more details.
+&quot;&quot;&quot;
+import json
+import time
+import urllib
+import urllib2
+
+from wechatUtil import MessageUtil
+from wechatReply import TextReply
+
+# add a robot auto reply class
+class RobotService(object):
+    &quot;&quot;&quot;Auto reply robot service&quot;&quot;&quot;
+    KEY = &apos;d92d20bc1d8bb3cff585bf746603b2a9&apos;    # change to your key
+    url = &apos;http://www.tuling123.com/openapi/api&apos;
+
+    @staticmethod
+    def auto_reply(req_info):
+        query = {&apos;key&apos;: RobotService.KEY, &apos;info&apos;: req_info.encode(&apos;utf-8&apos;)}
+        headers = {&apos;Content-type&apos;: &apos;text/html&apos;, &apos;charset&apos;: &apos;utf-8&apos;}
+        data = urllib.urlencode(query)
+        req = urllib2.Request(RobotService.url, data)
+        f = urllib2.urlopen(req).read()
+        return json.loads(f).get(&apos;text&apos;).replace(&apos;&lt;br&gt;&apos;, &apos;\n&apos;)
+
+
+class WechatService(object):
+    &quot;&quot;&quot;process request&quot;&quot;&quot;
+    @staticmethod
+    def processRequest(request):
+        &quot;&quot;&quot;process different message types.
+
+        :param request: post request message
+        :return: None
+        &quot;&quot;&quot;
+        requestMap = MessageUtil.parseXml(request)
+        fromUserName = requestMap.get(u&apos;FromUserName&apos;)
+        toUserName = requestMap.get(u&apos;ToUserName&apos;)
+        createTime = requestMap.get(u&apos;CreateTime&apos;)
+        msgType = requestMap.get(u&apos;MsgType&apos;)
+        msgId = requestMap.get(u&apos;MsgId&apos;)
+
+        textReply = TextReply()
+        textReply.setToUserName(fromUserName)
+        textReply.setFromUserName(toUserName)
+        textReply.setCreateTime(time.time())
+        textReply.setMsgType(MessageUtil.RESP_MESSAGE_TYPE_TEXT)
+
+        if msgType == MessageUtil.REQ_MESSAGE_TYPE_TEXT:
+            content = requestMap.get(&apos;Content&apos;).decode(&apos;utf-8&apos;)    # note: decode first
+            # respContent = u&apos;您发送的是文本消息:&apos; + content
+            # change to auto_reply(content)
+            respContent = RobotService.auto_reply(content)
+        elif msgType == MessageUtil.REQ_MESSAGE_TYPE_IMAGE:
+            respContent = u&apos;您发送的是图片消息！&apos;
+        elif msgType == MessageUtil.REQ_MESSAGE_TYPE_VOICE:
+            respContent = u&apos;您发送的是语音消息！&apos;
+        elif msgType == MessageUtil.REQ_MESSAGE_TYPE_VIDEO:
+            respContent = u&apos;您发送的是视频消息！&apos;
+        elif msgType == MessageUtil.REQ_MESSAGE_TYPE_LOCATION:
+            respContent = u&apos;您发送的是地理位置消息！&apos;
+        elif msgType == MessageUtil.REQ_MESSAGE_TYPE_LINK:
+            respContent = u&apos;您发送的是链接消息！&apos;
+        elif msgType == MessageUtil.REQ_MESSAGE_TYPE_EVENT:
+            eventType = requestMap.get(u&apos;Event&apos;)
+            if eventType == MessageUtil.EVENT_TYPE_SUBSCRIBE:
+                respContent = u&apos;^_^谢谢您的关注，本公众号由王宁宁开发(python2.7+django1.4),如果你有兴趣继续开发，&apos; \
+                              u&apos;可以联系我，就当打发时间了.&apos;
+            elif eventType == MessageUtil.EVENT_TYPE_UNSUBSCRIBE:
+                pass
+            elif eventType == MessageUtil.EVENT_TYPE_SCAN:
+                # TODO
+                pass
+            elif eventType == MessageUtil.EVENT_TYPE_LOCATION:
+                # TODO
+                pass
+            elif eventType == MessageUtil.EVENT_TYPE_CLICK:
+                # TODO
+                pass
+
+        textReply.setContent(respContent)
+        respXml = MessageUtil.class2xml(textReply)
+
+        return respXml
+
+
+
+        &quot;&quot;&quot;
+        if msgType == &apos;text&apos;:
+            content = requestMap.get(&apos;Content&apos;)
+            # TODO
+
+        elif msgType == &apos;image&apos;:
+            picUrl = requestMap.get(&apos;PicUrl&apos;)
+            # TODO
+
+        elif msgType == &apos;voice&apos;:
+            mediaId = requestMap.get(&apos;MediaId&apos;)
+            format = requestMap.get(&apos;Format&apos;)
+            # TODO
+
+        elif msgType == &apos;video&apos;:
+            mediaId = requestMap.get(&apos;MediaId&apos;)
+            thumbMediaId = requestMap.get(&apos;ThumbMediaId&apos;)
+            # TODO
+
+        elif msgType == &apos;location&apos;:
+            lat = requestMap.get(&apos;Location_X&apos;)
+            lng = requestMap.get(&apos;Location_Y&apos;)
+            label = requestMap.get(&apos;Label&apos;)
+            scale = requestMap.get(&apos;Scale&apos;)
+            # TODO
+
+        elif msgType == &apos;link&apos;:
+            title = requestMap.get(&apos;Title&apos;)
+            description = requestMap.get(&apos;Description&apos;)
+            url = requestMap.get(&apos;Url&apos;)
+        &quot;&quot;&quot;
+</code></pre><hr>
+<p>###编写wechat的views.py<br>最后为了更好地组织代码，我们在wechat这个app文件家里再建立两个文件views.py和urls.py，后面我们再把wechat的urls加入到mysite里边。</p>
+<pre><code># -*- coding:utf-8 -*-
+&quot;&quot;&quot;
+# Author: Pegasus Wang (pegasuswang@qq.com, http://ningning.today)
+# Created Time : Wed Feb 18 18:18:10 2015
+
+# File Name: views.py
+# Description:
+
+# :copyright: (c) 2015 by Pegasus Wang.
+# :license: MIT, see LICENSE for more details.
+&quot;&quot;&quot;
+# Create your views here.
+from django.http import HttpResponse
+from django.views.generic.base import View
+from .wechatUtil import checkSignature
+from .wechatService import WechatService
+
+
+class WechatInterfaceView(View):
+
+    def get(self, request):
+        echostr = request.GET.get(u&apos;echostr&apos;, None)
+        if checkSignature(request):
+            return HttpResponse(echostr)
+
+    def post(self, request):
+        return HttpResponse(WechatService.processRequest(request))
+</code></pre><p>这里定义了一个通用视图类，用来处理微信公众账号发过来的请求。</p>
+<hr>
+<p>###编写wechat的urls.py</p>
+<pre><code># -*- coding:utf-8 -*-
+&quot;&quot;&quot;
+# Author: Pegasus Wang (pegasuswang@qq.com, http://ningning.today)
+# Created Time : Fri Feb 20 22:31:30 2015
+
+# File Name: urls.py
+# Description:
+
+# :copyright: (c) 2015 by Pegasus Wang.
+# :license: MIT, see LICENSE for more details.
+&quot;&quot;&quot;
+
+from django.conf.urls import patterns, url
+from django.views.decorators.csrf import csrf_exempt
+from wechat import views
+
+
+urlpatterns = patterns(&apos;&apos;,
+    url(r&apos;^$&apos;, csrf_exempt(views.WechatInterfaceView.as_view())),
+)
+</code></pre><p>###编写mysite的urls.py</p>
+<pre><code>from django.conf.urls import patterns, include, url
+urlpatterns = patterns(&apos;&apos;,
+    url(r&apos;^wechat/&apos;, include(&apos;wechat.urls&apos;, namespace=&apos;wechat&apos;)),
+)
+</code></pre><hr>
+<p>###大功告成<br>到这里所有的代码就编写完成了，为了像模像样，我们再项目里加上LISENCE和README.md文件。看看最终的项目结构,用<code>tree 2命令</code>，2是文件夹名:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">2</span><br><span class="line">├── LICENSE</span><br><span class="line">├── README.md</span><br><span class="line">├── config.yaml</span><br><span class="line">├── index.wsgi</span><br><span class="line">├── manage.py</span><br><span class="line">├── mysite</span><br><span class="line">│   ├── __init__.py</span><br><span class="line">│   ├── settings.py</span><br><span class="line">│   ├── urls.py</span><br><span class="line">│   └── wsgi.py</span><br><span class="line">└── wechat</span><br><span class="line">    ├── __init__.py</span><br><span class="line">    ├── models.py</span><br><span class="line">    ├── tests.py</span><br><span class="line">    ├── urls.py</span><br><span class="line">    ├── views.py</span><br><span class="line">    ├── wechatEvent.py</span><br><span class="line">    ├── wechatMessage.py</span><br><span class="line">    ├── wechatReply.py</span><br><span class="line">    ├── wechatService.py</span><br><span class="line">    └── wechatUtil.py</span><br></pre></td></tr></table></figure>
+<p>用svn上传所有代码到sae服务器，然后就可以测试了。效果如下：<br>如果结果不符合预期，你可以参考鹦鹉学舌那篇文章用curl或者python的requests模块模拟微信服务器发送post请求到你的sae服务器，观察sae返回的结果就知道什么问题了。<br><img src="http://pegasus.qiniudn.com/wechat4.png" alt=""></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/03/15/psychology/谈谈情，说说爱/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/02/21/python/django-python微信开发之三－消息处理类/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

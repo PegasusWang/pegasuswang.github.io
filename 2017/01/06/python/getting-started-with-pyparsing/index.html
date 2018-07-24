@@ -1,0 +1,535 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Getting Started with Pyparsing | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Getting Started with Pyparsing"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2017-01-06T12:09:42.000Z"><a href="/2017/01/06/python/getting-started-with-pyparsing/">周五, 1月 6 2017, 8:09:42 晚上</a></time>
+
+  
+    <h1 class="title">Getting Started with Pyparsing</h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>The grammar specification should be a natural-looking part of the Python program, easy-to-read, and familiar in style and format to Python programmers. - Zen of Pyparsing.</p>
+</blockquote>
+<p>上篇博客在讲设计模式解释器模式的时候提到了pyparsing库，当时用该库处理命令从而实现了很简单的DSL，这次详细介绍下该库。 <a href="http://infohost.nmt.edu/tcc/help/pubs/pyparsing/web/index.html" target="_blank" rel="noopener">pyparsing</a>是一个文本处理库，可以用来处理html，日志文件，复杂数据结构或者命令的解析等。比如去除源码中的注释，或者写个简单的DSL等。</p>
+<a id="more"></a>
+<p>编程中处理文本的需求还是很多的，比如处理json串(各种json库)，爬虫解析html(re, bs，lxml)等。对于简单的字符串一般用str内置的split(),index(),startswith()等方法就能处理，对于源文件有lex/yacc工具。正则对于文本处理也是个强大的工具，但是大部分人不是正则表达式专家，对于复杂的文本处理写好正则是很难的，而且正则表达式也不是很直观，举个例子，我们写个处理ip地址后边跟个美国电话号码格式的字符串：</p>
+<pre><code># 正则
+pat = &apos;(\d{1,3}(?:\.\d{1,3}){3})\s+(\(\d{3}\)\d{3}-\d{4})&apos;
+
+# 使用 pyparsing，虽然代码写得多，但是从可读性可维护性和扩展性来说更好
+ipField = Word(nums, max=3)
+ipAddr = Combine( ipField + &quot;.&quot; + ipField + &quot;.&quot; + ipField + &quot;.&quot; + ipField )
+phoneNum = Combine( &quot;(&quot; + Word(nums, exact=3) + &quot;)&quot; +
+                    Word(nums, exact=3) + &quot;−&quot; + Word(nums, exact=4) )
+userdata = ipAddr + phoneNum
+</code></pre><p>pyparsing有以下特点：</p>
+<ul>
+<li>纯python实现，兼容2，3。易于开发和维护。</li>
+<li>内置了很多处理模式。<ul>
+<li>C,C++,Java,Pypthon, HTML 注释处理</li>
+<li>引号字符串</li>
+<li>HMLT和XML标签</li>
+<li>逗号等任意界定符表达式</li>
+</ul>
+</li>
+<li>只有一个python源文件，容易移植和使用</li>
+<li>MIT协议</li>
+</ul>
+<hr>
+<h2 id="使用pyparsing的正确姿势"><a href="#使用pyparsing的正确姿势" class="headerlink" title="使用pyparsing的正确姿势"></a>使用pyparsing的正确姿势</h2><h4 id="1-导入需要的函数或者类"><a href="#1-导入需要的函数或者类" class="headerlink" title="1. 导入需要的函数或者类"></a>1. 导入需要的函数或者类</h4><h4 id="2-定义语法和hepler函数"><a href="#2-定义语法和hepler函数" class="headerlink" title="2. 定义语法和hepler函数:"></a>2. 定义语法和hepler函数:</h4><ul>
+<li>比如定义变量名<code>identifier = Word(alphas, alphanums + &#39;_&#39;)</code></li>
+<li>定义整数或者浮点数<code>number = Word(nums+ &quot;.&quot;)</code></li>
+<li>定义个赋值语句<code>assignmentExpr = identifier + &quot;=&quot; + (identifier | number)</code></li>
+</ul>
+<pre><code># 利用我们定义的 assignmentExpr 可以解析下边的所有赋值语句
+a = 10
+a_2=100
+pi=3.14159
+goldenRatio = 1.61803
+E = mc2
+</code></pre><p>我们只使用<a href="http://en.wikipedia.org/wiki/backus-naur_form" target="_blank" rel="noopener">Backus-Naur Form (BNF)</a>这些缩写标记:</p>
+<ul>
+<li>::=  表示 “is defined as”</li>
+<li>+ 表示 “1 or more”</li>
+<li>* 表示 “0 or more”</li>
+<li>在[]中的项目表示可选的</li>
+<li>一连串项 表示要匹配的串必须出现在序列里</li>
+<li>| 表示或许会出现</li>
+</ul>
+<h4 id="3-使用定义的语法处理输入文本"><a href="#3-使用定义的语法处理输入文本" class="headerlink" title="3. 使用定义的语法处理输入文本"></a>3. 使用定义的语法处理输入文本</h4><ul>
+<li>parseString: 把定义的语法应用到输入文本上</li>
+<li>scanString: 扫描输入文本寻找匹配</li>
+<li>searchString: 封装了scanString,返回所有匹配token的list</li>
+<li>transformString: 也是封装了scanString, 简化了匹配token并且修改文本的操作</li>
+</ul>
+<h4 id="4-处理parsing文本得到的结果"><a href="#4-处理parsing文本得到的结果" class="headerlink" title="4. 处理parsing文本得到的结果"></a>4. 处理parsing文本得到的结果</h4><p>pyparsing可以返回list或者 ParseResults</p>
+<pre><code># 输出list
+assignemntToken = assignmentExpr.parseString(&quot;pi=3.14159&quot;)
+print(assignemntToken)    # 输出 [&apos;pi&apos;, &apos;=&apos;, &apos;3.14159&apos;]
+
+# 根据attributes输出
+assignmentExpr = identifier.setResultsName(&quot;lhs&quot;) + &quot;=&quot; + \
+    (identifier | number).setResultsName(&quot;rhs&quot;)
+assignmentTokens = assignmentExpr.parseString(&quot;pi=3.14159&quot;)
+# 输出 3.14159 is assigned to pi
+print(assignmentTokens.rhs, &quot;is assigned to&quot;, assignmentTokens.lhs)
+</code></pre><hr>
+<h2 id="“Hello-World-”-例子"><a href="#“Hello-World-”-例子" class="headerlink" title="“Hello World!” 例子"></a>“Hello World!” 例子</h2><p>我们通过解析”Hello World!” 来说明pyparsing的使用。”Hello, World!”的形式表示如下”word, word !”</p>
+<pre><code>Hello, World!
+Hi, Mom!
+Good morning, Miss Crabtree!
+Yo, Adrian!
+Whattup, G?
+How&apos;s it goin&apos;, Dude?
+Hey, Jude!
+Goodbye, Mr. Chips!
+</code></pre><p>我们用BNF来定义这个字符串表示 （这个例子有点杀鸡用牛刀，不过基本覆盖了pyparsing使用）</p>
+<pre><code>greeting ::= salutation comma greetee endpunc
+salutation ::= word+
+comma ::= ,
+greetee ::= word+
+word ::= a collection of one or more characters, which are any alpha or &apos; or .
+endpunc ::= ! | ?
+</code></pre><p>可以把上面这个BNF直接翻译到pyparsing表示，使用pyparsing定义的Word, Literal, OneOrMore和helper方法 onOf。BNF使用自顶向下，<br>翻译到pyparsing我们用自底向上方法:</p>
+<pre><code>word = Word(alphas + &quot;&apos;.&quot;)
+salutation = OneOrMore(word)
+comma = Literal(&quot;,&quot;)
+greetee = OneOrMore(word)
+endpunc = oneOf(&quot;! ?&quot;)    # oneOf可以避免这种麻烦的写法 Literal(&quot;!&quot;) | Literal(&quot;?&quot;)
+greeting = salutation + comma + greetee + endpunc
+</code></pre><p>完整代码如下:</p>
+<pre><code>from pyparsing import *    # 偷个懒
+
+tests = &quot;&quot;&quot;\
+Hello, World!
+Hi, Mom!
+Good morning, Miss Crabtree!
+Yo, Adrian!
+Whattup, G?
+How&apos;s it goin&apos;, Dude?
+Hey, Jude!
+Goodbye, Mr. Chips!
+&quot;&quot;&quot;
+
+word = Word(alphas + &quot;&apos;.&quot;)
+salutation = Group(OneOrMore(word))
+comma = Literal(&quot;,&quot;)
+greetee = Group(OneOrMore(word))
+endpunc = oneOf(&quot;! ?&quot;)    # oneOf可以避免这种麻烦的写法 Literal(&quot;!&quot;) | Literal(&quot;?&quot;)
+greeting = salutation + comma + greetee + endpunc
+for test_str in tests.splitlines():
+    # print(test_str)
+    print(greeting.parseString(test_str))
+</code></pre><p>输出结果如下:</p>
+<pre><code>[&apos;Hello&apos;, &apos;,&apos;, &apos;World&apos;, &apos;!&apos;]
+[&apos;Hi&apos;, &apos;,&apos;, &apos;Mom&apos;, &apos;!&apos;]
+[&apos;Good&apos;, &apos;morning&apos;, &apos;,&apos;, &apos;Miss&apos;, &apos;Crabtree&apos;, &apos;!&apos;]
+[&apos;Yo&apos;, &apos;,&apos;, &apos;Adrian&apos;, &apos;!&apos;]
+[&apos;Whattup&apos;, &apos;,&apos;, &apos;G&apos;, &apos;?&apos;]
+[&quot;How&apos;s&quot;, &apos;it&apos;, &quot;goin&apos;&quot;, &apos;,&apos;, &apos;Dude&apos;, &apos;?&apos;]
+[&apos;Hey&apos;, &apos;,&apos;, &apos;Jude&apos;, &apos;!&apos;]
+[&apos;Goodbye&apos;, &apos;,&apos;, &apos;Mr.&apos;, &apos;Chips&apos;, &apos;!&apos;]
+</code></pre><p>注意问候语被拆分长了多个，我们修改下定义:</p>
+<pre><code>salutation = Group( OneOrMore(word) )
+greetee = Group( OneOrMore(word) )
+</code></pre><p>结果如下:</p>
+<pre><code>[[&apos;Hello&apos;], &apos;,&apos;, [&apos;World&apos;], &apos;!&apos;]
+[[&apos;Hi&apos;], &apos;,&apos;, [&apos;Mom&apos;], &apos;!&apos;]
+[[&apos;Good&apos;, &apos;morning&apos;], &apos;,&apos;, [&apos;Miss&apos;, &apos;Crabtree&apos;], &apos;!&apos;]
+[[&apos;Yo&apos;], &apos;,&apos;, [&apos;Adrian&apos;], &apos;!&apos;]
+[[&apos;Whattup&apos;], &apos;,&apos;, [&apos;G&apos;], &apos;?&apos;]
+[[&quot;How&apos;s&quot;, &apos;it&apos;, &quot;goin&apos;&quot;], &apos;,&apos;, [&apos;Dude&apos;], &apos;?&apos;]
+[[&apos;Hey&apos;], &apos;,&apos;, [&apos;Jude&apos;], &apos;!&apos;]
+[[&apos;Goodbye&apos;], &apos;,&apos;, [&apos;Mr.&apos;, &apos;Chips&apos;], &apos;!&apos;]
+</code></pre><p>我们再修改下输出的结果显示：</p>
+<pre><code>salutation, dummy, greetee, endpunc = greeting.parseString(t)
+print(salutation, greetee, endpunc)
+</code></pre><p>输出如下：</p>
+<pre><code>[&apos;Hello&apos;] [&apos;World&apos;] !
+[&apos;Hi&apos;] [&apos;Mom&apos;] !
+[&apos;Good&apos;, &apos;morning&apos;] [&apos;Miss&apos;, &apos;Crabtree&apos;] !
+[&apos;Yo&apos;] [&apos;Adrian&apos;] !
+[&apos;Whattup&apos;] [&apos;G&apos;] ?
+[&quot;How&apos;s&quot;, &apos;it&apos;, &quot;goin&apos;&quot;] [&apos;Dude&apos;] ?
+[&apos;Hey&apos;] [&apos;Jude&apos;] !
+[&apos;Goodbye&apos;] [&apos;Mr.&apos;, &apos;Chips&apos;] !
+</code></pre><p>对于不感兴趣的内容可以压缩：</p>
+<pre><code>comma = Suppress(Literal(&quot;,&quot;))    #  压缩不感兴趣的
+for test_str in tests.splitlines():
+    salutation, greetee, endpunc = greeting.parseString(test_str)
+    print(salutation, greetee, endpunc)
+</code></pre><p>我们收集下所有的问候语：</p>
+<pre><code>salutation_list = []
+for test_str in tests.splitlines():
+    salutation, greetee, endpunc = greeting.parseString(test_str)
+    salutation_list.append((&quot; &quot;.join(salutation)))
+print(salutation_list)
+# 输出 [&apos;Hello&apos;, &apos;Hi&apos;, &apos;Good morning&apos;, &apos;Yo&apos;, &apos;Whattup&apos;, &quot;How&apos;s it goin&apos;&quot;, &apos;Hey&apos;, &apos;Goodbye&apos;]
+</code></pre><hr>
+<h2 id="pyparsing有什么特别的？"><a href="#pyparsing有什么特别的？" class="headerlink" title="pyparsing有什么特别的？"></a>pyparsing有什么特别的？</h2><h4 id="Class-names-are-easier-to-read-and-understand-than-specialized-typography"><a href="#Class-names-are-easier-to-read-and-understand-than-specialized-typography" class="headerlink" title="Class names are easier to read and understand than specialized typography."></a>Class names are easier to read and understand than specialized typography.</h4><p>用pyparsing可以让代码更易维护，更加易读。之前介绍的时候举过例子，再举个例子，比如我们想匹配c语言中的函数调用，包含0或者多个参数:</p>
+<pre><code># 匹配c函数调用的正则, 看起来很不直观
+(\w+)\((((\d+|\w+)(,(\d+|\w+))*)?)\)
+# 使用 pyparsing
+Word(alphas)+ &quot;(&quot; + Group(Optional(Word(nums)|Word(alphas) + ZeroOrMore(&quot;,&quot; + Word(nums)|Word (alphas)))) + &quot;)&quot;
+# x + ZeroOrMore(&quot;,&quot;+x) is so common 这种形式pyparsing提供了helper函数delimitedList
+# 还可以进一步简化成一下形式
+Word(alphas)+ &quot;(&quot; + Group( Optional(delimitedList(Word(nums)|Word(alphas)))  ) + &quot;)&quot;
+</code></pre><h4 id="Whitespace-markers-clutter-and-distract-from-the-grammar-definition"><a href="#Whitespace-markers-clutter-and-distract-from-the-grammar-definition" class="headerlink" title="Whitespace markers clutter and distract from the grammar definition."></a>Whitespace markers clutter and distract from the grammar definition.</h4><p>空白符等符号在我们处理字符串的时候有时候是无用的，上面的正则能处理<br><code>abd(1, 2, def, 5)</code>但是处理不了<code>abc(1, 2, def, 5)</code>，用正则的话需要加上空白处理<br><code>(\w+)\s*\(\s*(((\d+|\w+)(\s*,\s*(\d+|\w+))*)?)\s*\)</code>， 但是pyparsing版本不需要改动，会自动处理。<br>另外如果在参数里有代码注释我们可以这么处理:(用正则的话就很难实现了)</p>
+<pre><code>cFunction = Word(alphas)+ &quot;(&quot; + \
+    Group( Optional(delimitedList(Word(nums)|Word(alphas)))  ) + &quot;)&quot;
+cFunction.ignore( cStyleComment  )
+</code></pre><h4 id="The-results-of-the-parsing-process-should-do-more-than-just-represent-a-nested-list-of-tokens-especially-when-grammars-get-complicated"><a href="#The-results-of-the-parsing-process-should-do-more-than-just-represent-a-nested-list-of-tokens-especially-when-grammars-get-complicated" class="headerlink" title="The results of the parsing process should do more than just represent a nested list of tokens, especially when grammars get complicated."></a>The results of the parsing process should do more than just represent a nested list of tokens, especially when grammars get complicated.</h4><p>对于复杂的语法，我们可以通过ParseResults对结果进行访问，返回的list我们可以通过下标也可以通过属性名来访问，给处理结果带来很大便利。</p>
+<h4 id="Parse-time-is-a-good-time-for-additional-text-processing"><a href="#Parse-time-is-a-good-time-for-additional-text-processing" class="headerlink" title="Parse time is a good time for additional text processing."></a>Parse time is a good time for additional text processing.</h4><p>pyparsing支持在匹配的时候传入回调函数进行一些操作(parse-time callbacks，called parse actions)。下边这个例子匹配到引号括起来的字符串以后传入个lambda函数去除两头的引号。我们也可以在parse action里加入额外的字符串验证等。</p>
+<pre><code>quotedString.setParseAction( lambda t: t[0][1:−1]  )
+</code></pre><h4 id="Grammars-must-tolerate-change-as-grammar-evolves-or-input-text-becomes-more-challenging"><a href="#Grammars-must-tolerate-change-as-grammar-evolves-or-input-text-becomes-more-challenging" class="headerlink" title="Grammars must tolerate change, as grammar evolves or input text becomes more challenging."></a>Grammars must tolerate change, as grammar evolves or input text becomes more challenging.</h4><p>当输入文本变化的时候，处理文本会变得复杂。pyparsing可以使得代码更容易修改和扩充，更易写出自解释的代码。</p>
+<hr>
+<h2 id="使用Parse-Actions-和-ParseResults-从表格中解析数据"><a href="#使用Parse-Actions-和-ParseResults-从表格中解析数据" class="headerlink" title="使用Parse Actions 和 ParseResults 从表格中解析数据"></a>使用Parse Actions 和 ParseResults 从表格中解析数据</h2><p>先来看一组简单的数据，学校球赛得分，每行数据是日期和学校名及对应分数。</p>
+<pre><code>09/04/2004  Virginia         44   Temple             14
+09/04/2004  LSU              22   Oregon State       21
+09/09/2004  Troy State       24   Missouri           14
+01/02/2003  Florida State   103   University of Miami 2
+</code></pre><p>改数据的BNF定义:</p>
+<pre><code>digit      ::= &apos;0&apos;..&apos;9&apos;
+alpha      ::= &apos;A&apos;..&apos;Z&apos; &apos;a&apos;..&apos;z&apos;
+date       ::= digit+ &apos;/&apos; digit+ &apos;/&apos; digit+
+schoolName ::= ( alpha+ )+
+score      ::= digit+
+schoolAndScore ::= schoolName score
+gameResult ::= date schoolAndScore schoolAndScore
+</code></pre><p>我们把BNF翻译成pyparsing中的类</p>
+<pre><code>num = Word(nums)
+date = num + &quot;/&quot; + num + &quot;/&quot; + num
+schoolName = OneOrMore(Word(alphas))
+# 结合上面定义更复杂的表达式
+score = Word(nums)
+schoolAndScore = schoolName + score
+gameResult = date + schoolAndScore + schoolAndScore
+</code></pre><p>所有代码如下：</p>
+<pre><code>tests = &quot;&quot;&quot;\
+09/04/2004  Virginia         44   Temple             14
+09/04/2004  LSU              22   Oregon State       21
+09/09/2004  Troy State       24   Missouri           14
+01/02/2003  Florida State   103   University of Miami 2
+&quot;&quot;&quot;
+
+num = Word(nums)
+date = num + &quot;/&quot; + num + &quot;/&quot; + num
+schoolName = OneOrMore(Word(alphas))
+# 结合上面定义更复杂的表达式
+score = Word(nums)
+schoolAndScore = schoolName + score
+gameResult = date + schoolAndScore + schoolAndScore
+
+for test in tests.splitlines():
+    stats = gameResult.parseString(test)
+    print(stats.asList())
+&quot;&quot;&quot;  输出的是无结构的字符串list
+[&apos;09&apos;, &apos;/&apos;, &apos;04&apos;, &apos;/&apos;, &apos;2004&apos;, &apos;Virginia&apos;, &apos;44&apos;, &apos;Temple&apos;, &apos;14&apos;]
+[&apos;09&apos;, &apos;/&apos;, &apos;04&apos;, &apos;/&apos;, &apos;2004&apos;, &apos;LSU&apos;, &apos;22&apos;, &apos;Oregon&apos;, &apos;State&apos;, &apos;21&apos;]
+[&apos;09&apos;, &apos;/&apos;, &apos;09&apos;, &apos;/&apos;, &apos;2004&apos;, &apos;Troy&apos;, &apos;State&apos;, &apos;24&apos;, &apos;Missouri&apos;, &apos;14&apos;]
+[&apos;01&apos;, &apos;/&apos;, &apos;02&apos;, &apos;/&apos;, &apos;2003&apos;, &apos;Florida&apos;, &apos;State&apos;, &apos;103&apos;, &apos;University&apos;, &apos;of&apos;, &apos;Miami&apos;, &apos;2&apos;]
+&quot;&quot;&quot;
+
+
+# 我们把日期组合起来，修改date为
+date = Combine(num + &quot;/&quot; + num + &quot;/&quot; + num)
+gameResult = date + schoolAndScore + schoolAndScore
+
+&quot;&quot;&quot; 输出变成
+[&apos;09/04/2004&apos;, &apos;Virginia&apos;, &apos;44&apos;, &apos;Temple&apos;, &apos;14&apos;]
+[&apos;09/04/2004&apos;, &apos;LSU&apos;, &apos;22&apos;, &apos;Oregon&apos;, &apos;State&apos;, &apos;21&apos;]
+[&apos;09/09/2004&apos;, &apos;Troy&apos;, &apos;State&apos;, &apos;24&apos;, &apos;Missouri&apos;, &apos;14&apos;]
+[&apos;01/02/2003&apos;, &apos;Florida&apos;, &apos;State&apos;, &apos;103&apos;, &apos;University&apos;, &apos;of&apos;, &apos;Miami&apos;, &apos;2&apos;]
+&quot;&quot;&quot;
+</code></pre><p>还有个问题，大学名称现在是分隔的，我们现在给schoolName加上action<br><code>schoolName.setParseAction( lambda tokens: &quot; &quot;.join(tokens) )</code></p>
+<p>action一般还可以用来作为数据校验，比如我们想校验日期格式:</p>
+<pre><code>def validateDateString(tokens):
+    try:
+        time.strptime(tokens[0], &quot;%m/%d/%Y&quot;)
+    except ValueError:
+        raise ParseException(&quot;Invalid date string (%s)&quot; % tokens[0])
+date.setParseAction(validateDateString)
+</code></pre><p>接下来看看Gropu类的用法，Group用来把解析后的token嵌套成一个sublist,我们修改下schoolAndScore定义: <code>schoolAndScore = Group( schoolName + score  )</code>, 输出结果如下，可以看到学校和分数被[]括成了一个list</p>
+<pre><code>[&apos;09/04/2004&apos;, [&apos;Virginia&apos;, &apos;44&apos;], [&apos;Temple&apos;, &apos;14&apos;]]
+[&apos;09/04/2004&apos;, [&apos;LSU&apos;, &apos;22&apos;], [&apos;Oregon State&apos;, &apos;21&apos;]]
+[&apos;09/09/2004&apos;, [&apos;Troy State&apos;, &apos;24&apos;], [&apos;Missouri&apos;, &apos;14&apos;]]
+[&apos;01/02/2003&apos;, [&apos;Florida State&apos;, &apos;103&apos;], [&apos;University of Miami&apos;, &apos;2&apos;]]
+</code></pre><p>另外还想把score转成int类型，而不是使用字符串，我们可以在解析过程中传入action</p>
+<pre><code>score = Word(nums).setParseAction( lambda tokens : int(tokens[0])  )
+</code></pre><p>最后我们给结果添加label。之前的结果都是list，也就是说我们需要用下标访问，但是这样不够优雅，我们可以给每个定义的字段加上标签，这样就可以用标签访问结果，使得代码更加容易维护。就好比相比函数返回一个tuple，比如(res, err)，我们可以用namedtuple或者类封装下，这样函数返回的结果就可以用Result.res访问了。</p>
+<pre><code>schoolAndScore = Group(
+    schoolName.setResultsName(&quot;school&quot;) +
+    score.setResultsName(&quot;score&quot;)
+)
+gameResult = date.setResultsName(&quot;date&quot;) + \
+    schoolAndScore.setResultsName(&quot;team1&quot;) + \
+    schoolAndScore.setResultsName(&quot;team2&quot;)
+</code></pre><p>完整代码如下：</p>
+<pre><code>from pyparsing import Word, Group, Combine, Suppress, OneOrMore, alphas, nums,\
+    alphanums, stringEnd, ParseException
+import time
+
+tests = &quot;&quot;&quot;\
+09/04/2004  Virginia         44   Temple             14
+09/04/2004  LSU              22   Oregon State       21
+09/09/2004  Troy State       24   Missouri           14
+01/02/2003  Florida State   103   University of Miami 2
+&quot;&quot;&quot;.splitlines()
+
+num = Word(nums)
+date = Combine(num + &quot;/&quot; + num + &quot;/&quot; + num)
+def validateDateString(tokens):
+    try:
+        time.strptime(tokens[0], &quot;%m/%d/%Y&quot;)
+    except ValueError:
+        raise ParseException(&quot;Invalid date string (%s)&quot; % tokens[0])
+
+date.setParseAction(validateDateString)
+schoolName = OneOrMore( Word(alphas) )
+schoolName.setParseAction( lambda tokens: &quot; &quot;.join(tokens) )
+score = Word(nums).setParseAction(lambda tokens: int(tokens[0]))
+schoolAndScore = Group( schoolName.setResultsName(&quot;school&quot;) + \
+        score.setResultsName(&quot;score&quot;) )
+gameResult = date.setResultsName(&quot;date&quot;) + schoolAndScore.setResultsName(&quot;team1&quot;) + \
+        schoolAndScore.setResultsName(&quot;team2&quot;)
+for test in tests:
+    stats = (gameResult + stringEnd).parseString(test)
+    if stats.team1.score != stats.team2.score:
+        if stats.team1.score &gt; stats.team2.score:
+            result = &quot;won by &quot; + stats.team1.school
+        else:
+            result = &quot;won by &quot; + stats.team2.school
+    else:
+        result = &quot;tied&quot;
+    print(&quot;%s %s(%d) %s(%d), %s&quot; % (stats.date, stats.team1.school, stats.team1.score, stats.team2.school, stats.team2.score, result))
+    # or print one of these alternative formats
+    #print &quot;%(date)s %(team1)s %(team2)s&quot; % stats
+    #print stats.asXML(&quot;GAME&quot;)
+</code></pre><hr>
+<h2 id="从网页中抽取数据"><a href="#从网页中抽取数据" class="headerlink" title="从网页中抽取数据"></a>从网页中抽取数据</h2><p>从网页中抽取数据的库很多，比如lxml,BeautifulSoup,pyquery,内置的HTMLParser, htmllib等。不过我觉得还是用bs比较好，pyparsing要做的工作比较多。下边一个简单的例子，获取img标签的内容：</p>
+<pre><code>from pyparsing import makeHTMLTags
+html = &quot;&quot;&quot;
+&lt;div class=&quot;content clearfix&quot;&gt;
+
+    &lt;dl class=&quot;&quot;&gt;
+        &lt;dt&gt;
+            &lt;a href=&quot;https://book.douban.com/subject/7564420/&quot; onclick=&quot;moreurl(this, {&apos;total&apos;: 10, &apos;clicked&apos;: &apos;7564420&apos;, &apos;pos&apos;: 0, &apos;identifier&apos;: &apos;book-rec-books&apos;})&quot;&gt;&lt;img class=&quot;m_sub_img&quot; src=&quot;https://img3.doubanio.com/spic/s8950064.jpg&quot;&gt;&lt;/a&gt;
+        &lt;/dt&gt;
+        &lt;dd&gt;
+        &lt;a href=&quot;https://book.douban.com/subject/7564420/&quot; onclick=&quot;moreurl(this, {&apos;total&apos;: 10, &apos;clicked&apos;: &apos;7564420&apos;, &apos;pos&apos;: 0, &apos;identifier&apos;: &apos;book-rec-books&apos;})&quot; class=&quot;&quot;&gt;
+            软件之道
+        &lt;/a&gt;
+        &lt;/dd&gt;
+    &lt;/dl&gt;
+
+    &lt;dl class=&quot;&quot;&gt;
+        &lt;dt&gt;
+            &lt;a href=&quot;https://book.douban.com/subject/7063664/&quot; onclick=&quot;moreurl(this, {&apos;total&apos;: 10, &apos;clicked&apos;: &apos;7063664&apos;, &apos;pos&apos;: 1, &apos;identifier&apos;: &apos;book-rec-books&apos;})&quot;&gt;&lt;img class=&quot;m_sub_img&quot; src=&quot;https://img3.doubanio.com/spic/s10180950.jpg&quot;&gt;&lt;/a&gt;
+        &lt;/dt&gt;
+        &lt;dd&gt;
+        &lt;a href=&quot;https://book.douban.com/subject/7063664/&quot; onclick=&quot;moreurl(this, {&apos;total&apos;: 10, &apos;clicked&apos;: &apos;7063664&apos;, &apos;pos&apos;: 1, &apos;identifier&apos;: &apos;book-rec-books&apos;})&quot; class=&quot;&quot;&gt;
+            程序设计中实用的数据结构
+        &lt;/a&gt;
+        &lt;/dd&gt;
+    &lt;/dl&gt;
+&lt;/div&gt;
+&quot;&quot;&quot;
+
+# define expression for &lt;img&gt; tag
+imgTag,endImgTag = makeHTMLTags(&quot;img&quot;)
+# search for matching tags, and
+# print key attributes
+for img in imgTag.searchString(html):
+    print(&quot;&apos;%(class)s&apos; : %(src)s&quot; % img)
+</code></pre>
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2017/01/22/python/python-coding-details/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2017/01/03/python/master-python-design-patterns/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

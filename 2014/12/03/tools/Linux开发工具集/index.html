@@ -1,0 +1,288 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Linux开发工具集 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Linux开发工具集"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2014-12-03T14:13:22.000Z"><a href="/2014/12/03/tools/Linux开发工具集/">周三, 12月 3 2014, 10:13:22 晚上</a></time>
+
+  
+    <h1 class="title">Linux开发工具集</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/tools/">tools</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/tools/">tools</a>, <a href="/tags/linux/">linux</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>最近工作学了一些linux下的新东西，下面这些工具主要针对c/c++，以后慢慢补充一些好用的工具。</p>
+<hr>
+<p>####编辑器</p>
+<ul>
+<li>vim</li>
+<li>emacs</li>
+<li>kate（KDE下一个功能强大的编辑器）<a id="more"></a>
+</li>
+</ul>
+<hr>
+<p>####IDE(集成开发环境）</p>
+<ul>
+<li>eclipse+cdt</li>
+<li>clion</li>
+<li>qt cteator</li>
+</ul>
+<hr>
+<p>####编译器</p>
+<ul>
+<li>gcc</li>
+<li>g++</li>
+<li>clang</li>
+</ul>
+<hr>
+<p>####调试器</p>
+<ul>
+<li>gdb</li>
+</ul>
+<hr>
+<p>####构建工具</p>
+<ul>
+<li>cmake</li>
+<li>make</li>
+</ul>
+<hr>
+<p>####内存工具</p>
+<ul>
+<li>Purify</li>
+<li>Valgrind工具集(包括剖析工具Callgrind和线程分析工具Helgrind等)</li>
+<li>KCachegrind</li>
+</ul>
+<hr>
+<p>####剖析工具</p>
+<ul>
+<li>gprof开源剖析工具，通常作为gcc编译器的一部分。</li>
+<li>Quantify是IBM的一个功能强大的商业剖析工具。</li>
+</ul>
+<hr>
+<p>####静态检查器</p>
+<ul>
+<li>Lint</li>
+<li>google cpplint</li>
+<li>C++test</li>
+<li>cppcheck</li>
+</ul>
+<hr>
+<p>####并行编程工具</p>
+<ul>
+<li>Posix Threads</li>
+<li>MPI(Message Passing Interface)</li>
+<li>MapReduce（并行计算框架）</li>
+</ul>
+<hr>
+<p>####代码工具（命令行）</p>
+<ul>
+<li>nm 列出来自对象文件的符号</li>
+<li>objdump 显示对象文件信息</li>
+<li>strings 列出二进制文件中可输出的字符串</li>
+<li>strip 删除来自对象文件的符号</li>
+<li>m4 宏处理程序</li>
+<li>iconv 字符集转换工具</li>
+</ul>
+<p>####监测工具</p>
+<ul>
+<li>time 计时工具</li>
+<li>ps 显示运行进程的当前状态</li>
+<li>top 给出系统的详细信息</li>
+<li>strace 记录对操作系统的所有访问，例如内存分配、文件I/O、系统调用和子进程的启动</li>
+</ul>
+<hr>
+<p>####参考<br><a href="http://book.douban.com/subject/4231293/" target="_blank" rel="noopener">软件调试实战</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2014/12/11/读书/我的互联网方法论-周鸿祎/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2014/11/12/测试开发/ubuntu使用gtest单元测试框架/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

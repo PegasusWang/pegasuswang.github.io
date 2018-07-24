@@ -1,0 +1,321 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>用python的matplotlib库绘制柱状图和饼图 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="用python的matplotlib库绘制柱状图和饼图"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-04-17T13:56:19.000Z"><a href="/2015/04/17/python/用matplotlib绘制柱状图和饼图/">周五, 4月 17 2015, 9:56:19 晚上</a></time>
+
+  
+    <h1 class="title">用python的matplotlib库绘制柱状图和饼图</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/matplotlib/">matplotlib</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>毕业设计有一个需求，有一系列选择题，每个题目有四个选项，现在需要统计每个选项的人数，也就是画出柱状图和饼图。在网上找到了matplotlib这个库，折腾了几个小时，总算把需要的功能实现了。这个库一开始看起来是没有多少头绪的，很多函数也不知道什么意思，我感觉最好的学习方式就是按照需求，找到对应的gallery示例demo，然后按照需求来改，慢慢就知道怎么做了。只是看教程的话会感觉没有头绪，但是还是推荐先看几篇入门教程。<br><a id="more"></a></p>
+<p>###用matplotlib绘制柱状图<br>主要参考了这两个demo：<br><a href="http://matplotlib.org/examples/pylab_examples/barchart_demo.html" target="_blank" rel="noopener">http://matplotlib.org/examples/pylab_examples/barchart_demo.html</a><br><img src="http://matplotlib.org/_images/barchart_demo1.png" alt=""><br><a href="http://matplotlib.org/examples/api/barchart_demo.html" target="_blank" rel="noopener">http://matplotlib.org/examples/api/barchart_demo.html</a><br><img src="http://matplotlib.org/_images/barchart_demo.png" alt=""><br>现在照葫芦画瓢来个自己的：</p>
+<pre><code>#coding=utf-8
+&quot;&quot;&quot;
+Bar chart demo with pairs of bars grouped for easy comparison.
+&quot;&quot;&quot;
+import numpy as np
+import matplotlib.pyplot as plt
+plt.rcParams[&apos;font.sans-serif&apos;] = [&apos;SimHei&apos;] #指定默认字体,解决中文显示问题
+
+n_groups = 6
+
+means_men = (20, 35, 30, 35, 27, 18)
+#std_men = (2, 3, 4, 1, 2)
+
+means_women = (25, 32, 34, 20, 25, 18)
+#std_women = (3, 5, 2, 3, 3)
+
+fig, ax = plt.subplots()
+
+index = np.arange(n_groups)
+#bar_width = 0.35
+bar_width = 0.2
+
+opacity = 0.4
+error_config = {&apos;ecolor&apos;: &apos;0.3&apos;}
+
+rects1 = plt.bar(index, means_men, bar_width,
+                 alpha=opacity,
+                 color=&apos;b&apos;,
+                 #yerr=std_men,
+                 error_kw=error_config,
+                 label=&apos;Men&apos;)
+
+rects2 = plt.bar(index + bar_width, means_women, bar_width,
+                 alpha=opacity,
+                 color=&apos;r&apos;,
+                 #yerr=std_women,
+                 error_kw=error_config,
+                 label=&apos;Women&apos;)
+
+rects3 = plt.bar(index+bar_width*2, means_men, bar_width,
+                 alpha=opacity,
+                 color=&apos;b&apos;,
+                 #yerr=std_men,
+                 error_kw=error_config,
+                 label=&apos;Men&apos;)
+
+rects4 = plt.bar(index+bar_width*3, means_men, bar_width,
+                 alpha=opacity,
+                 color=&apos;g&apos;,
+                 #yerr=std_men,
+                 error_kw=error_config,
+                 label=&apos;Men&apos;)
+
+def autolabel(rects):
+    # attach some text labels
+    for rect in rects:
+        height = rect.get_height()
+        ax.text(rect.get_x()+rect.get_width()/2.0, 1.05*height, 
+                &apos;%d&apos;%int(height), ha=&apos;center&apos;, va=&apos;bottom&apos;)
+autolabel(rects1)
+autolabel(rects2)
+autolabel(rects3)
+autolabel(rects4)
+
+
+plt.xlabel(u&apos;题号&apos;)
+plt.ylabel(u&apos;人数&apos;)
+plt.title(u&apos;答题结果统计&apos;)
+plt.xticks(index + bar_width, (&apos;1&apos;, &apos;2&apos;, &apos;3&apos;, &apos;4&apos;, &apos;5&apos;, &apos;6&apos;))
+#plt.legend()
+ax.set_ybound(0, 40)
+
+plt.tight_layout()
+plt.show()
+#plt.savefig(u&apos;t.png&apos;)
+</code></pre><p><img src="http://pegasus.qiniudn.com/matplot0.png" alt=""></p>
+<p>###用matplotlib绘制饼图<br>这个就比较简单啦，直接看demo就可以了。</p>
+<pre><code>&quot;&quot;&quot;
+Demo of a basic pie chart plus a few additional features.
+
+In addition to the basic pie chart, this demo shows a few optional features:
+
+    * slice labels
+    * auto-labeling the percentage
+    * offsetting a slice with &quot;explode&quot;
+    * drop-shadow
+    * custom start angle
+
+Note about the custom start angle:
+
+The default ``startangle`` is 0, which would start the &quot;Frogs&quot; slice on the
+positive x-axis. This example sets ``startangle = 90`` such that everything is
+rotated counter-clockwise by 90 degrees, and the frog slice starts on the
+positive y-axis.
+&quot;&quot;&quot;
+import matplotlib.pyplot as plt
+
+
+# The slices will be ordered and plotted counter-clockwise.
+labels = &apos;Frogs&apos;, &apos;Hogs&apos;, &apos;Dogs&apos;, &apos;Logs&apos;
+sizes = [15, 30, 45, 10]
+colors = [&apos;yellowgreen&apos;, &apos;gold&apos;, &apos;lightskyblue&apos;, &apos;lightcoral&apos;]
+explode = (0, 0.1, 0, 0) # only &quot;explode&quot; the 2nd slice (i.e. &apos;Hogs&apos;)
+
+plt.pie(sizes, explode=explode, labels=labels, colors=colors,
+        autopct=&apos;%1.1f%%&apos;, shadow=True, startangle=90)
+# Set aspect ratio to be equal so that pie is drawn as a circle.
+plt.axis(&apos;equal&apos;)
+
+plt.show()
+</code></pre><p><img src="http://matplotlib.org/_images/pie_demo_features.png" alt="饼图显示效果"></p>
+<p>###Ref<br><a href="http://matplotlib.org/" target="_blank" rel="noopener">matplotlib</a><br><a href="http://www.cnblogs.com/qianlifeng/archive/2012/02/13/2350086.html" target="_blank" rel="noopener">python使用matplotlib绘图 – barChart</a><br><a href="http://www.cnblogs.com/vamei/archive/2013/01/30/2879700.html" target="_blank" rel="noopener">绘图: matplotlib核心剖析</a><br><a href="http://www.pythontab.com/html/2013/pythonhexinbiancheng_0123/161.html" target="_blank" rel="noopener">python使用matplotlib绘图详解</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/04/22/python/django使用matplotlib绘图/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/04/14/python/用python画一颗心/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

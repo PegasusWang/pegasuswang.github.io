@@ -1,0 +1,791 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>第 3 页 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <div id="cover">
+	<div id="profile" alt="http://pegasus.qiniudn.com/summer.jpg">
+		<a href="/">
+			<div class="logo">
+				<img src="/logo.png" alt="Profile Picture">
+			</div>
+			<div id="title">Pegasus' Blog</div>
+		</a>
+
+		
+			<div id="subtitle">保持一颗好奇心</div>
+		
+		 <ul class="my-socials">
+  
+  <li>
+  	<a href="https://github.com/PegasusWang" class="github" target="_blank">
+  		<i class="fa fa-github"></i>
+  	</a>
+  </li>
+  
+ 
+</ul>
+	</div>
+</div>
+
+
+  <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-12-30T12:47:31.000Z"><a href="/2016/12/30/python/write-maintainable-python-project/">周五, 12月 30 2016, 8:47:31 晚上</a></time>
+
+  
+    <h1 class="title"><a href="/2016/12/30/python/write-maintainable-python-project/">编写易维护的python项目</a></h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>从实习到现在使用python也快两年了，虽然经验依旧不多，不过维护旧项目和开发新项目好歹也都经历过，记录下想法就当年终总结吧。很多东西是之前没参与项目协作的时候没有注意到的，要不就是踩了坑才知道的。和人协作项目以后才真正意识到代码首先是写给人看的，其次才是让机器执行的。</p>
+<h2 id="易编写，难维护"><a href="#易编写，难维护" class="headerlink" title="易编写，难维护"></a>易编写，难维护</h2><blockquote>
+<p>Always code as if the person who ends up maintaining your code is a violent psychopath who knows where you live.- John Woods</p>
+</blockquote>
+<p>python做项目给我的感觉就是易编写，难维护。一方面是动态语言本身的特性，比如没有类型声明，难以重构等；另一方面就是团队流程和规范的问题，没有严格的流程控制提交代码的质量。目前很多使用python的公司都是小公司，很多流程不正规，没有编码规范，没有文档，没有注释，没有静态检测(pylint)，没有code review，没有单元测试，没有持续集成等等，最终的代码质量可想而知，维护和新人上手成本很高，代码仓库很容易失控(野蛮开发技术债会越积越多)。一开始我认为python号称『伪代码』语言，应该是更易读易理解的，后来发现我错了。python给你一种代码很好写的错觉，很容易就写出烂代码。</p>
+      
+    </div>
+    <footer>
+      
+        <div class="alignleft">
+            <a href="/2016/12/30/python/write-maintainable-python-project/#more" class="more-link"><i class="fa fa-chevron-right"></i>Read More ^_^</a>
+        </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-12-10T13:52:38.000Z"><a href="/2016/12/10/python/data-structures-and-algorithms-using-python/">周六, 12月 10 2016, 9:52:38 晚上</a></time>
+
+  
+    <h1 class="title"><a href="/2016/12/10/python/data-structures-and-algorithms-using-python/"></a></h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python-algorithms/">python, algorithms</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>I think a lot of new programmers like to use advanced data structures and advanced language features as a way of demonstrating their ability. I call it the lion-tamer syndrome. Such demonstrations are impressive, but unless they actually translate into real wins for the project, avoid them. - Glyn Williams’</p>
+</blockquote>
+<p>最近重新复习下常用算法和数据结构，下边是看该书大致记的笔记和代码，纯手敲，有兴趣的可以参考下，都是基于python3.5 class实现，所以也算是复习了一下OOP。虽然思想都是通用的，但是使用的语言也会影响到我们的思维，我会结合一下使用python的经验来稍微分析下各种数据结构和其操作的复杂度，以便灵活选用。实现一个数据结构后最好写一些单元测试用例，否则没人知道你写的究竟对不对。坑爹的是本书有很多代码错误甚至实现错误，调试花了我很多时间。同时你还会发现很多坑爹的网络算法教程文章代码直接拷贝根本不能用，没有单元测试证明算法正确性的都是扯淡。</p>
+      
+    </div>
+    <footer>
+      
+        <div class="alignleft">
+            <a href="/2016/12/10/python/data-structures-and-algorithms-using-python/#more" class="more-link"><i class="fa fa-chevron-right"></i>Read More ^_^</a>
+        </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-11-22T10:23:13.000Z"><a href="/2016/11/22/python/flask-unittest/">周二, 11月 22 2016, 6:23:13 晚上</a></time>
+
+  
+    <h1 class="title"><a href="/2016/11/22/python/flask-unittest/">flask项目单元测试实践</a></h1>
+  
+
+
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Test early. Test often. Test automatically. Tests that run with every build are much more effective than test plans that sit on a shelf.</p>
+</blockquote>
+<p>最近开始做公司内部项目，CRM系统（客户关系管理）， 用的flask+python3.5.2。我以前闲着没事逛逛github的时候发现了这个<a href="https://github.com/sloria/cookiecutter-flask" target="_blank" rel="noopener">cookiecutter-flask</a>，就是用来生成一个项目模板的东西，直接帮你生成项目总体框架还有README文件，还是比较方便的，直接填写逻辑即可。以前并没有使用flask的经验，这次也是边摸索一边使用（好在没碰到坑），主要想记录下关于单元测试的东西。crm主要是crud操作，这次我比较重视测试代码编写，web项目单元测试需要处理数据库交互，模拟请求，模拟登录，表单提交等操作，如何编写易于构建和执行的单元测试也是需要注意的地方。新项目统一用flask+python3.5.2(python3库的支持比我想象中快，目前使用的依赖中都支持python3)，前端使用vue，前后分离，后端使用flask-restful写接口。贴出来一些代码，如果写得不合适的正好可以给我指正下:)</p>
+      
+    </div>
+    <footer>
+      
+        <div class="alignleft">
+            <a href="/2016/11/22/python/flask-unittest/#more" class="more-link"><i class="fa fa-chevron-right"></i>Read More ^_^</a>
+        </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-11-09T15:40:34.000Z"><a href="/2016/11/09/tools/vim-tmux-zsh-autojump/">周三, 11月 9 2016, 11:40:34 晚上</a></time>
+
+  
+    <h1 class="title"><a href="/2016/11/09/tools/vim-tmux-zsh-autojump/">使用vim+tmux+zsh+autojump提升效率</a></h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/tools/">tools</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Unix was not designed to stop its users from doing stupid things, as that would also stop them from doing clever things.</p>
+</blockquote>
+<p>如果你是用mac或者linux，这些工具的配合能大幅提高工作(装逼)效率(并且在服务器上也能用)，本文不打算具体介绍安装方式，请自行google，主要介绍下vim一些好用的插件，说实话，真正感觉vim好用是因为github上很多牛人写的好用的插件。（当然如果你用IDE我强烈推荐Pycharm, 其实编辑器用不好反而容易写出烂代码，还是推荐不想折腾的用PyCharm，最好用的python开发工具，pycharm+vim插件也比较爽）。无论用什么工具，首要目的都是提升开发效率。</p>
+<hr>
+<p>##vim小Tips</p>
+<ul>
+<li>更改键盘设置映射capslock到ctrl，ctrl使用非常频繁</li>
+<li>使用ctrl+[ 或者 ctr+c 代替 Esc</li>
+<li>vimrc中加入两行<code>inoremap &lt;c-l&gt; &lt;c-o&gt;:w&lt;cr&gt;</code> 和 <code>nnoremap &lt;c-l&gt; :w&lt;cr&gt;</code> 保存文件，再也不用每次都使用:w了，insert和normal模式下都可以用</li>
+<li>Chrome安装vimium可以在浏览器里使用vim命令浏览网页</li>
+<li>高亮当前选中单词，写代码的时候高亮选中的相同单词，方便查找引用。F3激活<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">autocmd CursorMoved * exe exists(&quot;HlUnderCursor&quot;)?HlUnderCursor?printf(&apos;match IncSearch /\V\&lt;%s\&gt;/&apos;, escape(expand(&apos;&lt;cword&gt;&apos;), &apos;/\&apos;)):&apos;match none&apos;:&quot;&quot;</span><br><span class="line">nnoremap &lt;silent&gt; &lt;F3&gt; :exe &quot;let HlUnderCursor=exists(\&quot;HlUnderCursor\&quot;)?HlUnderCursor*-1+1:1&quot;&lt;CR&gt;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+      
+    </div>
+    <footer>
+      
+        <div class="alignleft">
+            <a href="/2016/11/09/tools/vim-tmux-zsh-autojump/#more" class="more-link"><i class="fa fa-chevron-right"></i>Read More ^_^</a>
+        </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-10-18T14:49:09.000Z"><a href="/2016/10/18/python/docker-sentry/">周二, 10月 18 2016, 10:49:09 晚上</a></time>
+
+  
+    <h1 class="title"><a href="/2016/10/18/python/docker-sentry/">使用docker-compose运行错误收集工具Sentry</a></h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/sentry/">sentry</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Use exceptions for exceptional problems. Exceptions can suffer from all the readability and maintainability problems of classic spaghetti code. Reserve exceptions for exceptional things.</p>
+</blockquote>
+<p>最近在尝试搭建错误日志收集工具Sentry，发现用docker-compose工具运行起来非常方便。 目前的项目捕捉异常比较简陋，一般代码发生异常之后，写个函数发一封邮件把异常信息附上。 一开始只是在邮件附带了异常消息，但是没有加上函数调用的参数和变量值，导致问题排查起来比较困难。 后来函数加上了个locals()返回的字典返回当前函数内部变量信息，算是方便了一点。不过最近发现了神器 <a href="https://sentry.io/welcome/" target="_blank" rel="noopener">Sentry</a>， Sentry’s real-time error tracking gives you insight into production deployments and information to reproduce and fix crashes.</p>
+<p>在ubuntu server上搭建个一个尝试了一下（也可以直接用官方提供的服务），感觉还是非常强大的，界面也比较漂亮。</p>
+      
+    </div>
+    <footer>
+      
+        <div class="alignleft">
+            <a href="/2016/10/18/python/docker-sentry/#more" class="more-link"><i class="fa fa-chevron-right"></i>Read More ^_^</a>
+        </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-08-27T01:05:42.000Z"><a href="/2016/08/27/python/python单元测试/">周六, 8月 27 2016, 9:05:42 上午</a></time>
+
+  
+    <h1 class="title"><a href="/2016/08/27/python/python单元测试/">python单元测试</a></h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/unittest/">unittest</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Test your software, or your users will. “Test ruthlessly. Don’t make your users find bugs for you.”</p>
+</blockquote>
+<p>最近看了<a href="http://blog.2baxb.me/archives/1343" target="_blank" rel="noopener">Axb的自我修养</a>写的关于好代码，烂代码和单元测试的一些文章，挺受启发的，结合python讲一下自己对单元测试的理解和操作。</p>
+<h3 id="单元测试是什么"><a href="#单元测试是什么" class="headerlink" title="单元测试是什么"></a>单元测试是什么</h3><p>单元测试（又称为模块测试, Unit Testing）是针对程序模块（软件设计的最小单位）来进行正确性检验的测试工作。程序单元是应用的最小可测试部件。在过程化编程中，一个单元就是单个程序、函数、过程等；对于面向对象编程，最小单元就是方法，包括基类（超类）、抽象类、或者派生类（子类）中的方法。</p>
+      
+    </div>
+    <footer>
+      
+        <div class="alignleft">
+            <a href="/2016/08/27/python/python单元测试/#more" class="more-link"><i class="fa fa-chevron-right"></i>Read More ^_^</a>
+        </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-08-20T03:24:14.000Z"><a href="/2016/08/20/python/fuck-python/">周六, 8月 20 2016, 11:24:14 上午</a></time>
+
+  
+    <h1 class="title"><a href="/2016/08/20/python/fuck-python/">python项目免坑指南</a></h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/规范/">规范</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>我不是个伟大的程序员，我只是个有着一些优秀习惯的好程序员”。 —Kent Beck</p>
+</blockquote>
+<p>因为之前实习和工作的经历都是做新项目，对于维护老项目和阅读旧代码也没太多经验，踩了一些坑。笔者在还没有彻底了解业务的情况下就重构代码，导致延误了项目进度。so naive啊。。。。。。<br>最近感受最深的就是项目规范化很必要，尤其是多人协作的时候。人多了的时候，不同人的水平和代码风格差异很大，如果没有统一的规范，不同的人写的代码太个人化，有时候还有很多坏味道，导致协作和他人上手很困难，项目进度也会受到影响。<br>另外就是程序员需要的技能还是很多的，除了写代码实现需求，还需要能够很好地理解业务，和PM，测试，其他开发人员的沟通也很重要(甚至深刻理解业务需求比编码都难，我发现我的很多做法还没摆脱典型的学生思维，囧…)。随便记录一些东西吧：</p>
+      
+    </div>
+    <footer>
+      
+        <div class="alignleft">
+            <a href="/2016/08/20/python/fuck-python/#more" class="more-link"><i class="fa fa-chevron-right"></i>Read More ^_^</a>
+        </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-07-12T13:07:11.000Z"><a href="/2016/07/12/psychology/改变自己-积极心理学入门推荐/">周二, 7月 12 2016, 9:07:11 晚上</a></time>
+
+  
+    <h1 class="title"><a href="/2016/07/12/psychology/改变自己-积极心理学入门推荐/">改变自己:积极心理学入门读物推荐</a></h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/psychology/">psychology</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/psychology/">psychology</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>While you can’t control your experiences, you can control your explanations.<br>  (你无法控制你的经历，但你可以控制你的解释。) - 马丁.塞利格曼</p>
+</blockquote>
+<p>最近笔者学到了一些积极心理学的东西，看了一些书，希望可以帮助一些想改变自己的人。</p>
+      
+    </div>
+    <footer>
+      
+        <div class="alignleft">
+            <a href="/2016/07/12/psychology/改变自己-积极心理学入门推荐/#more" class="more-link"><i class="fa fa-chevron-right"></i>Read More ^_^</a>
+        </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-05-12T15:38:36.000Z"><a href="/2016/05/12/python/用docker-compose构建flask应用/">周四, 5月 12 2016, 11:38:36 晚上</a></time>
+
+  
+    <h1 class="title"><a href="/2016/05/12/python/用docker-compose构建flask应用/">用docker-compose构建flask应用</a></h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/docker/">docker</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>灵活性被过分高估–约束才是解放。- Ruby on Rails作者汉森。</p>
+</blockquote>
+<p>最近没事的时候折腾docker，发现用docker-compose构建个flask小应用真的是炒鸡方便。一步一步来。<br>系统用的是ubuntu14.04。如果没有docker的话先装docker，然后装docker-compose，这个工具是python开发的，所以可以用pip安装。<br>
+      
+    </div>
+    <footer>
+      
+        <div class="alignleft">
+            <a href="/2016/05/12/python/用docker-compose构建flask应用/#more" class="more-link"><i class="fa fa-chevron-right"></i>Read More ^_^</a>
+        </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+  <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-05-12T13:36:43.000Z"><a href="/2016/05/12/Linux/ubuntu常用工具和python虚拟环境安装脚本/">周四, 5月 12 2016, 9:36:43 晚上</a></time>
+
+  
+    <h1 class="title"><a href="/2016/05/12/Linux/ubuntu常用工具和python虚拟环境安装脚本/">ubuntu常用工具和python虚拟环境安装脚本</a></h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/Linux/">Linux</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/ubuntu/">ubuntu</a>, <a href="/tags/python/">python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Make it easy to reuse. If it’s easy to reuse, people will. Create an environment that supports reuse.</p>
+</blockquote>
+<p>经常装ubuntu的环境，每次都要重新把vim，tmux等工具安装上，最近整理了一下安装脚本。地址在这个<a href="https://github.com/PegasusWang/linux_config" target="_blank" rel="noopener">https://github.com/PegasusWang/linux_config</a>。包含了tmux,vim,docker,zsh等开发常用的工具，vim为python做了配置，包含了各种常用功能。</p>
+      
+    </div>
+    <footer>
+      
+        <div class="alignleft">
+            <a href="/2016/05/12/Linux/ubuntu常用工具和python虚拟环境安装脚本/#more" class="more-link"><i class="fa fa-chevron-right"></i>Read More ^_^</a>
+        </div>
+        
+        
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+
+
+
+<nav id="pagination">
+  
+    <a href="/page/2/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>上一页</a>
+  
+  
+    <a href="/page/4/" class="alignright next">下一页<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+
+<script src="/js/jquery.anystretch.min.js"></script>
+<script src="/js/cover.js"></script>
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

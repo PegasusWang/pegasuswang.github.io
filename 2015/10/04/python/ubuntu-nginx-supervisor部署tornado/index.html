@@ -1,0 +1,340 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>ubuntu+nginx+supervisor部署tornado | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="ubuntu+nginx+supervisor部署tornado"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-10-04T08:15:10.000Z"><a href="/2015/10/04/python/ubuntu-nginx-supervisor部署tornado/">周日, 10月 4 2015, 4:15:10 下午</a></time>
+
+  
+    <h1 class="title">ubuntu+nginx+supervisor部署tornado</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/tornado/">tornado</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>记录一下最近部署tornado的过程:</p>
+<p>###安装所需软件<br>使用apt-get安装nginx，redis，supervisor等需要用到的服务。<br>使用pip命令安装项目需要的python依赖。</p>
+<hr>
+<p>###修改文件描述符数量<br>默认ubuntu每个进程最多打开1024个文件描述符，有时候会提示”Too many open files”的错误，需要先修改这个限制。</p>
+<ol>
+<li><code>sudo vi /etc/security/limits.conf</code><br>在文件尾加上</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">* hard nofile 65535</span><br><span class="line">* soft nofile 65535</span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li><p><code>sudo vi /etc/pam.d/su</code><br>将pam_limits.so这一行注释删除.</p>
+</li>
+<li><p><code>sudo vi /etc/profile</code><br>最后加上<code>ulimit -SHn 65535</code><br>重启后用<code>ulimit -n</code>查看应该已经是65535.</p>
+<a id="more"></a>
+</li>
+</ol>
+<hr>
+<p>###修改nginx配置<br>这里启动四个tornado进程，nginx监听80端口反响代理到8000-8004的四个tornado进程。<br>修改nginx配置，<code>vi /etc/nginx/nginx.conf</code></p>
+<pre><code>user root;
+worker_processes 1;
+
+error_log /var/log/nginx/error.log;
+pid /var/run/nginx.pid;
+
+events {
+    worker_connections 1024;
+    use epoll;
+}
+
+http {
+    # Enumerate all the Tornado servers here
+    upstream frontends {
+        server 127.0.0.1:8000;
+        server 127.0.0.1:8001;
+        server 127.0.0.1:8002;
+        server 127.0.0.1:8003;
+    }
+
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    access_log /var/log/nginx/access.log;
+
+    keepalive_timeout 65;
+    proxy_read_timeout 200;
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    gzip on;
+    gzip_min_length 1000;
+    gzip_proxied any;
+    gzip_types text/plain text/html text/css text/xml
+               application/x-javascript application/xml
+               application/atom+xml text/javascript;
+
+    # Only retry if there was a communication error, not a timeout
+    # on the Tornado server (to avoid propagating &quot;queries of death&quot;
+    # to all frontends)
+    proxy_next_upstream error;
+
+    server {
+        listen 80;
+
+        # Allow file uploads
+        client_max_body_size 50M;
+
+        location ^~ /static/ {
+            root /home/wnn/program/picwall/;    # your own static file
+            if ($query_string) {
+                expires max;
+            }
+        }
+        location = /favicon.ico {
+            rewrite (.*) /static/favicon.ico;
+        }
+        location = /robots.txt {
+            rewrite (.*) /static/robots.txt;
+        }
+
+        location / {
+            proxy_pass_header Server;
+            proxy_set_header Host $http_host;
+            proxy_redirect off;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Scheme $scheme;
+            proxy_pass http://frontends;
+        }
+    }
+}
+</code></pre><hr>
+<p>###使用supervisor管理tornado进程<br>supervisor是使用python开发的一个进程管理工具，可以用apt-get直接安装。<br>修改supervisor配置文件<code>vi /etc/supervisor/supervisord.conf</code>,在文件最后加上以下配置:</p>
+<pre><code>[group:tornadoes]
+programs=tornado-8000,tornado-8001,tornado-8002,tornado-8003
+
+[program:tornado-8000]
+command=python /home/wnn/program/picwall/app.py --port=8000
+directory=/home/wnn/program/picwall
+user=root
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/var/log/tornado.log
+loglevel=info
+
+[program:tornado-8001]
+command=python /home/wnn/program/picwall/app.py --port=8001
+directory=/home/wnn/program/picwall
+user=root
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/var/log/tornado.log
+loglevel=info
+
+[program:tornado-8002]
+command=python /home/wnn/program/picwall/app.py --port=8002
+directory=/home/wnn/program/picwall
+user=root
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/var/log/tornado.log
+loglevel=info
+
+[program:tornado-8003]
+command=python /home/wnn/program/picwall/app.py --port=8003
+directory=/home/wnn/program/picwall
+user=root
+autorestart=true
+redirect_stderr=true
+stdout_logfile=/var/log/tornado.log
+loglevel=info
+</code></pre><p>这里定义个一个进程组，可以很方便的在supervisorctl里边管理进程。设置好以后可以使用supervisord命令启动。<br>这样tornado项目就启动好了。</p>
+<hr>
+<p>  刚做的一个图片网站<a href="http://tupian.today" target="_blank" rel="noopener">http://tupian.today</a>就是使用这些配置搭建的。vps使用的<a href="www.vultr.com">vultr</a>,如果你需要购买vps可以通过<a href="http://www.vultr.com/?ref=6852279" target="_blank" rel="noopener">http://www.vultr.com/?ref=6852279</a>这个链接，可以获得十美元两个月的试用。感觉vultr东京机房的速度比digitocean旧金山的速度和稳定性好太多了，最低配置都是一个月5美元，不过vultr的缺点就是一个月只有400G流量,考虑速度还是用日本的机房吧，都说digitocean旧金山速度好，但是我用ssh经常登陆不了，体验很差。</p>
+<p>###More than just a pretty web framework, the Tornado IOLoop<br>  <iframe width="420" height="315" src="https://www.youtube.com/embed/3BYN3ouwkRA" frameborder="0" allowfullscreen></iframe></p>
+<p>###Ref<br><a href="http://www.tornadoweb.org/en/stable/" target="_blank" rel="noopener">Tornado Web Server</a><br><a href="http://demo.pythoner.com/itt2zh/ch8.html" target="_blank" rel="noopener">Introduction to Tornado</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/11/30/python/mac-install-python3-5/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/10/04/python/Python爬虫的一些总结/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

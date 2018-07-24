@@ -1,0 +1,290 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>tornado写博客碰到的一些问题 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="tornado写博客碰到的一些问题"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-01-27T01:52:56.000Z"><a href="/2016/01/27/python/tornado写博客碰到的一些问题/">周三, 1月 27 2016, 9:52:56 上午</a></time>
+
+  
+    <h1 class="title">tornado写博客碰到的一些问题</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/tornado/">tornado</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>最近还是打算继续写个博客练手，不过为了增加一些难度，需要自己实现登录、注册、权限管理、后台管理等功能。tornado不像django那样什么都给了， 也不像flask那样丰富的插件支持，不过也有一些github项目可以作为参考。慢慢记录一下实现过程中碰到的一些小问题。博客采用tornado、mongodb（motorengine） redis(session模块)等实现，参考了<a href="http://codingpy.com" target="_blank" rel="noopener">http://codingpy.com</a> 的代码，这个网站叫做编程派，用flask写的，我看源码里头用到了一些flask插件，不得不说 flask这种插件扩展真滴很强大，很方便。</p>
+<a id="more"></a>
+<hr>
+<p>###如何加密用户密码？<br>这里使用bcrypt模块, 参考<a href="http://stackoverflow.com/questions/9559549/how-to-store-and-compare-password-in-db-using-py-bcrypt" target="_blank" rel="noopener">http://stackoverflow.com/questions/9559549/how-to-store-and-compare-password-in-db-using-py-bcrypt</a><br>大致思路如下，tornado官方的blog demo里边就是这种方式加密。</p>
+<pre><code>def gen_hash(password):
+    return bcrypt.hashpw(password.encode(&apos;utf-8&apos;), bcrypt.gensalt())  # encode
+
+
+def check(password, password_hash):
+    return password_hash == bcrypt.hashpw(password.encode(&apos;utf-8&apos;),
+                                          password_hash.encode(&apos;utf-8&apos;))
+
+
+def test_check():
+    ori_pwd = &apos;1234567&apos;
+    input_pwd = &apos;1234567&apos;
+    assert check(input_pwd, gen_hash(ori_pwd)) is True
+</code></pre><hr>
+<p>###如何实现身份识别?cookie？session？<br><a href="http://stackoverflow.com/questions/15254538/standard-way-to-handle-user-session-in-tornado" target="_blank" rel="noopener">http://stackoverflow.com/questions/15254538/standard-way-to-handle-user-session-in-tornado</a><br>网上可以搜到一些tornado基于redis实现的session模块。我觉得可以这么实现，每个用户用uuid4生成一个唯一的uuid串，请求的时候带上它，后台可以用redis存储 一个键值对，uuid作为键，用户数据库的id（mongo里的_id）作为值，每次从uuid拿到用户id，再去数据库取得用户信息。这样就实现了认证。（貌似「礼物说」后台就是 这么搞的）,这个uuid是没法造假的，几乎是唯一的，所以没办法伪造一个已经后台已经生成的uuid。 或者直接用set_secure_cookis方法直接把用户的id设置成cookie， 每次取cookie后直接通过id拿到用户信息，这个secure_cookie是加密的，可以保证用户id不会泄露。 这样一来就免去了后端存储session的麻烦，个人倾向于这种方式。</p>
+<hr>
+<p>###请求参数验证<br>一般来说网址都是从页面点击的，但是也有可能被随意输入。比如这样一个<code>url:http://xxx.com/page/1</code>,如果用户这么输入<code>http://xxx.com/page/0</code>,我第一次写分页的时候直接报了一个异常,一般分页查询时使用query.skip((page-1)*limit)计算，skip的参数不能是小于0的，所以可能需要验证url里的page值。可以单独抽出来Pagination类处理分页。对于数据的验证，我搜了一下，有三个做的不错的，star数目和贡献者比较多，用起来放心。这样可以在进入数据库model层之前确保不会传给非法的参数。如果不验证参数，就得在model层做一些异常处理，我目前也不太清楚到底哪个实践比较好，可以参考参考防御性编程的一些做法。</p>
+<p><a href="http://cerberus.readthedocs.org/en/latest/usage.html" target="_blank" rel="noopener">http://cerberus.readthedocs.org/en/latest/usage.html</a></p>
+<p><a href="https://github.com/keleshev/schema" target="_blank" rel="noopener">https://github.com/keleshev/schema</a></p>
+<p><a href="https://github.com/alecthomas/voluptuous.git" target="_blank" rel="noopener">https://github.com/alecthomas/voluptuous.git</a></p>
+<hr>
+<p>###表单验证<br>验证一般有前端和后端验证，前端可以通过js插件实现，后端为了安全性也要进行验证。自己也可以实现个验证器，不过逻辑可能比较复杂，python已经有了相应库 <a href="http://wtforms.readthedocs.org/en/latest/index.html" target="_blank" rel="noopener">WTForms</a>, 包括了Forms、Fields、Validators，Widgets等api，可以方便实现后台表单验证功能。另外csrf因为tornado自带了，所以可以直接用tornado的。或者可以直接用wtforms-tornado。</p>
+<hr>
+<p>###权限管理<br>这个是比较头疼的问题。<a href="http://damnever.github.io/2015/09/19/how-to-design-a-permission-system/" target="_blank" rel="noopener">http://damnever.github.io/2015/09/19/how-to-design-a-permission-system/</a> 可以参考下这篇文章。大致思想就是用二进制数方便实现权限验证，把每个权限当成一个二进制位，这些权限可以组合相加成各种数，将数字和权限做与运算， 得到的结果不为0就说明有相应的权限。具体可以参考以上面的文章。</p>
+<hr>
+<p>###测试问题<br>异步的测试相对麻烦一些，不过tornado的testing模块提供了一个方便的测试类AsyncTestCase，这样我们加上装饰器gen_test可以实现异步代码测试。下边这个类针对motorengine测试了一下crud等功能，测试采用py.test框架，支持unittest的运行。用这个主要是为了偷懒，不用一堆assertEqual啥的，都用assert就可以:</p>
+<pre><code>class TestModelPost(AsyncTestCase):
+    &quot;&quot;&quot;Post测试
+    注意改变数据结构后先删除mongo数据库，否则会有超时
+    &quot;&quot;&quot;
+
+    def setUp(self):
+        self.io_loop = IOLoop.current()
+        connect(CONFIG.MONGO.DATABASE, host=CONFIG.MONGO.HOST,
+                port=CONFIG.MONGO.PORT,
+                io_loop=self.io_loop)    # connect mongoengine
+
+    @gen_test
+    def test_create(self):
+        &quot;&quot;&quot;非幂等，对应http中的post&quot;&quot;&quot;
+        user = yield User.objects.create(**save_user)
+        save_post[&apos;author&apos;] = user
+        post = yield Post.objects.create(**save_post)
+        assert post is not None
+        assert post.slug == &apos;test&apos;
+
+        post_nums = yield Post.objects.filter(slug=&apos;test&apos;).delete()
+        user_nums = yield User.objects.filter(slug=save_user[&apos;slug&apos;]).delete()
+        assert post_nums == 1
+        assert user_nums == 1
+
+    @gen_test
+    def test_save(self):
+        &quot;&quot;&quot;幂等，对应http中的put&quot;&quot;&quot;
+        post = yield Post.objects.create(**save_post)
+        assert post.slug == &apos;test&apos;
+        post.slug = &apos;save&apos;
+        post = yield post.save()
+        assert post.slug == &apos;save&apos;
+        nums = yield Post.objects.filter(slug=&apos;save&apos;).delete()
+        assert nums == 1
+
+    @gen_test
+    def test_bulk_insert(self):
+        post_list = []
+        n = 10
+        for i in range(n):
+            post = copy.deepcopy(save_post)    # note use deepcopy
+            post[&apos;slug&apos;] = post[&apos;slug&apos;] + str(i)
+            post_obj = Post(**post)
+            post_list.append(post_obj)
+        yield Post.objects.bulk_insert(post_list)
+        post_obj_list = yield Post.objects.find_all()
+        assert n == len(post_obj_list)
+        nums = yield Post.objects.delete()
+        assert nums == n
+</code></pre><p>暂时先写这么多，后面碰到问题了再记录下。</p>
+<p><iframe src="//www.slideshare.net/slideshow/embed_code/key/tT4b1xmJkROVZL" width="595" height="485" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" style="border:1px solid #CCC; border-width:1px;
+margin-bottom:5px; max-width: 100%;" allowfullscreen> </iframe> <div style="margin-bottom:5px"> <strong> <a href="//www.slideshare.net/pgollakota/tornado-web-server-internals" title="Tornado Web Server Internals" target="_blank">Tornado Web Server<br>Internals</a> </strong> from <strong><a href="//www.slideshare.net/pgollakota" target="_blank">Praveen Gollakota</a></strong> </div></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/01/31/python/python缓存的一些用法/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/01/26/python/understanding-python-GIL/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

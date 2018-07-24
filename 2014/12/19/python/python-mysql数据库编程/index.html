@@ -1,0 +1,448 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>python mysql数据库编程 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="python mysql数据库编程"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2014-12-19T15:06:52.000Z"><a href="/2014/12/19/python/python-mysql数据库编程/">周五, 12月 19 2014, 11:06:52 晚上</a></time>
+
+  
+    <h1 class="title">python mysql数据库编程</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/mysql/">mysql</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>##安装mysql和MySQLdb模块</p>
+<p>安装mysql数据库:</p>
+<p><code>sudo apt-get install mysql-server</code></p>
+<p>安装python MySQLdb模块:</p>
+<p><code>sudo apt-get install python-mysqldb</code></p>
+<a id="more"></a>
+<hr>
+<p>##配置mysql</p>
+<p>首先我们建立一个新的数据库用户和数据库。(注意sql命令后都有分号)</p>
+<p><code>$ mysql -u root -p</code></p>
+<p><code>mysql&gt; SHOW DATABASES;</code></p>
+<p>显示数据库信息:</p>
+<p>+——————–+</p>
+<p>| Database           |</p>
+<p>+——————–+</p>
+<p>| information_schema |</p>
+<p>| mysql              |</p>
+<p>+——————–+</p>
+<p>建立一个数据库testdb用来实验:</p>
+<p><code>mysql&gt; CREATE DATABASE testdb CHARACTER SET utf8;</code></p>
+<p>Query OK, 1 row affected (0.02 sec)</p>
+<p><code>mysql&gt; CREATE USER &#39;testuser&#39;@&#39;localhost&#39; IDENTIFIED BY &#39;test623&#39;;</code></p>
+<p>使用testdb数据库:</p>
+<p><code>mysql&gt; USE testdb;</code></p>
+<p>更改权限:</p>
+<p><code>mysql&gt; GRANT ALL ON testdb.* TO &#39;testuser&#39;@&#39;localhost&#39;;</code></p>
+<p>退出:</p>
+<p><code>mysql&gt; quit;</code></p>
+<hr>
+<p>##MySQLdb模块操作</p>
+<p>####0. 获取数据库版本(version.py)</p>
+<pre><code>#!/usr/bin/python
+#coding=utf-8
+
+import MySQLdb as mdb
+import sys
+
+try:
+
+    #连接数据库函数connect(host, username, password, dbname)
+    con = mdb.connect(&apos;localhost&apos;, &apos;testuser&apos;, &apos;test623&apos;, &apos;testdb&apos;);
+
+    #cursor对象遍历记录
+    cur = con.cursor()
+
+    #execute()函数执行sql语句
+    cur.execute(&quot;SELECT VERSION()&quot;)
+
+    #fetchone()获取一个记录
+    ver = cur.fetchone()
+
+    print &quot;Database version : %s &quot; % ver
+
+except mdb.Error, e:
+    print &quot;Error %d: %s&quot; % (e.args[0],e.args[1])
+    sys.exit(1)
+
+finally:
+    if con:
+        con.close()
+</code></pre><p>执行</p>
+<p><code>python version.py</code></p>
+<p>或者</p>
+<p><code>chmod a+x version.py</code></p>
+<p><code>./version</code></p>
+<p>可以看到输出mysql版本号:</p>
+<p>MySQL version: 5.5.40-0ubuntu0.14.04.1</p>
+<p>####1. 创建和更新数据库表(create_add.py)</p>
+<pre><code>#!/usr/bin/python
+#coding=utf-8
+
+import MySQLdb as mdb
+
+con = mdb.connect(&apos;localhost&apos;, &apos;testuser&apos;, &apos;test623&apos;, &apos;testdb&apos;);
+
+ #python解释器碰到with关键字会自动释放资源和错误处理
+
+with con:
+
+    cur = con.cursor()
+
+    cur.execute(&quot;DROP TABLE IF EXISTS Writers&quot;)
+
+    #创建作者表Writers,注意表名大小写敏感
+
+    cur.execute(&quot;CREATE TABLE Writers(Id INT PRIMARY KEY AUTO_INCREMENT, \
+
+                 Name VARCHAR(25))&quot;)
+
+    cur.execute(&quot;INSERT INTO Writers(Name) VALUES(&apos;Jack London&apos;)&quot;)
+
+    cur.execute(&quot;INSERT INTO Writers(Name) VALUES(&apos;Honore de Balzac&apos;)&quot;)
+
+    cur.execute(&quot;INSERT INTO Writers(Name) VALUES(&apos;Lion Feuchtwanger&apos;)&quot;)
+
+    cur.execute(&quot;INSERT INTO Writers(Name) VALUES(&apos;Emile Zola&apos;)&quot;)
+
+    cur.execute(&quot;INSERT INTO Writers(Name) VALUES(&apos;Truman Capote&apos;)&quot;)
+</code></pre><p>执行<code>python create_add.py</code>然后进入mysql查询<code>SELECT * FROM Writers;</code></p>
+<p>+—-+——————-+</p>
+<p>| Id | Name              |</p>
+<p>+—-+——————-+</p>
+<p>|  1 | Jack London       |</p>
+<p>|  2 | Honore de Balzac  |</p>
+<p>|  3 | Lion Feuchtwanger |</p>
+<p>|  4 | Emile Zola        |</p>
+<p>|  5 | Truman Capote     |</p>
+<p>+—-+——————-+</p>
+<p>5 rows in set (0.00 sec)</p>
+<p>####2. 检索数据(retrieve.py)</p>
+<pre><code>#!/usr/bin/python
+#coding=utf-8
+
+import MySQLdb as mdb
+
+con = mdb.connect(&apos;localhost&apos;, &apos;testuser&apos;, &apos;test623&apos;, &apos;testdb&apos;);
+
+with con:
+
+    cur = con.cursor()
+
+    cur.execute(&quot;SELECT * FROM Writers&quot;)
+
+    #fetchall()得到所有记录，返回一个二维tuple，每个inner tuples代表数据库表的一行
+    rows = cur.fetchall()
+
+    for row in rows:
+        print row
+```
+
+执行`python retrieve.py`:
+
+(1L, &apos;Jack London&apos;)
+(2L, &apos;Honore de Balzac&apos;)
+(3L, &apos;Lion Feuchtwanger&apos;)
+(4L, &apos;Emile Zola&apos;)
+(5L, &apos;Truman Capote&apos;)
+</code></pre><p>####3. 字典游标(dictcur.py)</p>
+<p>之前cursor返回的是一个tuple的tuple，也可以使用列名作为字典的下标获得数据</p>
+<pre><code>#!/usr/bin/python
+#coding=utf-8
+
+import MySQLdb as mdb
+
+con = mdb.connect(&apos;localhost&apos;, &apos;testuser&apos;, &apos;test623&apos;, &apos;testdb&apos;)
+
+with con:
+
+    cur = con.cursor(mdb.cursors.DictCursor)
+    cur.execute(&quot;SELECT * FROM Writers LIMIT 4&quot;)
+    rows = cur.fetchall()
+    for row in rows:
+        print row[&quot;Id&quot;], row[&quot;Name&quot;]
+</code></pre><p>执行下看看:</p>
+<p><code>python ./dictcur.py</code></p>
+<p>1 Jack London<br>2 Honore de Balzac<br>3 Lion Feuchtwanger<br>4 Emile Zola</p>
+<p>####4. 获取列信息Column headerscolumnheaders.py)</p>
+<pre><code>#!/usr/bin/python
+#coding=utf-8
+
+import MySQLdb as mdb
+
+con = mdb.connect(&apos;localhost&apos;, &apos;testuser&apos;, &apos;test623&apos;, &apos;testdb&apos;)
+
+with con:
+    cur = con.cursor()
+    cur.execute(&quot;SELECT * FROM Writers LIMIT 5&quot;)
+    rows = cur.fetchall()
+
+    #cursor对象的description返回一个查询的列信息
+    desc = cur.description
+
+    print &quot;%s %3s&quot; % (desc[0][0], desc[1][0])
+
+    for row in rows:
+        print &quot;%2s %3s&quot; % row
+</code></pre><p><code>python columnheaders.py</code></p>
+<p>Id Name<br> 1 Jack London<br> 2 Honore de Balzac<br> 3 Lion Feuchtwanger<br> 4 Emile Zola<br> 5 Truman Capote</p>
+<p>####5. 预处理语句Prepared statements(prepared.py)<br>使用占位符而不是直接输出值</p>
+<pre><code>#!/usr/bin/python
+#coding=utf-8
+
+import MySQLdb as mdb
+
+con = mdb.connect(&apos;localhost&apos;, &apos;testuser&apos;, &apos;test623&apos;, &apos;testdb&apos;)
+
+with con:
+    cur = con.cursor()
+    cur.execute(&quot;UPDATE Writers SET Name = %s WHERE Id = %s&quot;,
+        (&quot;Guy de Maupasant&quot;, &quot;4&quot;))
+    print &quot;Number of rows updated:&quot;,  cur.rowcount
+</code></pre><p><code>python ./prepared.py</code></p>
+<p>Number of rows updated: 1</p>
+<p>We have updated one row.</p>
+<p>去数据库查看:</p>
+<p><code>mysql&gt; SELECT Name FROM Writers WHERE Id=4;</code></p>
+<p>+——————+<br>| Name             |<br>+——————+<br>| Guy de Maupasant |<br>+——————+</p>
+<p>1 row in set (0.00 sec)</p>
+<p>####6. 事务支持Transaction support</p>
+<p>一个事务Transaction是指在一个或多个数据库间的原子操作，在一个Transaction中的数据库语句可以全部提交(commit())或者回滚(rollback())。</p>
+<p>注意老版本的mysql使用的存储引擎是MyISAM(不支持Transaction)，从MySQL5.5以后使用InnoDB作为默认存储引擎，在安全性和速度上做了权衡。</p>
+<pre><code>#!/usr/bin/python
+#coding=utf-8
+
+import MySQLdb as mdb
+import sys
+
+try:
+    con = mdb.connect(&apos;localhost&apos;, &apos;testuser&apos;, &apos;test623&apos;, &apos;testdb&apos;)
+    # A transaction is started when the cursor is created.
+    cur = con.cursor()
+
+    cur.execute(&quot;DROP TABLE IF EXISTS Writers&quot;)
+    cur.execute(&quot;CREATE TABLE Writers(Id INT PRIMARY KEY AUTO_INCREMENT, \
+                 Name VARCHAR(25)) ENGINE=INNODB&quot;)
+    cur.execute(&quot;INSERT INTO Writers(Name) VALUES(&apos;Jack London&apos;)&quot;)
+    cur.execute(&quot;INSERT INTO Writers(Name) VALUES(&apos;Honore de Balzac&apos;)&quot;)
+    cur.execute(&quot;INSERT INTO Writers(Name) VALUES(&apos;Lion Feuchtwanger&apos;)&quot;)
+    cur.execute(&quot;INSERT INTO Writers(Name) VALUES(&apos;Emile Zola&apos;)&quot;)
+    cur.execute(&quot;INSERT INTO Writers(Name) VALUES(&apos;Truman Capote&apos;)&quot;)
+    cur.execute(&quot;INSERT INTO Writers(Name) VALUES(&apos;Terry Pratchett&apos;)&quot;)
+
+    #We must end a transaction with either a commit() or a rollback() method
+
+    #If we comment this line, the table is created but the data is not written to the table.
+    con.commit()
+
+except mdb.Error, e:
+    if con:
+        con.rollback()
+
+    print &quot;Error %d: %s&quot; % (e.args[0],e.args[1])
+
+    sys.exit(1)
+
+finally:
+    if con:
+        con.close()
+</code></pre><p>实际上之前的代码示例已经通过with语句使用了Transaction而没有显示声明它。with语句适用于对资源进行访问的场合，确保不管使用过程中是否发生异常都会执行必要的“清理”操作，释放资源，比如文件使用后自动关闭、线程中锁的自动获取和释放等。在这里with自动commits()或者rollback()，很方便。</p>
+<hr>
+<p>####Reference<br><a href="http://zetcode.com/db/mysqlpython/" target="_blank" rel="noopener">MySQL Python tutorial</a><br><a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-pythonwith/" target="_blank" rel="noopener">浅谈 Python 的 with 语句</a><br><img src="http://7ktuty.com1.z0.glb.clouddn.com/python.jpg" alt="人生苦短，我用python"></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/01/03/psychology/超越自卑/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2014/12/14/psychology/毁三观的进化心理学之男女择偶策略/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

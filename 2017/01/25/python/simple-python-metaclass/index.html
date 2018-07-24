@@ -1,0 +1,524 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>『简单』的python元类 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="『简单』的python元类"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2017-01-25T00:44:48.000Z"><a href="/2017/01/25/python/simple-python-metaclass/">周三, 1月 25 2017, 8:44:48 早上</a></time>
+
+  
+    <h1 class="title">『简单』的python元类</h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Metaclasses are deeper magic than 99% of users should ever worry about. If you wonder whether you need them, you don’t (the people who actually need them know with certainty that they need them, and don’t need an explanation about why). - Tim Peters</p>
+</blockquote>
+<p>平常都是写业务逻辑，从来没有使用过元类这种黑魔法（好吧，目前的编码规范是不推荐在业务逻辑当中使用元类的，不好维护并且一般来说并无这个必要）。不过貌似只有造轮子的时候才会用到，就像上边的引用里说的，当你不知道为什么要使用元类时，你是没必要使用它的,大部分时间python灵活的特性已经可以应付几乎所有业务问题。最近重新看了下元类，突然有了一种霍然开朗的感觉，用几个简单的例子介绍一些元类(使用python3.5)。</p>
+<a id="more"></a>
+<hr>
+<h2 id="什么是元类？"><a href="#什么是元类？" class="headerlink" title="什么是元类？"></a>什么是元类？</h2><p>元类是创建类的类。这么说很绕口。 在python中，一切皆对象，类也不例外。 当我们用class关键字定义类的时候，python实际上会执行它然后生成一个对象。既然是对象，就可以进行赋值，拷贝，添加属性，作为函数参数等。使用元类允许我们控制类的生成，比如修改类的属性，检查属性的合法性等。</p>
+<pre><code>class MyClass:    # python2中新式类要显示继承object
+    pass
+</code></pre><p><img src="https://i.stack.imgur.com/QQ0OK.png" alt="metaclass"></p>
+<hr>
+<h2 id="类的创建方式"><a href="#类的创建方式" class="headerlink" title="类的创建方式"></a>类的创建方式</h2><p>在Python中，有两种创建类的方式，一种是平常我们使用的使用class关键字创建类:</p>
+<pre><code>class MyClass:    # python2中新式类要显示继承object
+    pass
+</code></pre><p>还有一种方式是使用type函数创建，type的描述如下，平常我们一般使用type查看对象的类型，实际上type还有一个重要的功能就是创建类</p>
+<pre><code>Docstring:
+type(object_or_name, bases, dict)
+type(object) -&gt; the object&apos;s type
+type(name, bases, dict) -&gt; a new type
+</code></pre><p>上边MyClass的定义用type创建可以这么写: <code>MyClass = type(&#39;Myclass&#39;, (), {})</code></p>
+<p>对于有继承关系和属性的类来说，可以使用如下等价定义:</p>
+<pre><code># 加上继承
+class Base:
+    pass
+
+class Child(Base):
+    pass
+# 等价定义
+Child = type(&apos;Child&apos;, (Base,), {})      # 注意Base后要加上逗号否则就不是tuple了
+
+
+# 加上属性
+class ChildWithAttr(Base):
+    bar = True
+
+# 等价定义
+ChildWithAttr = type(&apos;ChildWithAttr&apos;, (Base,), {&apos;bar&apos;: True})
+
+
+# 加上方法
+class ChildWithMethod(Base):
+    bar = True
+
+    def hello(self):
+        print(&apos;hello&apos;)
+
+
+def hello(self):
+    print(&apos;hello&apos;)
+
+# 等价定义
+ChildWithMethod = type(&apos;ChildWithMethod&apos;, (Base,), {&apos;bar&apos;: True, &apos;hello&apos;: hello})
+</code></pre><p>看懂了上边的等价定义对于理解元类的创建很重要。</p>
+<h2 id="创建一个元类"><a href="#创建一个元类" class="headerlink" title="创建一个元类"></a>创建一个元类</h2><p>什么时候需要创建元类呢？当我想控制类的创建，比如校验或者修改类的属性的时候，就可以使用元类。元类通过继承type实现，在python2和python3中略有不同</p>
+<pre><code>class Meta(type):
+    pass
+
+# python2
+class Base(object):
+    __metaclass__ = Meta
+
+# python3
+class Base(metaclass=Meta):
+    pass
+
+# 如果写兼容2和3的代码可以使用six模块
+
+from six import with_metaclass
+
+class Meta(type):
+    pass
+
+class Base(metaclass=Meta):
+    pass
+
+class MyClass(with_metaclass(Meta, Base)):
+    pass
+</code></pre><p>我们使用几个很简单的例子来演示元类的创建，第一个例子我们实现一个修改类的属性名为小写的元类:</p>
+<pre><code>class LowercaseMeta(type):
+    &quot;&quot;&quot; 修改类的属性名称为小写的元类 &quot;&quot;&quot;
+    def __new__(mcs, name, bases, attrs):
+        lower_attrs = {}
+        for k, v in attrs.items():
+            if not k.startswith(&apos;__&apos;):    # 排除magic method
+                lower_attrs[k.lower()] = v
+            else:
+                lower_attrs[k] = v
+        return type.__new__(mcs, name, bases, lower_attrs)
+
+
+class LowercaseClass(metaclass=LowercaseMeta):
+    BAR = True
+
+    def HELLO(self):
+        print(&apos;hello&apos;)
+
+print(dir(LowercaseClass))    # 你会发现&quot;BAR&quot;和&quot;HELLO&quot;都变成了小写
+LowercaseClass().hello()    # 用一个类的实例调用hello方法，神奇的地方就是这里，我们修改了类定义时候的属性名!!!
+</code></pre><p>第二个例子是给类添加一个add属性，比如我经常手误使用list.add而不是写list.append方法:</p>
+<pre><code>class ListMeta(type):
+    &quot;&quot;&quot; 用元类实现给类添加属性 &quot;&quot;&quot;
+    def __new__(mcs, name, bases, attrs):
+        attrs[&apos;add&apos;] = lambda self, value: self.append(value)
+        return type.__new__(mcs, name, bases, attrs)
+
+class MyList(list, metaclass=ListMeta):
+    pass
+
+l = MyList()
+l.add(1)
+print(l)
+
+# 但实际上给类动态添加属性用类装饰器反而更简单
+def class_decorator(cls):
+    cls.add = lambda self, value: self.append(value)
+    return cls
+
+@class_decorator
+class MyList(list):
+    pass
+
+
+l = MyList()
+l.append(1)
+print(l)
+</code></pre><hr>
+<h2 id="元类的-new-和-init"><a href="#元类的-new-和-init" class="headerlink" title="元类的__new__和__init__"></a>元类的<code>__new__</code>和<code>__init__</code></h2><p>一般在python里<code>__new__</code>方法创建实例，<code>__init__</code>负责初始化一个实例。<code>__new__</code>方法返回创建的对象，而<code>__init__</code>方法禁止返回值(必须返回None)。有一个简单的原则来判断什么使用使用<code>__init__</code>和<code>__new__</code>：</p>
+<ul>
+<li>如果需要修改类的属性，使用元类的<code>__new__</code>方法</li>
+<li>如果只是做一些类属性检查的工作，使用元类的<code>__init__</code>方法</li>
+</ul>
+<p>之前的示例都是使用<code>__new__</code>方式，我们来看个使用<code>__init__</code>方法的元类。假如我们有这样一个需求，很多懒痴汉程序员不喜欢给类的方法写docstring，怎么办呢？我们可以定义一个元类，强制让所有人使用这个元类。如果哪个家伙偷懒没给方法写docstring，咱就让他连类的定义都不能通过。</p>
+<pre><code>class LazybonesError(BaseException):
+    &quot;&quot;&quot; 给懒虫们的提示 &quot;&quot;&quot;
+    pass
+
+
+class MustHaveDocMeta(type):
+    def __init__(cls, name, bases, attrs):
+        for attr_name, attr_value in attrs.items():
+            if attr_name.startswith(&apos;__&apos;):    # skip magic or private method
+                continue
+            if not callable(attr_value):    # skip non method attr
+                continue
+            if not getattr(attr_value, &apos;__doc__&apos;):
+                raise LazybonesError(
+                    &apos;Hi Lazybones, please write doc for your &quot;{}&quot; method&apos;.format(attr_name)
+                )
+        type.__init__(cls, name, bases, attrs)
+
+
+class ClassByLazybones(metaclass=MustHaveDocMeta):
+    &quot;&quot;&quot; 这个类的定义是无法通过的，直接会报异常，让你不给方法写docstring &quot;&quot;&quot;
+    def complicate(self):
+        pass
+</code></pre><hr>
+<h2 id="何时使用元类"><a href="#何时使用元类" class="headerlink" title="何时使用元类?"></a>何时使用元类?</h2><p>嗯，其实我没啥经验，还没在业务代码中使用过。使用元类可以拦截和修改类的创建，我们也使用使用别的技术来实现类属性的修改，比如</p>
+<ul>
+<li>monkey patching: 猴子补丁，实际上就是『运行时动态替换属性』</li>
+<li>class decorators: 类装饰器，可以实现给类动态修改属性。</li>
+</ul>
+<p>有时候使用元类反而是最麻烦的技术。不过使用元类也有一下一些好处:</p>
+<ul>
+<li>意图更加明确。当然你的metaclass名字要起好。</li>
+<li>面向对象。可以隐式继承到子类。</li>
+<li>可以更好地组织代码，更易读。</li>
+<li>可以用<code>__new__，__init__,__call__</code>等方法更好地控制。<br>我们最好选择容易理解和维护的方式来实现。</li>
+</ul>
+<hr>
+<h2 id="元类的一些应用（单例，ORM-abc模块等"><a href="#元类的一些应用（单例，ORM-abc模块等" class="headerlink" title="元类的一些应用（单例，ORM, abc模块等)"></a>元类的一些应用（单例，ORM, abc模块等)</h2><h4 id="单例模式：元类经常用来实现单例模式"><a href="#单例模式：元类经常用来实现单例模式" class="headerlink" title="单例模式：元类经常用来实现单例模式"></a>单例模式：元类经常用来实现单例模式</h4><pre><code># 拦截(intercepting)class的创建
+class Singleton(type):
+    instance = None
+    def __call__(cls, *args, **kw):
+        # 通过重写__call__拦截实例的创建,(实例通过调用括号运算符创建的)
+        if not cls.instance:
+            cls.instance = super().__call__(*args, **kw)
+        return cls.instance
+
+
+class ASingleton(metaclass=Singleton):
+    pass
+
+class BSingleton(metaclass=Singleton):
+    pass
+
+a = ASingleton()
+aa = ASingleton()
+b = BSingleton()
+bb = BSingleton()
+assert a is aa
+assert b is bb
+</code></pre><h4 id="ORM框架："><a href="#ORM框架：" class="headerlink" title="ORM框架："></a>ORM框架：</h4><p>ORM是”Object Relational Mapping”的缩写，叫做对象-关系映射，用来把关系数据的一行映射成一个对象，一个表对应成一个类，这样就免去了直接使用SQL语句的麻烦，使用起来更加符合程序员的思维习惯。ORM框架里所有的类都是动态定义的，由使用类的用户决定有哪些字段，这个时候就只能用元类来实现了。感兴趣的可以看看廖雪峰的python教程，里边有个简单的orm实现。我在这里重新巩固一下。<br>orm有两个重要的类，一个是Model表示数据库中的表，一个是Field表示数据库中的字段。通常通过以下方式使用(py3.5):</p>
+<pre><code>class User(Model):
+    id = IntegerField(&apos;id&apos;)
+    name = StringField(&apos;name&apos;)
+u = User(id=1, name=&apos;laowang&apos;)
+u.save()
+</code></pre><p>接下来定义Field类，Model的元类和基类:</p>
+<pre><code>class Field:
+    &quot;&quot;&quot; 负责保存数据库表的字段名和字段类型 &quot;&quot;&quot;
+    def __init__(self, name, column_type):
+        self.name = name
+        self.column_type = column_type
+
+    def __str__(self):
+        return &apos;&lt;%s:%s&gt;&apos; % (self.__class__.__name__, self.name)
+
+
+class IntegerField(Field):
+    def __init__(self, name):
+        super().__init__(name, &apos;bigint&apos;)
+
+
+class StringField(Field):
+    def __init__(self, name):
+        super().__init__(name, &apos;varchar(100)&apos;)
+
+
+# 编写ModelMetaclass元类
+class ModelMetaclass(type):
+    def __new__(mcs, name, bases, attrs):
+        if name == &apos;Model&apos;:
+            return type.__new__(mcs, name, bases, attrs)
+        print(&apos;Found model: %s&apos; % name)
+
+        mappings = {}    # 保存field
+        for attr_name, attr_value in attrs.items():
+            if isinstance(attr_value, Field):
+                print(&apos;Found maping: %s ==&gt; %s&apos; % (attr_name, attr_value))
+                mappings[attr_name] = attr_value
+
+        for k in mappings.keys():
+            attrs.pop(k)    # 去除field属性
+
+        # 把所有的Field移到__mappings__里，防止实例的属性覆盖类的同名属性
+        attrs[&apos;__mappings__&apos;] = mappings
+        attrs[&apos;__tablename__&apos;] = name.lower()  # 使用类名小写作为表名
+        return type.__new__(mcs, name, bases, attrs)
+
+
+# 编写基类Model
+class Model(dict, metaclass=ModelMetaclass):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def __getattr__(self, key):    # 为了实现可以用&quot;.&quot;访问属性
+        try:
+            return self[key]
+        except KeyError:
+            raise AttributeError(&quot;&apos;Model&apos; object has no attribute &apos;%s&apos;&quot; % key)
+
+    def __setattr__(self, k, v):
+        self[k] = v
+
+    def save(self):
+        fields = []
+        params = []
+        args = []
+
+        for field_name, field in self.__mappings__.items():
+            fields.append(field.name)
+            params.append(&apos;?&apos;)
+            args.append(getattr(self, field_name, None))
+
+        # 拼成sql语句
+        sql = &apos;inset into %s (%s) values (%s)&apos; % (
+            self.__tablename__, &apos;,&apos;.join(fields), &apos;,&apos;.join(params)
+        )
+        print(&apos;SQL: %s&apos; % sql)
+        print(&apos;ARGS: %s&apos; % str(args))
+
+
+# python3.5
+class User(Model):
+    id = IntegerField(&apos;id&apos;)
+    name = StringField(&apos;name&apos;)
+
+u = User(id=1, name=&apos;laowang&apos;)
+u.save()
+
+&quot;&quot;&quot; 输出如下
+Found model: User
+Found maping: id ==&gt; &lt;IntegerField:id&gt;
+Found maping: name ==&gt; &lt;StringField:name&gt;
+SQL: inset into user (id,name) values (?,?)
+ARGS: [1, &apos;laowang&apos;]
+&quot;&quot;&quot;
+</code></pre><h4 id="abc模块-抽象基类支持"><a href="#abc模块-抽象基类支持" class="headerlink" title="abc模块:抽象基类支持"></a>abc模块:抽象基类支持</h4><p>抽象基类就是包含一个或者多个抽象方法的类，它本身不实现抽象方法，强制子类去实现，同时抽象基类自己不能被实例化，没有实现抽象方法的子类也无法实例化。python内置的abc(abstract base class)来实现抽象基类。</p>
+<pre><code># 为了实现这两个特性，我们可以这么写
+class Base:
+    def foo(self):
+        raise NotImplementedError()
+
+    def bar(self):
+        raise NotImplementedError()
+
+class Concrete(Base):
+    def foo(self):
+        return &apos;foo() called&apos;
+
+    # Oh no, we forgot to override bar()...
+    # def bar(self):
+    #     return &quot;bar() called&quot;
+</code></pre><p>但是这么写依然可以实例化Base，python2.6以后引入了abc模块帮助我们实现这个功能。</p>
+<pre><code>from abc import ABCMeta, abstractmethod
+
+class Base(metaclass=ABCMeta):
+    @abstractmethod
+    def foo(self):
+        pass
+
+    @abstractmethod
+    def bar(self):
+        pass
+
+class Concrete(Base):
+    def foo(self):
+        pass
+    # We forget to declare bar() again...
+</code></pre><p>使用这种方式如果没有在子类里实现bar方法你是没有办法实例化子类的。合理使用抽象基类定义明确的接口。另外应该优先使用collections定义的抽象基类，比如要实现一个容器我们可以继承 collections.Container</p>
+<hr>
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref:"></a>Ref:</h2><p><a href="http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python" target="_blank" rel="noopener">http://stackoverflow.com/questions/100003/what-is-a-metaclass-in-python</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2017/01/26/python/use-python-write-vim-plugin/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2017/01/22/python/python-coding-details/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

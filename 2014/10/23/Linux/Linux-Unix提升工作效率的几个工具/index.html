@@ -1,0 +1,237 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Linux/Unix提升工作效率的几个工具 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Linux/Unix提升工作效率的几个工具"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2014-10-23T12:28:10.000Z"><a href="/2014/10/23/Linux/Linux-Unix提升工作效率的几个工具/">周四, 10月 23 2014, 8:28:10 晚上</a></time>
+
+  
+    <h1 class="title">Linux/Unix提升工作效率的几个工具</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/Linux/">Linux</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/Linux/">Linux</a>, <a href="/tags/tools/">tools</a>, <a href="/tags/zsh/">zsh</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>下面是几个linux下挺很有用的玩意，可以大幅提高操作效率。包括好用的zsh，打开终端的工具，linux/unix文件转化工具等。</p>
+<hr>
+<p>##终极shell:OH-MY-ZSH(吐血推荐)<br>mac和ubuntu默认的shell是bash，最近从网上看到了oh-my-zsh，不仅兼容bash，而且功能更强大，比如更加智能的模糊搜索，git项目高亮显示等，还可以自己配置主题，果断放弃bash。<br><a id="more"></a><br>mac安装请看着一篇文章:<a href="http://zhuanlan.zhihu.com/mactalk/19556676" target="_blank" rel="noopener">终极 Shell——ZSH</a></p>
+<p>ubuntu安装:<br>安装zsh、git和wget：</p>
+<p><code>sudo apt-get install zsh git wget</code></p>
+<p>获取并自动安装oh-my-zsh：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget --no-check-certificate https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | sh</span><br></pre></td></tr></table></figure></p>
+<p>替换bash为zsh：</p>
+<p><code>chsh -s /bin/zsh</code></p>
+<p>最后重启:</p>
+<p><code>sudo reboot</code></p>
+<p>重启后，打开terminal就可以看见新的shell了。<br>在用户主文件夹会生成一个.zshrc隐藏文件，可以添加个性化设置。比如我把python命令起了个别名alias py=”python”。只要输入py就可以用python解释器了。</p>
+<hr>
+<p>##如何在文件浏览器中打开终端Terminal<br>这个还是挺常用的，有时候在文件浏览器、finder里面浏览文件想要打开终端时，打开终端还要输入文件路径，非常麻烦，解决方式：</p>
+<p>mac：搜索这个工具go2shell然后安装，然后finder里就会看到这个&gt;_&lt;，点击就可以打开终端并且自动切换到当前文件路径。</p>
+<p>ubuntu:<br>1）把终端加到右键菜单:<br><code>sudo apt-get install nautilus-open-terminal</code></p>
+<p>3）重新加载文件夹:<br><code>nautilus -q</code></p>
+<p>这样直接右键里边就有打开终端。</p>
+<hr>
+<p>##如何在终端打开各种类型的文件<br>在mac的终端下用命令open可以调用相应的软件打开各种文件，比如我最常用的几个：</p>
+<p><code>open .</code><br>调用finder打开当前路径（linux/unix中.表示当前文件夹）</p>
+<p><code>open http://ningning.today</code><br>调用chrome打开网站等，比如上面我在.zshrc中用alias起了个别名，<br><code>alias blog=&quot;open http://ningning.today&quot;</code><br>我在terminal中输入blog就可以打开我的博客了。</p>
+<p>而在ubuntu下对应的命令是：<br>xdg-open,当然这个命令有点长，我在.zshrc中又添加一行alias xo=’xdg-open’<br>然后<br><code>xo t.txt</code>   #调用gedit打开t.txt</p>
+<p><code>xo t.doc</code>   #调用office打开doc文件</p>
+<p><code>xo .</code>       #和mac终端下执行open .一样的效果，用文件浏览器打开当前文件夹</p>
+<hr>
+<p>##unix/linux和windows文件转换工具<br>由于不同操作系统的换行有差异，不同系统间传递文件可能会有些问题。安装俩工具就行，用法很简单，直接unix2dos后边跟上要转换的文件就行了。也可以用vim搞。<br><code>unix2dos</code><br><code>dos2unix</code><br>mac:<br><code>brew install unix2dos</code><br>ubuntu:<br><code>sudo apt-get install unix2dos</code><br>妈妈再也不用担心我在不同系统之间拷贝文件了（＾∇＾）</p>
+<hr>
+<p>##vim补全插件YouCompleteMe(折腾vim心不死)<br>网上已经有了不少教程，不再重复了：<br><a href="http://zuyunfei.com/2013/04/12/killer-plugin-of-vim-vundle/" target="_blank" rel="noopener">vim中的杀手级插件:vundle</a><br><a href="http://zuyunfei.com/2013/05/16/killer-plugin-of-vim-youcompleteme/" target="_blank" rel="noopener">vim中的杀手级插件YouCompleteMe</a><br><a href="http://blog.jobbole.com/58978/" target="_blank" rel="noopener">vim自动补全神奇YouCompleterMe</a><br>如果你用的是ubuntu14.04可以直接安装:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install vim-youcompleteme</span><br><span class="line">sudo apt-get install vim-addon-manager</span><br><span class="line">vam install youcompleteme</span><br></pre></td></tr></table></figure></p>
+<p>有一点需要注意，就是<code>.ycm_extra_conf.py</code>的配置，配置不好可能出现无法补全c++ stl的问题，在<code>.ycm_extra_conf.py</code>的flags里边有一些路径需要添加，你可以随便用g++编译一个文件，用｀g++ -v main.cpp`加上-v参数，这个参数可以列出g++的搜索路径，把g++搜索头文件的路径都添加进flags里边就可以补全stl里的东西了。</p>
+<p>##Tmux终端复用神器和目录跳转神器autojump</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2014/11/02/Linux/vim常用命令/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2014/10/09/psychology/谈情商/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

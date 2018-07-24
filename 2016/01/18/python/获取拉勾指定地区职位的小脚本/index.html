@@ -1,0 +1,485 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>获取拉勾指定地区职位的小脚本 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="获取拉勾指定地区职位的小脚本"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-01-18T11:20:12.000Z"><a href="/2016/01/18/python/获取拉勾指定地区职位的小脚本/">周一, 1月 18 2016, 7:20:12 晚上</a></time>
+
+  
+    <h1 class="title">获取拉勾指定地区职位的小脚本</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>最近公司没啥事了，想跳槽了，不过处境比较尴尬，刚出来混几个月，技术又很一般，有点难找。<br>感觉拉勾网在互联网行业招聘方面做的不错，不过目测地区招聘没有具体筛选到哪个区域，比如只有北京市的，却没法精确到海淀区的。还是想在学校附近找个工作吧，就写了个脚本筛出来所有在海淀区的python岗位，思路比较简单，查询请求，然后遍历列表页面拿到所有的职位id号，再 请求所有这些id的职位页面，每个页面可以得到位置信息，抠出来地理位置符合要求就输出这个url。</p>
+<p>还是先上以前写过的一个异步小爬虫，网页多的时候速度比较快。async_spider.py</p>
+<a id="more"></a>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+import time
+import logging
+from datetime import timedelta
+from tornado import httpclient, gen, ioloop, queues
+import traceback
+from bs4 import BeautifulSoup
+
+
+def get_logger(name):
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(name)
+    return logger
+
+
+class AsyncSpider(object):
+    &quot;&quot;&quot;A simple class of asynchronous spider.&quot;&quot;&quot;
+    def __init__(self, urls, concurrency=10, results=None, **kwargs):
+        self.concurrency = concurrency
+        self._q = queues.Queue()
+        self._fetching = set()
+        self._fetched = set()
+        if results is None:
+            self.results = []
+        for url in urls:
+            self._q.put(url)
+        self.logger = get_logger(self.__class__.__name__)
+        httpclient.AsyncHTTPClient.configure(
+            &quot;tornado.curl_httpclient.CurlAsyncHTTPClient&quot;
+        )
+
+    def fetch(self, url, **kwargs):
+        fetch = getattr(httpclient.AsyncHTTPClient(), &apos;fetch&apos;)
+        http_request = httpclient.HTTPRequest(url, **kwargs)
+        return fetch(http_request, raise_error=False)
+
+    def handle_html(self, url, html):
+        &quot;&quot;&quot;处理html页面&quot;&quot;&quot;
+        print(url)
+
+    def handle_response(self, url, response):
+        &quot;&quot;&quot;处理http响应，对于200响应码直接处理html页面，
+        否则按照需求处理不同响应码&quot;&quot;&quot;
+        if response.code == 200:
+            self.handle_html(url, response.body)
+
+        elif response.code == 599:    # retry
+            self._fetching.remove(url)
+            self._q.put(url)
+
+    @gen.coroutine
+    def get_page(self, url):
+        # yield gen.sleep(10)    # sleep when need
+        try:
+            response = yield self.fetch(url)
+            self.logger.debug(&apos;######fetched %s&apos; % url)
+        except Exception as e:
+            self.logger.debug(&apos;Exception: %s %s&apos; % (e, url))
+            raise gen.Return(e)
+        raise gen.Return(response)    # py3 can just return response
+
+    @gen.coroutine
+    def _run(self):
+        @gen.coroutine
+        def fetch_url():
+            current_url = yield self._q.get()
+            try:
+                if current_url in self._fetching:
+                    return
+
+                self.logger.debug(&apos;fetching****** %s&apos; % current_url)
+                self._fetching.add(current_url)
+
+                response = yield self.get_page(current_url)
+                self.handle_response(current_url, response)    # handle reponse
+
+                self._fetched.add(current_url)
+
+            finally:
+                self._q.task_done()
+
+        @gen.coroutine
+        def worker():
+            while True:
+                yield fetch_url()
+
+        # Start workers, then wait for the work queue to be empty.
+        for _ in range(self.concurrency):
+            worker()
+
+        yield self._q.join(timeout=timedelta(seconds=300000))
+
+        try:
+            assert self._fetching == self._fetched
+        except AssertionError:    # some http error not handle
+            print(self._fetching-self._fetched)
+            print(self._fetched-self._fetching)
+
+    def run(self):
+        io_loop = ioloop.IOLoop.current()
+        io_loop.run_sync(self._run)
+</code></pre><p>接下来打开浏览器开发者工具，我们筛选拉勾的面试信息职位的时候注意观察发送的请求，然后看到请求之后，chrome里边右键点击这个请求，然后选择copy as curl就可以得到一个curl请求字符串到剪贴板，直接copy到终端里边就可以执行，然后就可以看到拉勾返回的请求数据了。但是shell不是很熟悉，就写个python小脚本把这个字符串转成requests库需要的参数。</p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+&quot;&quot;&quot;
+chrome有个功能，对于请求可以直接右键copy as curl，然后在命令行里边用curl
+模拟发送请求。现在需要把此curl字符串处理成requests库可以传入的参数格式，
+http://stackoverflow.com/questions/23118249/whats-the-difference-between-request-payload-vs-form-data-as-seen-in-chrome
+&quot;&quot;&quot;
+
+import json
+import re
+import requests
+
+
+def encode_to_dict(encoded_str):
+    &quot;&quot;&quot; 将encode后的数据拆成dict
+    &gt;&gt;&gt; encode_to_dict(&apos;name=foo&apos;)
+    {&apos;name&apos;: foo&apos;}
+    &gt;&gt;&gt; encode_to_dict(&apos;name=foo&amp;val=bar&apos;)
+    {&apos;name&apos;: &apos;foo&apos;, &apos;val&apos;: &apos;var&apos;}
+    &quot;&quot;&quot;
+
+    pair_list = encoded_str.split(&apos;&amp;&apos;)
+    d = {}
+    for pair in pair_list:
+        if pair:
+            key = pair.split(&apos;=&apos;)[0]
+            val = pair.split(&apos;=&apos;)[1]
+            d[key] = val
+    return d
+
+
+def parse_curl_str(s):
+    &quot;&quot;&quot;convert chrome curl string to url, headers dict and data&quot;&quot;&quot;
+    pat = re.compile(&quot;&apos;(.*?)&apos;&quot;)
+    str_list = [i.strip() for i in re.split(pat, s)]   # 拆分curl请求字符串
+
+    url = &apos;&apos;
+    headers = {}
+    data = &apos;&apos;
+
+    for i in range(0, len(str_list)-1, 2):
+        arg = str_list[i]
+        string = str_list[i+1]
+
+        if arg.startswith(&apos;curl&apos;):
+            url = string
+
+        elif arg.startswith(&apos;-H&apos;):
+            header_key = string.split(&apos;:&apos;, 1)[0].strip()
+            header_val = string.split(&apos;:&apos;, 1)[1].strip()
+            headers[header_key] = header_val
+
+        elif arg.startswith(&apos;--data&apos;):
+            data = string
+
+    return url, headers, data
+
+
+def test_lagou():
+    lagou_str = &quot;&quot;&quot;curl &apos;http://www.lagou.com/jobs/positionAjax.json?gj=1-3%E5%B9%B4&amp;px=default&amp;city=%E5%8C%97%E4%BA%AC&apos; -H &apos;Cookie: user_trace_token=20150911115414-e35eaafdf3cd430fb0a9fed4ca568273; LGUID=20150911115415-c53a987d-5838-11e5-8fa5-525400f775ce; fromsite=www.baidu.com; LGMOID=20160112143105-A2EDC0F26EF4FF9F7A0E261E95FFC0D5; tencentSig=5171360768; JSESSIONID=0F7B9502EFBBC658FD043C42196C5F58; PRE_UTM=; PRE_HOST=; PRE_SITE=http%3A%2F%2Fwww.lagou.com%2Fjobs%2F1018226.html; PRE_LAND=http%3A%2F%2Fwww.lagou.com%2Fjobs%2F1018226.html; login=true; unick=%E7%8E%8B%E5%AE%81%E5%AE%81-Python%E5%BA%94%E8%81%98; showExpriedIndex=1; showExpriedCompanyHome=1; showExpriedMyPublish=1; hasDeliver=77; SEARCH_ID=c70df91703ee4c1ca380d883e93dde6c; index_location_city=%E5%8C%97%E4%BA%AC; _gat=1; HISTORY_POSITION=1326282%2C9k-18k%2C%E4%BB%80%E4%B9%88%E5%80%BC%E5%BE%97%E4%B9%B0%2CPython%7C1247829%2C8k-16k%2CPair%2CPython%7C1162119%2C8k-15k%2C%E5%A4%A7%E7%A0%81%E7%BE%8E%E8%A1%A3%2CPython%E5%B7%A5%E7%A8%8B%E5%B8%88%7C411250%2C10k-20k%2C%E6%9C%89%E5%BA%B7%E7%88%B1%E5%B8%AE%2CPython%20%E5%BC%80%E5%8F%91%E5%B7%A5%E7%A8%8B%E5%B8%88%7C1269616%2C12k-20k%2CE%E7%98%A6%E7%BD%91%2CPython%7C; Hm_lvt_4233e74dff0ae5bd0a3d81c6ccf756e6=1452172939,1452231058,1452231062,1452580269; Hm_lpvt_4233e74dff0ae5bd0a3d81c6ccf756e6=1453095567; LGSID=20160118132416-b7c3fc3c-bda3-11e5-8bf5-5254005c3644; LGRID=20160118133926-d61df46a-bda5-11e5-8a39-525400f775ce; _ga=GA1.2.878965075.1441943655&apos; -H &apos;Origin: http://www.lagou.com&apos; -H &apos;Accept-Encoding: gzip, deflate&apos; -H &apos;Accept-Language: zh-CN,zh;q=0.8,en-US;q=0.6,en;q=0.4&apos; -H &apos;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36&apos; -H &apos;Content-Type: application/x-www-form-urlencoded; charset=UTF-8&apos; -H &apos;Accept: application/json, text/javascript, */*; q=0.01&apos; -H &apos;Referer: http://www.lagou.com/jobs/list_Python?gj=1-3%E5%B9%B4&amp;px=default&amp;city=%E5%8C%97%E4%BA%AC&apos; -H &apos;X-Requested-With: XMLHttpRequest&apos; -H &apos;Connection: keep-alive&apos; --data &apos;first=false&amp;pn=9&amp;kd=Python&apos; --compressed&quot;&quot;&quot;
+    url, headers, data = parse_curl_str(lagou_str)
+    r = requests.post(url, data=data, headers=headers)  # loads
+    print(r.content)
+
+
+if __name__ == &apos;__main__&apos;:
+    test_lagou()
+</code></pre><p>里边这个噁心的lagou_str就是在chrome里得到的字符串，现在把它转成url，headers和post数据三部分。其实这个copy as curl功能还有不少用途，比如直接把这个字符串复制到终端里，前面加上个repeat命令，这就是个发帖机器人啊。或者有些js网站直接拿到这个请求后模拟就可以抓到一些ajax请求数据了，扯远了。。。<br>拆分后，就可以用requests库的post方法发送请求了，data就是parse后得到的post数据。<br>剩下的工作就是请求得到所有页面，然后拿到符合要求的职位链接后，再分别请求每个网页，从每个职位网页中得到需要的位置信息，看看符合要求不。</p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+&quot;&quot;&quot;自己投简历用的，用来拿到lagou职位符合预期地理位置的职位信息&quot;&quot;&quot;
+
+import _env
+import re
+import json
+import requests
+from bs4 import BeautifulSoup
+from async_spider import AsySpider
+from web_util import parse_curl_str
+from functools import wraps
+
+
+def retry(times=3):
+    &quot;&quot;&quot;requests retry decorator&quot;&quot;&quot;
+    def _retry(func):
+        @wraps(func)
+        def _wrapper(*args, **kwargs):
+            index = 0
+            while index &lt; times:
+                index += 1
+                try:
+                    response = func(*args, **kwargs)
+                    if response.status_code != 200:
+                        print(&apos;retry&apos;, index)
+                        continue
+                    else:
+                        break
+                except Exception as e:
+                    print(e)
+                    response = None
+            return response
+        return _wrapper
+    return _retry
+
+
+@retry(3)
+def fetch_json(url, data, headers):
+    return requests.post(url, data=data, headers=headers)  # use data
+
+
+def parse_json(s):
+    &quot;&quot;&quot;拿到每页请求得到的职位列表&quot;&quot;&quot;
+    content = json.loads(s).get(&apos;content&apos;)
+    result = content.get(&apos;result&apos;)
+    for each in result:
+        yield each.get(&apos;positionId&apos;)
+
+
+def get_all_urls():
+    res = []
+    for page in range(1, 20):
+        # 用chrome右键copy as curl复制得到字符串，按照需求修改参数
+        lagou_str = &quot;&quot;&quot;curl &apos;http://www.lagou.com/jobs/positionAjax.json?gj=1-3%E5%B9%B4&amp;px=default&amp;city=%E5%8C%97%E4%BA%AC&apos; -H &apos;Cookie: user_trace_token=20150911115414-e35eaafdf3cd430fb0a9fed4ca568273; LGUID=20150911115415-c53a987d-5838-11e5-8fa5-525400f775ce; fromsite=www.baidu.com; LGMOID=20160112143105-A2EDC0F26EF4FF9F7A0E261E95FFC0D5; tencentSig=5171360768; JSESSIONID=0F7B9502EFBBC658FD043C42196C5F58; PRE_UTM=; PRE_HOST=; PRE_SITE=http%3A%2F%2Fwww.lagou.com%2Fjobs%2F1018226.html; PRE_LAND=http%3A%2F%2Fwww.lagou.com%2Fjobs%2F1018226.html; login=true; unick=%E7%8E%8B%E5%AE%81%E5%AE%81-Python%E5%BA%94%E8%81%98; showExpriedIndex=1; showExpriedCompanyHome=1; showExpriedMyPublish=1; hasDeliver=77; SEARCH_ID=c70df91703ee4c1ca380d883e93dde6c; index_location_city=%E5%8C%97%E4%BA%AC; _gat=1; HISTORY_POSITION=1326282%2C9k-18k%2C%E4%BB%80%E4%B9%88%E5%80%BC%E5%BE%97%E4%B9%B0%2CPython%7C1247829%2C8k-16k%2CPair%2CPython%7C1162119%2C8k-15k%2C%E5%A4%A7%E7%A0%81%E7%BE%8E%E8%A1%A3%2CPython%E5%B7%A5%E7%A8%8B%E5%B8%88%7C411250%2C10k-20k%2C%E6%9C%89%E5%BA%B7%E7%88%B1%E5%B8%AE%2CPython%20%E5%BC%80%E5%8F%91%E5%B7%A5%E7%A8%8B%E5%B8%88%7C1269616%2C12k-20k%2CE%E7%98%A6%E7%BD%91%2CPython%7C; Hm_lvt_4233e74dff0ae5bd0a3d81c6ccf756e6=1452172939,1452231058,1452231062,1452580269; Hm_lpvt_4233e74dff0ae5bd0a3d81c6ccf756e6=1453095567; LGSID=20160118132416-b7c3fc3c-bda3-11e5-8bf5-5254005c3644; LGRID=20160118133926-d61df46a-bda5-11e5-8a39-525400f775ce; _ga=GA1.2.878965075.1441943655&apos; -H &apos;Origin: http://www.lagou.com&apos; -H &apos;Accept-Encoding: gzip, deflate&apos; -H &apos;Accept-Language: zh-CN,zh;q=0.8,en-US;q=0.6,en;q=0.4&apos; -H &apos;User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36&apos; -H &apos;Content-Type: application/x-www-form-urlencoded; charset=UTF-8&apos; -H &apos;Accept: application/json, text/javascript, */*; q=0.01&apos; -H &apos;Referer: http://www.lagou.com/jobs/list_Python?gj=1-3%E5%B9%B4&amp;px=default&amp;city=%E5%8C%97%E4%BA%AC&apos; -H &apos;X-Requested-With: XMLHttpRequest&apos; -H &apos;Connection: keep-alive&apos; --data &apos;first=false&amp;pn={0}&amp;kd=Python&apos; --compressed&quot;&quot;&quot;.format(page)
+        url, headers, data = parse_curl_str(lagou_str)
+        r = fetch_json(url, data=data, headers=headers)  # loads
+        if r and r.status_code == 200:
+            res.extend(parse_json(r.content))
+
+    position_url = &apos;http://www.lagou.com/jobs/%s.html&apos;
+    return (position_url % str(_id) for _id in res)
+
+
+class PositionPageSpider(AsySpider):
+    def handle_html(self, url, html):
+        soup = BeautifulSoup(html, &apos;lxml&apos;)
+        position = re.search(r&quot;positionAddress = &apos;(.*?)&apos;&quot;, html).group(1)
+        print(position)
+        if &apos;海淀&apos; in position:    # 输出url
+            print(url)
+
+
+def test_get_all_urls():
+    &quot;&quot;&quot;use py.test run this function&quot;&quot;&quot;
+    res = list(get_all_urls())
+    for i in res:
+        print(i)
+    print(len(res))
+
+
+if __name__ == &apos;__main__&apos;:
+    urls = list(get_all_urls())
+    s = PositionPageSpider(urls)
+    s.run()
+</code></pre><p>这个就是用来筛选的，因为职位页面比较少，就直接用个循环请求得到每个页面的职位json数据，从里边拿到id号，拿到所有20个页面的之后，把这几个百个url列表拼起来给异步爬虫，爬虫抓到网页得到html后解析，碰到符合要求的页面就输出这个职位的url。注意拿列表的时候可能失败，所以用了个decorator，失败重试几次。<br>最后，一个一个打开比较麻烦，把上边得到的url重定向到一个文件url.txt，然后可以这么搞:</p>
+<pre><code>import webbrowser
+
+
+def main():
+    with open(&apos;./url.txt&apos;, &apos;r&apos;) as f:
+        for line in f:
+            raw_input()    ＃ input() in py3
+            if line.strip():
+                print(line)
+                webbrowser.open_new_tab(line.strip())
+
+
+if __name__ == &apos;__main__&apos;:
+    main()
+</code></pre><p>好啦，运行后，海淀区的python职位运行一下就自动用浏览器打开了，输入一个回车打开一个。。。。。。感觉真是闲滴＊疼了。有海淀附近招python小弟的可以联系我，虽然水平比较菜也没啥经验，不过好调教。。。吃得少干得不少( ´◔ ‸◔’)</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/01/22/python/python用装饰器实现多线程/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/12/25/python/Python如何用协程模拟线程/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

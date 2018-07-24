@@ -1,0 +1,331 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>用Python脚本生成sitemap.xml | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="用Python脚本生成sitemap.xml"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-07-23T02:49:24.000Z"><a href="/2015/07/23/web/用Python脚本生成sitemap-xml/">周四, 7月 23 2015, 10:49:24 上午</a></time>
+
+  
+    <h1 class="title">用Python脚本生成sitemap.xml</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/web/">web</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/sitemap/">sitemap</a>, <a href="/tags/web/">web</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>项目需要用脚本生成sitemap，中间学习了一下sitemap的格式和lxml库的用法。把结果记录一下，方便以后需要直接拿来用。</p>
+<hr>
+<p>###安装lxml<br>首先需要<code>pip install lxml</code>安装lxml库。<br>如果你在ubuntu上遇到了以下错误:<br><a id="more"></a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">#include &quot;libxml/xmlversion.h&quot;</span><br><span class="line"></span><br><span class="line">compilation terminated.</span><br><span class="line"></span><br><span class="line">error: command &apos;x86_64-linux-gnu-gcc&apos; failed with exit status 1</span><br><span class="line"></span><br><span class="line">----------------------------------------</span><br><span class="line">Cleaning up...</span><br><span class="line">  Removing temporary dir /tmp/pip_build_root...</span><br><span class="line">Command /usr/bin/python -c &quot;import setuptools, tokenize;__file__=&apos;/tmp/pip_build_root/lxml/setup.py&apos;;exec(compile(getattr(tokenize, &apos;open&apos;, open)(__file__).read().replace(&apos;\r\n&apos;, &apos;\n&apos;), __file__, &apos;exec&apos;))&quot; install --record /tmp/pip-O4cIn6-record/install-record.txt --single-version-externally-managed --compile failed with error code 1 in /tmp/pip_build_root/lxml</span><br><span class="line">Exception information:</span><br><span class="line">Traceback (most recent call last):</span><br><span class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/basecommand.py&quot;, line 122, in main</span><br><span class="line">    status = self.run(options, args)</span><br><span class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/commands/install.py&quot;, line 283, in run</span><br><span class="line">    requirement_set.install(install_options, global_options, root=options.root_path)</span><br><span class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/req.py&quot;, line 1435, in install</span><br><span class="line">    requirement.install(install_options, global_options, *args, **kwargs)</span><br><span class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/req.py&quot;, line 706, in install</span><br><span class="line">    cwd=self.source_dir, filter_stdout=self._filter_install, show_stdout=False)</span><br><span class="line">  File &quot;/usr/lib/python2.7/dist-packages/pip/util.py&quot;, line 697, in call_subprocess</span><br><span class="line">    % (command_desc, proc.returncode, cwd))</span><br><span class="line">InstallationError: Command /usr/bin/python -c &quot;import setuptools, tokenize;__file__=&apos;/tmp/pip_build_root/lxml/setup.py&apos;;exec(compile(getattr(tokenize, &apos;open&apos;, open)(__file__).read().replace(&apos;\r\n&apos;, &apos;\n&apos;), __file__, &apos;exec&apos;))&quot; install --record /tmp/pip-O4cIn6-record/install-record.txt --single-version-externally-managed --compile failed with error code 1 in /tmp/pip_build_root/lxml</span><br></pre></td></tr></table></figure>
+<p>请安装以下依赖：</p>
+<p><code>sudo apt-get install libxml2-dev libxslt1-dev</code></p>
+<hr>
+<p>###Python代码<br>下面是生成sitemap和sitemapindex索引的代码，可以按照需求传入需要的参数，或者增加字段：</p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+import io
+import re
+from lxml import etree
+
+
+def generate_xml(filename, url_list):
+    &quot;&quot;&quot;Generate a new xml file use url_list&quot;&quot;&quot;
+    root = etree.Element(&apos;urlset&apos;,
+                         xmlns=&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;)
+    for each in url_list:
+        url = etree.Element(&apos;url&apos;)
+        loc = etree.Element(&apos;loc&apos;)
+        loc.text = each
+        url.append(loc)
+        root.append(url)
+
+    header = u&apos;&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\n&apos;
+    s = etree.tostring(root, encoding=&apos;utf-8&apos;, pretty_print=True)
+    with io.open(filename, &apos;w&apos;, encoding=&apos;utf-8&apos;) as f:
+        f.write(unicode(header+s))
+
+
+def update_xml(filename, url_list):
+    &quot;&quot;&quot;Add new url_list to origin xml file.&quot;&quot;&quot;
+    f = open(filename, &apos;r&apos;)
+    lines = [i.strip() for i in f.readlines()]
+    f.close()
+
+    old_url_list = []
+    for each_line in lines:
+        d = re.findall(&apos;&lt;loc&gt;(http:\/\/.+)&lt;\/loc&gt;&apos;, each_line)
+        old_url_list += d
+    url_list += old_url_list
+
+    generate_xml(filename, url_list)
+
+
+def generatr_xml_index(filename, sitemap_list, lastmod_list):
+    &quot;&quot;&quot;Generate sitemap index xml file.&quot;&quot;&quot;
+    root = etree.Element(&apos;sitemapindex&apos;,
+                         xmlns=&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;)
+    for each_sitemap, each_lastmod in zip(sitemap_list, lastmod_list):
+        sitemap = etree.Element(&apos;sitemap&apos;)
+        loc = etree.Element(&apos;loc&apos;)
+        loc.text = each_sitemap
+        lastmod = etree.Element(&apos;lastmod&apos;)
+        lastmod.text = each_lastmod
+        sitemap.append(loc)
+        sitemap.append(lastmod)
+        root.append(sitemap)
+
+    header = u&apos;&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;\n&apos;
+    s = etree.tostring(root, encoding=&apos;utf-8&apos;, pretty_print=True)
+    with io.open(filename, &apos;w&apos;, encoding=&apos;utf-8&apos;) as f:
+        f.write(unicode(header+s))
+
+
+if __name__ == &apos;__main__&apos;:
+    urls = [&apos;http://www.baidu.com&apos;] * 10
+    mods = [&apos;2004-10-01T18:23:17+00:00&apos;] * 10
+    generatr_xml_index(&apos;index.xml&apos;, urls, mods)
+</code></pre><hr>
+<p>###效果<br>生成的效果应该是这种格式：<br>sitemap格式:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><br><span class="line">&lt;urlset xmlns=&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;&gt;</span><br><span class="line">  &lt;url&gt;</span><br><span class="line">    &lt;loc&gt;http://www.example.com/foo.html&lt;/loc&gt;</span><br><span class="line">  &lt;/url&gt;</span><br><span class="line">&lt;/urlset&gt;</span><br></pre></td></tr></table></figure>
+<p>sitemapindex格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span><br><span class="line">   &lt;sitemapindex xmlns=&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;&gt;</span><br><span class="line">   &lt;sitemap&gt;</span><br><span class="line">      &lt;loc&gt;http://www.example.com/sitemap1.xml.gz&lt;/loc&gt;</span><br><span class="line">      &lt;lastmod&gt;2004-10-01T18:23:17+00:00&lt;/lastmod&gt;</span><br><span class="line">   &lt;/sitemap&gt;</span><br><span class="line">   &lt;sitemap&gt;</span><br><span class="line">      &lt;loc&gt;http://www.example.com/sitemap2.xml.gz&lt;/loc&gt;</span><br><span class="line">      &lt;lastmod&gt;2005-01-01&lt;/lastmod&gt;</span><br><span class="line">   &lt;/sitemap&gt;</span><br><span class="line">   &lt;/sitemapindex&gt;</span><br></pre></td></tr></table></figure>
+<hr>
+<p>###lastmod时间格式的问题<br>格式是用ISO 8601的标准，如果是linux/unix系统，可以使用以下函数获取</p>
+<pre><code>def get_lastmod_time(filename):
+    time_stamp = os.path.getmtime(filename)
+    t = time.localtime(time_stamp)
+    # return time.strftime(&apos;%Y-%m-%dT%H:%M:%S+08:00&apos;, t)
+    return time.strftime(&apos;%Y-%m-%dT%H:%M:%SZ&apos;, t)
+</code></pre><hr>
+<p>###优化<br>一般来说，用lxml效率低并且内存占用比较大，可以直接用文件的write方法创建。</p>
+<pre><code>def generate_xml(filename, url_list):
+    with gzip.open(filename,&quot;w&quot;) as f:
+        f.write(&quot;&quot;&quot;&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;urlset xmlns=&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;&gt;\n&quot;&quot;&quot;)
+        for i in url_list:
+            f.write(&quot;&quot;&quot;&lt;url&gt;&lt;loc&gt;%s&lt;/loc&gt;&lt;/url&gt;\n&quot;&quot;&quot;%i)
+        f.write(&quot;&quot;&quot;&lt;/urlset&gt;&quot;&quot;&quot;)
+
+
+def append_xml(filename, url_list):
+    with gzip.open(filename, &apos;r&apos;) as f:
+        for each_line in f:
+            d = re.findall(&apos;&lt;loc&gt;(http:\/\/.+)&lt;\/loc&gt;&apos;, each_line)
+            url_list.extend(d)
+
+        generate_xml(filename, set(url_list))
+
+
+def modify_time(filename):
+    time_stamp = os.path.getmtime(filename)
+    t = time.localtime(time_stamp)
+    return time.strftime(&apos;%Y-%m-%dT%H:%M:%S:%SZ&apos;, t)
+
+
+def new_xml(filename, url_list):
+    generate_xml(filename, url_list)
+    root = dirname(filename)
+
+    with open(join(dirname(root), &quot;sitemap.xml&quot;),&quot;w&quot;) as f:
+        f.write(&apos;&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;\n&lt;sitemapindex xmlns=&quot;http://www.sitemaps.org/schemas/sitemap/0.9&quot;&gt;\n&apos;)
+        for i in glob.glob(join(root,&quot;*.xml.gz&quot;)):
+            lastmod = modify_time(i)
+            i = i[len(CONFIG.SITEMAP_PATH):]
+            f.write(&quot;&lt;sitemap&gt;\n&lt;loc&gt;http:/%s&lt;/loc&gt;\n&quot;%i)
+            f.write(&quot;&lt;lastmod&gt;%s&lt;/lastmod&gt;\n&lt;/sitemap&gt;\n&quot;%lastmod)
+        f.write(&apos;&lt;/sitemapindex&gt;&apos;)
+</code></pre><hr>
+<p>Ref:<br><a href="https://support.google.com/webmasters/answer/183668?hl=zh-Hans" target="_blank" rel="noopener">创建站点地图</a><br><a href="http://baike.baidu.com/view/1072062.htm" target="_blank" rel="noopener">sitemap</a><br><a href="http://lxml.de/" target="_blank" rel="noopener">lxml</a><br><a href="http://www.focuznet.com/siteroad/t2513/" target="_blank" rel="noopener">谷歌(Google)网站地图的XML文档格式说明</a><br><a href="https://blog.othree.net/log/2005/06/04/google-sitemap-doc-format/" target="_blank" rel="noopener">Google Sitemap文件格式</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/07/28/web/网页静态化SEO/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/07/18/psychology/《改变心理学的40项研究》读书笔记/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

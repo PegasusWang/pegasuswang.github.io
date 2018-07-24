@@ -1,0 +1,772 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>django+python微信开发之二－封装消息类 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="django+python微信开发之二－封装消息类"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-02-21T01:50:15.000Z"><a href="/2015/02/21/python/django-python微信开发之二－封装消息类/">周六, 2月 21 2015, 9:50:15 上午</a></time>
+
+  
+    <h1 class="title">django+python微信开发之二－封装消息类</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/django/">django</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>###消息的类型<br>微信开发中有三种消息类型，参考书籍：<a href="http://book.douban.com/subject/25838708/" target="_blank" rel="noopener">《微信公众平台应用开发：方法、技巧与案例》</a></p>
+<ul>
+<li>请求消息，指用户发送给公众账号的消息，然后由微信公众账号平台post给你的sae服务器，包括文本消息、图片消息、语音消息、视频消息、地理位置消息和链接消息。</li>
+<li>事件，是指用户对公众账号做出某种操作时，微信服务器会将对应的事件推送给公众账号服务器。五类事件分别是关注公众账号、取消关注公众账号、扫描带参数二维码、同意上报地理位置并进入公众账号和点击自定义菜单，这5种操作所对应的事件分别为关注事件、取消关注事件、扫描带参数二维码事件、上报地理位置事件和自定义菜单事件。</li>
+<li>响应消息，响应消息是指公众账号回复给用户的消息，响应消息包括文本消息、图片消息、语音消息、视频消息、音乐消息和图文消息。<a id="more"></a>
+流程如下：<br>用户(发送消息)–&gt;微信公众平台账号(发送post请求或事件)–&gt;你的sae django服务器(处理请求并且返回响应消息）–&gt;微信公众平台账号(处理)–&gt;用户接收</li>
+</ul>
+<hr>
+<p>###封装请求消息类wechatMessage.py</p>
+<pre><code># -*- coding:utf-8 -*-
+&quot;&quot;&quot;
+# Author: Pegasus Wang (pegasuswang@qq.com, http://ningning.today)
+# Created Time : Wed Feb 18 18:18:10 2015
+
+# File Name: wechatMessage.py
+# Description:
+
+# :copyright: (c) 2015 by Pegasus Wang.
+# :license: MIT, see LICENSE for more details.
+&quot;&quot;&quot;
+
+
+class BaseMessage(object):
+    &quot;&quot;&quot;base message class&quot;&quot;&quot;
+    def __init__(self):
+        self.ToUserName = u&apos;&apos;
+        self.FromUserName = u&apos;&apos;
+        self.CreateTime = 0L
+        self.MsgType = u&apos;&apos;
+        self.MsgId = 0L
+
+    def getToUserName(self):
+        return self.ToUserName
+
+    def setToUserName(self, toUserName):
+        self.ToUserName = toUserName
+
+    def getFromUserName(self):
+        return self.FromUserName
+
+    def setFromUserName(self, fromUserName):
+        self.FromUserName = fromUserName
+
+    def getCreateTime(self):
+        return self.CreateTime
+
+    def setCreateTime(self, createTime):
+        self.CreateTime = createTime
+
+    def getMsgType(self):
+        return self.MsgType
+
+    def setMsgType(self, msgType):
+        self.MsgType = msgType
+
+    def getMsgId(self):
+        return self.MsgId
+
+    def setMsgId(self, msgId):
+        self.MsgId = msgId
+
+
+class TextMessage(BaseMessage):
+    &quot;&quot;&quot;text message class&quot;&quot;&quot;
+    def __init__(self):
+        super(TextMessage, self).__init__()
+        self.Content = u&apos;&apos;
+
+    def getContent(self):
+        return self.Content
+
+    def setContent(self, content):
+        self.Content = content
+
+
+class ImageMessage(BaseMessage):
+    &quot;&quot;&quot;image message class&quot;&quot;&quot;
+    def __init__(self):
+        super(ImageMessage, self).__init__()
+        self.PicUrl = u&apos;&apos;
+
+    def getPicUrl(self):
+        return self.PicUrl
+
+    def setPicUrl(self, picUrl):
+        self.PicUrl = picUrl
+
+
+class VoiceMessage(BaseMessage):
+    &quot;&quot;&quot;voice message class&quot;&quot;&quot;
+    def __init__(self):
+        super(VoiceMessage, self).__init__()
+        self.MediaId = u&apos;&apos;
+        self.Format = u&apos;&apos;
+        self.Recognition = u&apos;&apos;
+
+    def getMediaId(self):
+        return self.MediaId
+
+    def setMediaId(self, mediaId):
+        self.MediaId = mediaId
+
+    def getFormat(self):
+        return self.Format
+
+    def setFormat(self, format):
+        self.Format = format
+
+    def getRecognition(self):
+        return self.Recognition
+
+    def setRecognition(self, recognition):
+        self.Recognition = recognition
+
+
+class VideoMessage(BaseMessage):
+    &quot;&quot;&quot;video message class&quot;&quot;&quot;
+    def __init__(self):
+        super(VideoMessage, self).__init__()
+        self.MediaId = u&apos;&apos;
+        self.ThumbMediaId = u&apos;&apos;
+
+    def getMediaId(self):
+        return self.MediaId
+
+    def setMediaId(self, mediaId):
+        self.MediaId = mediaId
+
+    def getThumbMediaId(self):
+        return self.ThumbMediaId
+
+    def setThumbMediaId(self, thumbMediaId):
+        self.ThumbMediaId = thumbMediaId
+
+
+class LocationMessage(BaseMessage):
+    &quot;&quot;&quot;location message class&quot;&quot;&quot;
+    def __init__(self):
+        super(LocationMessage, self).__init__()
+        self.Location_X = u&apos;&apos;
+        self.Location_Y = u&apos;&apos;
+        self.Scale = u&apos;&apos;
+        self.Label = u&apos;&apos;
+
+    def getLocation_X(self):
+        return self.Location_X
+
+    def setLocation_X(self, location_X):
+        self.Location_X = location_X
+
+    def getLocation_Y(self):
+        return self.Location_Y
+
+    def setLocation_Y(self, location_Y):
+        self.Location_Y = location_Y
+
+    def getScale(self):
+        return self.Scale
+
+    def setScale(self, scale):
+        self.Scale = scale
+
+    def getLabel(self):
+        return self.Label
+
+    def setLabel(self, label):
+        self.Label = label
+
+
+class LinkMessage(BaseMessage):
+    &quot;&quot;&quot;link message class&quot;&quot;&quot;
+    def __init__(self):
+        super(LinkMessage, self).__init__()
+        self.Title = u&apos;&apos;
+        self.Description = u&apos;&apos;
+        self.Url = u&apos;&apos;
+
+    def getTitle(self):
+        return self.Title
+
+    def setTitle(self, title):
+        self.Title = title
+
+    def getDescription(self):
+        return self.Description
+
+    def setDescription(self, description):
+        self.Description = description
+
+    def getUrl(self):
+        return self.Url
+
+    def setUrl(self, url):
+        self.Url = url
+</code></pre><p>这里有一个BaseMessage作为消息基类，包含了所有消息类型共有的成员，不同的消息类型作为子类，添加自己的成员，代码也很简单。</p>
+<hr>
+<p>###封装事件类wechatEvent.py</p>
+<pre><code># -*- coding:utf-8 -*-
+&quot;&quot;&quot;
+# Author: Pegasus Wang (pegasuswang@qq.com, http://ningning.today)
+# Created Time : Wed Feb 18 18:29:06 2015
+
+# File Name: wechatEvent.py
+# Description:
+
+# :copyright: (c) 2015 by Pegasus Wang.
+# :license: MIT, see LICENSE for more details.
+&quot;&quot;&quot;
+
+
+class BaseEvent(object):
+    &quot;&quot;&quot;base event class&quot;&quot;&quot;
+    def __init__(self):
+        self.ToUserName = u&apos;&apos;
+        self.FromUserName = u&apos;&apos;
+        self.CreateTime = 0L
+        self.MsgType = u&apos;&apos;
+        self.Event = u&apos;&apos;
+
+    def getToUserName(self):
+        return self.ToUserName
+
+    def setToUserName(self, toUserName):
+        self.ToUserName = toUserName
+
+    def getFromUserName(self):
+        return self.FromUserName
+
+    def setFromUserName(self, fromUserName):
+        self.FromUserName = fromUserName
+
+    def getCreateTime(self):
+        return self.CreateTime
+
+    def setCreateTime(self, createTime):
+        self.CreateTime = createTime
+
+    def getMsgType(self):
+        return self.MsgType
+
+    def setMsgType(self, msgType):
+        self.MsgType = msgType
+
+    def getEvent(self):
+        return self.Event
+
+    def setMsgId(self, event):
+        self.Event = event
+
+
+class SubscribeEvent(BaseEvent):
+    &quot;&quot;&quot;subscribe event class&quot;&quot;&quot;
+    def __init__(self):
+        super(SubscribeEvent, self).__init__()
+
+
+class QRCodeEvent(BaseEvent):
+    &quot;&quot;&quot;scan QR code event class&quot;&quot;&quot;
+    def __init__(self):
+        super(QRCodeEvent, self).__init__()
+        self.EventKey = u&apos;&apos;
+        self.Ticket = u&apos;&apos;
+
+    def getEventKey(self):
+        return self.EventKey
+
+    def setEventKey(self, eventKey):
+        self.EventKey = eventKey
+
+    def getTicket(self):
+        return self.Ticket
+
+    def setTicket(self, ticket):
+        self.Ticket = ticket
+
+
+class LocationEvent(BaseEvent):
+    &quot;&quot;&quot;upload location event class&quot;&quot;&quot;
+    def __init__(self):
+        super(LocationEvent, self).__init__()
+        self.Latitude = u&apos;&apos;
+        self.Longitude = u&apos;&apos;
+        self.Precision = u&apos;&apos;
+
+    def getLatitude(self):
+        return self.Latitude
+
+    def setLatitude(self, latitude):
+        self.Latitude = latitude
+
+    def getLongitude(self):
+        return self.Longitude
+
+    def setLongitude(self, longtitude):
+        self.Longitude = longtitude
+
+    def getPrecision(self):
+        return self.Precision
+
+    def setPrecision(self, precision):
+        self.Precision = precision
+
+
+class MenuEvent(BaseEvent):
+    &quot;&quot;&quot;customize menu class&quot;&quot;&quot;
+    def __init__(self):
+        super(MenuEvent, self).__init__()
+        self.EventKey = u&apos;&apos;
+
+    def getEventKey(self):
+        return self.EventKey
+
+    def setEventKey(self, eventKey):
+        self.EventKey = eventKey
+</code></pre><p>一个事件基类，子类是不同的事件类型。</p>
+<hr>
+<p>###封装响应消息类wechatReply.py</p>
+<pre><code># -*- coding:utf-8 -*-
+&quot;&quot;&quot;
+# Author: Pegasus Wang (pegasuswang@qq.com, http://ningning.today)
+# Created Time : Wed Feb 18 18:58:39 2015
+
+# File Name: wechatReply.py
+# Description:
+
+# :copyright: (c) 2015 by Pegasus Wang.
+# :license: MIT, see LICENSE for more details.
+&quot;&quot;&quot;
+
+
+class BaseReply(object):
+    &quot;&quot;&quot;base reply message class&quot;&quot;&quot;
+    def __init__(self):
+        self.ToUserName = u&apos;&apos;
+        self.FromUserName = u&apos;&apos;
+        self.CreateTime = 0L
+        self.MsgType = u&apos;&apos;
+
+    def getToUserName(self):
+        return self.ToUserName
+
+    def setToUserName(self, toUserName):
+        self.ToUserName = toUserName
+
+    def getFromUserName(self):
+        return self.FromUserName
+
+    def setFromUserName(self, fromUserName):
+        self.FromUserName = fromUserName
+
+    def getCreateTime(self):
+        return self.CreateTime
+
+    def setCreateTime(self, createTime):
+        self.CreateTime = createTime
+
+    def getMsgType(self):
+        return self.MsgType
+
+    def setMsgType(self, msgType):
+        self.MsgType = msgType
+
+
+class TextReply(BaseReply):
+    &quot;&quot;&quot;text reply message class&quot;&quot;&quot;
+    def __init__(self):
+        super(TextReply, self).__init__()
+        self.Content = u&apos;&apos;
+
+    def getContent(self):
+        return self.Content
+
+    def setContent(self, content):
+        self.Content = content
+
+
+class Image(object):
+    &quot;&quot;&quot;image class&quot;&quot;&quot;
+    def __init__(self):
+        self.MediaId = u&apos;&apos;
+
+    def getMediaId(self):
+        return self.MediaId
+
+    def setMediaId(self, mediaId):
+        self.MediaId = mediaId
+
+
+class ImageReply(BaseReply):
+    &quot;&quot;&quot;image reply message class&quot;&quot;&quot;
+    def __init__(self):
+        super(ImageReply, self).__init__()
+        self.Image = Image()
+
+    def getImage(self):
+        return self.Image
+
+    def setImage(self, image):
+        self.Image = image
+
+
+class Voice(object):
+    &quot;&quot;&quot;voice class&quot;&quot;&quot;
+    def __init__(self):
+        self.MediaId = u&apos;&apos;
+
+    def getMediaId(self):
+        return self.MediaId
+
+    def setMediaId(self, mediaId):
+        self.MediaId = mediaId
+
+
+class VoiceReply(BaseReply):
+    &quot;&quot;&quot;voice reply message class&quot;&quot;&quot;
+    def __init__(self):
+        super(VoiceReply, self).__init__()
+        self.Voice = Voice()
+
+    def getVoice(self):
+        return self.Voice
+
+    def setVoice(self, voice):
+        self.Voice = voice
+
+
+class Video(object):
+    &quot;&quot;&quot;video class&quot;&quot;&quot;
+    def __init__(self):
+        self.MediaId = u&apos;&apos;
+        self.ThumbMediaId = u&apos;&apos;
+
+    def getMediaId(self):
+        return self.MediaId
+
+    def setMediaId(self, mediaId):
+        self.MediaId = mediaId
+
+    def getThumbMediaId(self):
+        return self.ThumbMediaId
+
+    def setThumbMediaId(self, thumbMediaId):
+        self.ThumbMediaId = thumbMediaId
+
+
+class VideoReply(BaseReply):
+    &quot;&quot;&quot;video reply messag class&quot;&quot;&quot;
+    def __init__(self):
+        super(VideoReply, self).__init__()
+        self.Video = Video()
+
+    def getVideo(self):
+        return self.Video
+
+    def setVideo(self, video):
+        self.Video = video
+
+
+class Music(object):
+    &quot;&quot;&quot;music class&quot;&quot;&quot;
+    def __init__(self):
+        self.Title = u&apos;&apos;
+        self.Description = u&apos;&apos;
+        self.MusicUrl = u&apos;&apos;
+        self.HQMusicUrl = u&apos;&apos;
+        self.ThumbMediaId = u&apos;&apos;
+
+    def getTitle(self):
+        return self.Title
+
+    def setTitle(self, title):
+        self.Title = title
+
+    def getDescription(self):
+        return self.Description
+
+    def setDescription(self, description):
+        self.Description = description
+
+    def getMusicUrl(self):
+        return self.MusicUrl
+
+    def setMusicUrl(self, musicUrl):
+        self.MusicUrl = musicUrl
+
+    def getHQMusicUrl(self):
+        return self.HQMusicUrl
+
+    def setHQMusicUrl(self, musicUrl):
+        self.HQMusicUrl = musicUrl
+
+    def getThumbMediaId(self):
+        return self.ThumbMediaId
+
+    def setThumbMediaId(self, thumbMediaId):
+        self.ThumbMediaId = thumbMediaId
+
+
+class MusicReply(BaseReply):
+    &quot;&quot;&quot;music reply message class&quot;&quot;&quot;
+    def __init__(self):
+        super(MusicReply, self).__init__()
+        self.Music = Music()
+
+    def getMusic(self):
+        return self.Music
+
+    def setMusic(self, music):
+        self.Music = music
+
+
+class Article(object):
+    &quot;&quot;&quot;article class&quot;&quot;&quot;
+    def __init__(self):
+        self.Title = u&apos;&apos;
+        self.Description = u&apos;&apos;
+        self.PicUrl = u&apos;&apos;
+        self.Url = u&apos;&apos;
+
+    def getTitle(self):
+        return self.Title
+
+    def setTitle(self, title):
+        self.Title = title
+
+    def getDescription(self):
+        return self.Description
+
+    def setDescription(self, description):
+        self.Description = description
+
+    def getPicUrl(self):
+        return self.PicUrl
+
+    def setPicUrl(self, picUrl):
+        self.PicUrl = picUrl
+
+    def getUrl(self):
+        return self.Url
+
+    def setUrl(self, url):
+        self.Url = url
+
+
+class NewsReply(BaseReply):
+    &quot;&quot;&quot;news(image and text) reply message class&quot;&quot;&quot;
+    def __init__(self):
+        super(NewsReply, self).__init__()
+        self.ArticleCount = 0
+        self.Articles = []
+
+    def getArticleCount(self):
+        return self.ArticleCount
+
+    def setArticleCount(self, articleCount):
+        self.ArticleCount = articleCount
+
+    def getArticles(self):
+        return self.Articles
+
+    def setArticles(self, articles):
+        self.Articles = articles
+</code></pre><p>这里也有一个响应消息基类，子类是各种消息类型。参考<a href="http://mp.weixin.qq.com/wiki/14/89b871b5466b19b3efa4ada8e577d45e.html" target="_blank" rel="noopener">微信开发文档：被动回复用户消息</a></p>
+<hr>
+<p>消息类型封装就完成了，代码很简单，消息格式需要参考下微信开发文档来定义适当的类。接下来是编写消息处理类。</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/02/21/python/django-python微信开发之三－消息处理类/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/02/21/python/django-python微信开发之一－准备工作/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

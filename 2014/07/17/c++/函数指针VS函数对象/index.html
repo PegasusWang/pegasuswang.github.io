@@ -1,0 +1,287 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>函数指针VS函数对象 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="函数指针VS函数对象"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2014-07-17T15:32:55.000Z"><a href="/2014/07/17/c++/函数指针VS函数对象/">周四, 7月 17 2014, 11:32:55 晚上</a></time>
+
+  
+    <h1 class="title">函数指针VS函数对象</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/c/">c++</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/c/">c++</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p><strong>函数指针</strong>：指向函数的指针变量。本身首先应是指针变量，只不过该指针变量指向函数。这正如用指针变量可指向整型变量、字符型、数组一样，这里是指向函数。如前所述，C在编译时，每一个函数都有一个入口地址，该入口地址就是函数指针所指向的地址。有了指向函数的指针变量后，可用该指针变量调用函数，就如同用指针变量可引用其他类型变量一样，在这些概念上是一致的。<br><a id="more"></a><br>函数指针有两个用途：调用函数和做函数的参数。<br>函数指针的声明方法为：<br>数据类型标志符 (指针变量名) (形参列表);<br>注1：“函数类型”说明函数的返回类型，由于“()”的优先级高于”<em>“,所以指针变量名外的括号必不可少，后面的“形参列表”表示指针变量指向的函数所带的参数列表。例如：<br>`int func(int x); /</em> 声明一个函数 <em>/<code></code>int (</em>f) (int x); /<em> 声明一个函数指针 </em>/<code></code>f=func; /<em> 将func函数的首地址赋给指针f </em>/`<br>赋值时函数func不带括号，也不带参数，由于func代表函数的首地址，因此经过赋值以后，指针f就指向函数func(x)的代码的首地址<br>注2：函数括号中的形参可有可无，视情况而定。<br>注意，指向函数的指针变量没有++和—运算，用时要小心</p>
+<p>#####1.定义函数指针类型：</p>
+<p><code>typedef int (*fun_ptr)(int,int);</code></p>
+<p>######2.申明变量，赋值：<br>fun_ptr max_func=max;<br>也就是说，赋给函数指针的函数应该和函数指针所指的函数原型是一致的。<br>例二、</p>
+<pre><code> 　#include&lt;stdio.h&gt;
+　　void FileFunc()
+　　{
+　　    printf(&quot;FileFunc\n&quot;);
+　　}
+　　void EditFunc()
+　　{
+　　    printf(&quot;EditFunc\n&quot;);
+　　}
+　　int main()
+　　{
+　　    typedef void (*funcp)();
+　　    funcp=FileFunc;
+　　    (*funcp)();
+　　    funcp=EditFunc;
+　　    (*funcp)();
+　　}
+</code></pre><p>#####指针函数和函数指针的区别　　</p>
+<p>1,这两个概念都是简称，指针函数是指带指针的函数，即本质是一个函数。我们知道函数都有返回类型（如果不返回值，则为无值型），只不过指针函数返回类型是某一类型的指针。<br>　　其定义格式如下所示：<br>　　返回类型标识符 <em>返回名称（形式参数表）<br>　　{ 函数体 }<br>事实上，每一个函数，即使它不带有返回某种类型的指针，它本身都有一个入口地址，该地址相当于一个指针。比如函数返回一个整型值，实际上也相当于返回一个指针变量的值，不过这时的变量是函数本身而已，而整个函数相当于一个“变量”。<br>关于函数指针数组的定义　　关于函数指针数组的定义方法，有两种：一种是标准的方法；一种是蒙骗法。<br>　　第一种，标准方法：<br>　　{<br>　　分析：函数指针数组是一个其元素是函数指针的数组。那么也就是说，此数据结构是是一个数组，且其元素是一个指向函数入口地址的指针。<br>　　根据分析：首先说明是一个数组：数组名[]<br>　　其次，要说明其元素的数据类型指针:</em>数组名[].<br>　　再次，要明确这每一个数组元素是指向函数入口地址的指针：函数返回值类型 (<em>数组名[])().请注意，这里为什么要把“</em>数组名[]”用括号扩起来呢？因为圆括号和数组说明符的优先级是等同的，如果不用圆括号把指针数组说明表达式扩起来，根据圆括号和方括号的结合方向，那么 *数组名 说明的是什么呢？是元素返回值类型为指针的函数数组。有这样的函数数祖吗？不知道。所以必须括起来，以保证数组的每一个元素是指针。</p>
+<hr>
+<p><strong>函数对象：</strong><br>尽管函数指针被广泛用于实现函数回调，但C++还提供了一个重要的实现回调函数的方法，那就是函数对象。函数对象（也称“算符”）是重载了“()”操作符的普通类对象。因此从语法上讲，函数对象与普通的函数行为类似。<br>用函数对象代替函数指针有几个优点，首先，因为对象可以在内部修改而不用改动外部接口，因此设计更灵活，更富有弹性。函数对象也具备有存储先前调用结果的数据成员。在使用普通函数时需要将先前调用的结果存储在全程或者本地静态变量中，但是全程或者本地静态变量有某些我们不愿意看到的缺陷。<br>其次，在函数对象中编译器能实现内联调用，从而更进一步增强了性能。这在函数指针中几乎是不可能实现的。<br>下面举例说明如何定义和使用函数对象。首先，声明一个普通的类并重载“()”操作符:</p>
+<pre><code>class Negate 
+{
+    public: 
+    int operator() (int n) { return -n;} 
+};
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">重载操作语句中，记住第一个圆括弧总是空的,因为它代表重载的操作符名；第二个圆括弧是参数列表。一般在重载操作符时，参数数量是固定的，而重载“()”操作符时有所不同，它可以有任意多个参数。因为在Negate中内建的操作是一元的（只有一个操作数），重载的“()”操作符也只有一个参数。返回类型与参数类型相同-本例中为int。函数返回与参数符号相反的整数。使用函数对象我们现在定义一个叫Callback()的函数来测试函数对象。Callback()有两个参数：一个为int一个是对类Negate的引用。Callback()将函数对象neg作为一个普通的函数名:</span><br><span class="line"></span><br><span class="line">```include &lt;iostream&gt;using std::cout;void Callback(int n, Negate &amp; neg) &#123;	int val = neg(n); //调用重载的操作符“()” 	cout &lt;&lt; val;&#125;```不要的代码中，注意neg是对象，而不是函数。编译器将语句`int val = neg(n);`转化为`int val = neg.operator()(n);`通常，函数对象不定义构造函数和析构函数。因此，在创建和销毁过程中就不会发生任何问题。前面曾提到过，编译器能内联重载的操作符代码，所以就避免了与函数调用相关的运行时问题。为了完成上面个例子，我们用主函数main()实现Callback()的参数传递:</span><br><span class="line">```int main() &#123;	Callback(5, Negate() ); //输出 -5&#125;</span><br></pre></td></tr></table></figure>
+
+
+本例传递整数5和一个临时Negate对象到Callback()，然后程序输出-5。
+模板函数对象
+从上面的例子中可以看出，其数据类型被限制在int，而通用性是函数对象的优势之一，如何创建具有通用性的函数对象呢？方法是使用模板，也就是将重载的操作符“（）”定义为类成员模板，以便函数对象适用于任何数据类型：如double，_int64或char:
+
+</code></pre><p>class GenericNegate<br>{<br>    public:<br>    template <class t=""> T operator() (T t) const {return -t;}<br>};<br>int main()<br>{<br>    GenericNegate negate;<br>    cout&lt;&lt; negate(5.3333); // double<br>    cout&lt;&lt; negate(10000000000i64); // __int64<br>}</class></p>
+<pre><code>如果用普通的回调函数实现上述的灵活性是相当困难的。
+标准库中函数对象
+C++标准库定义了几个有用的函数对象，它们可以被放到STL算法中。例如，sort()算法以
+判断对象（predicate object）作为其第三个参数。判断对象是一个返回Boolean型结果的
+模板化的函数对象。可以向sort()传递greater&lt;&gt;或者less&lt;&gt;来强行实现排序的升序或降序:
+
+</code></pre><p>#include <functional> // for greater&lt;&gt; and less&lt;&gt;</functional></p>
+<p>#include <algorithm> //for sort() </algorithm></p>
+<p>#include <vector><br>using namespace std;<br>int main()<br>{<br>vector <int> vi;<br>//..填充向量<br>sort(vi.begin(), vi.end(), greater<int>() );//降序( descending )<br>sort(vi.begin(), vi.end(), less<int>() ); //升序 ( ascending )<br>}</int></int></int></vector></p>
+<pre><code>考虑使用函数对象代替函数作算法的参数
+一个关于用高级语言编程的抱怨是抽象层次越高，产生的代码效率就越低。事实上，Alexander Stepanov（STL的发明者）有一次作了一组小测试，试图测量出相对C，C++的“抽象惩罚”。其中，测试结果显示基本上操作包含一个double的类产生的代码效率比对应的直接操作一个double的代码低。因此你可能会奇怪地发现把STL函数对象——化装成函数的对象——传递给算法所产生的代码一般比传递真的函数高效。
+比如，假设你需要以降序排序一个double的vector。最直接的STL方式是通过sort算法和greater类型的函数对象：
+vector v;
+…
+sort(v.begin(), v.end(), greater());
+如果你注意了抽象惩罚，你可能决定避开函数对象而使用真的函数，一个不光是真的，而且是内联的函数：
+
+</code></pre><p>inline<br>bool doubleGreater(double d1, double d2)<br>{<br>return dl &gt; d2;<br>}<br>…<br>sort(v.begin(), v.end(), doubleGreater);</p>
+<pre><code>有趣的是，如果你比较了两个sort调用（一个使用greater，一个使用doubleGreater）的性能，你基本上可以明确地知道使用greater的那个更快。实际来说，我在四个不同的STL平台上测量了对一百万个double的vector的两个sort调用，每个都设为针对速度优化，使用greater的版本每次都比较快。最差的情况下，快50%，最好的快了160%。抽象惩罚真多啊。
+这个行为的解释很简单：内联。如果一个函数对象的operator()函数被声明为内联（不管显式地通过inline或者隐式地通过定义在它的类定义中），编译器就可以获得那个函数的函数体，而且大部分编译器喜欢在调用算法的模板实例化时内联那个函数。在上面的例子中，greater::operator()是一个内联函数，所以编译器在实例化sort时内联展开它。结果，sort没有包含一次函数调用，而且编译器可以对这个没有调用操作的代码进行其他情况下不经常进行的优化。（内联和编译器优化之间交互的讨论，参见《Effective C++》的条款33和Bulka与Mayhew的《Efficient C++》[10]的第8-10章。)
+使用doubleGreater调用sort的情况则不同。要知道有什么不同，我们必须知道不可能把一个函数作为参数传给另一个函数。当我们试图把一个函数作为参数时，编译器默默地把函数转化为一个指向那个函数的指针，而那个指针是我们真正传递的。因此，这个调用
+`sort(v.begin(), v.end(), doubleGreater);`不是真的把doubleGreater传给sort，它传了一个doubleGreater的指针。当sort模板实例化时，这是产生函数的声明:
+
+</code></pre><p>void sort(vector::iterator first, // 区间起点<br>vector::iterator last, // 区间终点<br>bool (*comp)(double, double)); // 比较函数</p>
+<pre><code>因为comp是一个指向函数的指针，每次在sort中用到时，编译器产生一个间接函数调用——通过指针调用。大部分编译器不会试图去内联通过函数指针调用的函数，甚至，正如本例中，那个函数已经声明为inline而且这个优化看起来很直接。为什么不？可能因为编译器厂商从来没有觉得值得实现这个优化。你得稍微同情一下编译器厂商。他们有很多需求，而他们不能做每一件事。你的需要并不能让他们实现那个优化。
+把函数指针作为参数会抑制内联的事实解释了一个长期使用C的程序员经常发现却难以相信的现象：在速度上，C++的sort实际上总是使C的qsort感到窘迫。当然，C++有函数、实例化的类模板和看起来很有趣的operator()函数需要调用，而C只是进行简单的函数调用，但所有的C++“开销”都在编译期被吸收。在运行期，sort内联调用它的比较函数（假设比较函数已经被声明为inline而且它的函数体在编译期可以得到）而qsort通过一个指针调用它的比较函数。结果是sort运行得更快。在我的测试的一百万个double的vector上，它快670%，但不要光相信我的话，亲自试试。很容易证实当比较函数对象和真的函数作为算法的参数时，那是一个纯红利。
+还有另一个使用函数对象代替函数作为算法参数的理由，而它与效率无关。它涉及到让你的程序可以编译。对于任何理由，STL平台经常完全拒绝有效代码，即使编译器或库或两者都没问题。比如，一个广泛使用的STL平台拒绝了下面（有效的）代码来从cout打印出set中每个字符串的长度：
+
+</code></pre><p>set<string> s;<br>…<br>transform(s.begin(), s.end(),<br>    ostream_iterator<a href="string::size_type" target="_blank" rel="noopener">string::size_type</a>(cout, “\n”),<br>    mem_fun_ref(&amp;string::size));</string></p>
+<pre><code>这个问题的原因是这个特定的STL平台在处理const成员函数时有bug（比如string::size）。一个变通方法是改用函数对象:
+
+</code></pre><p>struct StringSize:<br>public unary_function&lt;string, string::size_type&gt;{ // 参见条款40<br>string::size_type operator()(const string&amp; s) const<br>{<br>   return s.size();<br>}<br>};<br>transform(s.begin(), s.end(),<br>   ostream_iterator<a href="string::size_type" target="_blank" rel="noopener">string::size_type</a>(cout, “\n”),<br>   StringSize());</p>
+<pre><code>   解决这问题的还有其他变通办法，但这个不仅在我知道的每个STL平台都可以编译。而且它简化了string::size的内联调用，那是几乎不会在上面把mem_fun_ref(&amp;string::size)传给transform的代码中发生的事情。换句话说，仿函数类StringSize的创造不仅避开了编译器一致性问题，而且可能会带来性能提升。
+另一个用函数对象代替函数的原因是它们可以帮助你避免细微的语言陷阱。有时候，看起来合理代码被编译器由于合法性的原因——但很模糊——而拒绝。有很多这样的情况，比如，当一个函数模板实例化的名字不等价于函数名。这是一种这样的情况:
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">template&lt;typename FPType&gt;      // 返回两个FPTypeaverage(FPType val1, FPType val2)    // 浮点数的平均值&#123;	return (val1 + val2) / 2;&#125;template&lt;typename InputIter1,    typename InputIter2&gt;void writeAverages(InputIter1 begin1,    // 把两个序列的     InputIter1 end1,   // 成对的平均值     InputIter2 begin2,   // 写入一个流     ostream&amp; s)&#123;transform(   begin1, end1, begin2,   ostream_iterator&lt;typename iterator_traits   &lt;lnputIter1&gt;::value_type&gt; (s, &quot;\n&quot;),   average&lt;typename iteraror_traits     &lt;InputIter1&gt;::value_type&gt; // 有错？);&#125;</span><br></pre></td></tr></table></figure>
+
+
+很多编译器接受这段代码，但是C++标准倾向于禁止它。理由是理论上有可能存在另一带有一个类型参数的函数模板叫做average。如果有，表达式average::value_type&gt;将是模棱两可的，因为它不清楚将实例化哪个模板。在这个特殊的例子里，不存在模棱两可，但是无论如何，有些编译器会拒绝这段代码，而且那么做是允许的。没有关系。解决这个问题的方法是依靠一个函数对象:
+
+</code></pre><p>template<typename fptype=""><br>struct Average:<br>public binary_function&lt;FPType, FPType, FPType&gt;{   // 参见条款40<br>FPType operator()(FPType val1. FPType val2) const<br>{<br>    return average(val 1 , val2);<br>}<br>template<typename inputiter1,="" typename="" inputiter2=""><br>void writeAverages(lnputIter1 begin1, InputIter1 end1,<br>     InputIter2 begin2, ostream&amp; s)<br>{<br>transform(<br>   begin1, end1, begin2,<br>   ostream_iterator&lt;typename iterator_traits<lnputiter1><br>       ::value_type&gt;(s, “\n”),<br>   Average&lt;typename iterator_traits<inputiter1><br>     ::value_type&gt;()<br>);<br>}</inputiter1></lnputiter1></typename></typename></p>
+<p><code>`</code></p>
+<p>每个编译器都会接受这条修正的代码。而且在transform里调用Average::operator()符合内联的条件，有些事情对于实例化上面的average不成立，因为averate是一个函数模板，不是函数对象。<br>把函数对象作为算法的参数所带来的不仅是巨大的效率提升。在让你的代码可以编译方面，它们也更稳健。当然，真函数很有用，但是当涉及有效的STL编程时，函数对象经常更有用。</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2014/07/25/mylife/开篇-写给自己/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

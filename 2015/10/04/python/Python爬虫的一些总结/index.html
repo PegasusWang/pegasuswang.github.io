@@ -1,0 +1,354 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Python爬虫的一些总结 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Python爬虫的一些总结"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-10-04T08:07:20.000Z"><a href="/2015/10/04/python/Python爬虫的一些总结/">周日, 10月 4 2015, 4:07:20 下午</a></time>
+
+  
+    <h1 class="title">Python爬虫的一些总结</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/爬虫/">爬虫</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>最近写了一些爬虫，总结下遇到过的一些问题.</p>
+<hr>
+<p>###常用库:</p>
+<ul>
+<li>抓取网页: 常用的有requests, urllib.</li>
+<li>解析: BeautifulSoup, lxml, re.</li>
+<li>框架: scrapy, pyspier.</li>
+<li>url去重: bloomfilter</li>
+<li>图片处理: Pillow</li>
+<li>OCR: Google 的 OCR 开源库 tesseract，对应的Python包是pytesser.</li>
+<li>代理: 代理Tor, PySocks</li>
+<li>消息队列: rabbitmq</li>
+</ul>
+<a id="more"></a>
+<hr>
+<p>###如何异步爬取？<br>可以使用grequests库，或者对于简单的爬虫,tornado文档有个demo，稍微改下自己用。<br>一个简单的异步爬虫类：</p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+import time
+from datetime import timedelta
+from tornado import httpclient, gen, ioloop, queues
+import traceback
+
+
+class AsySpider(object):
+    &quot;&quot;&quot;A simple class of asynchronous spider.&quot;&quot;&quot;
+    def __init__(self, urls, concurrency=10, **kwargs):
+        urls.reverse()
+        self.urls = urls
+        self.concurrency = concurrency
+        self._q = queues.Queue()
+        self._fetching = set()
+        self._fetched = set()
+
+    def fetch(self, url, **kwargs):
+        fetch = getattr(httpclient.AsyncHTTPClient(), &apos;fetch&apos;)
+        return fetch(url, **kwargs)
+
+    def handle_html(self, url, html):
+        &quot;&quot;&quot;handle html page&quot;&quot;&quot;
+        print(url)
+
+    def handle_response(self, url, response):
+        if response.code == 200:
+            self.handle_html(url, response.body)
+
+        elif response.code == 599:    # retry
+            self._fetching.remove(url)
+            self._q.put(url)
+
+    @gen.coroutine
+    def get_page(self, url):
+        try:
+            response = yield self.fetch(url)
+            print(&apos;######fetched %s&apos; % url)
+        except Exception as e:
+            print(&apos;Exception: %s %s&apos; % (e, url))
+            raise gen.Return(e)
+        raise gen.Return(response)
+
+    @gen.coroutine
+    def _run(self):
+        @gen.coroutine
+        def fetch_url():
+            current_url = yield self._q.get()
+            try:
+                if current_url in self._fetching:
+                    return
+
+                print(&apos;fetching****** %s&apos; % current_url)
+                self._fetching.add(current_url)
+
+                response = yield self.get_page(current_url)
+                self.handle_response(current_url, response)    # handle reponse
+
+                self._fetched.add(current_url)
+
+                for i in range(self.concurrency):
+                    if self.urls:
+                        yield self._q.put(self.urls.pop())
+
+            finally:
+                self._q.task_done()
+
+        @gen.coroutine
+        def worker():
+            while True:
+                yield fetch_url()
+
+        self._q.put(self.urls.pop())    # add first url
+
+        # Start workers, then wait for the work queue to be empty.
+        for _ in range(self.concurrency):
+            worker()
+
+        yield self._q.join(timeout=timedelta(seconds=300000))
+        assert self._fetching == self._fetched
+
+    def run(self):
+        io_loop = ioloop.IOLoop.current()
+        io_loop.run_sync(self._run)
+
+
+class MySpider(AsySpider):
+
+    def fetch(self, url, **kwargs):
+        &quot;&quot;&quot;重写父类fetch方法可以添加cookies，headers，timeout等信息&quot;&quot;&quot;
+        cookies_str = &quot;PHPSESSID=j1tt66a829idnms56ppb70jri4; pspt=%7B%22id%22%3A%2233153%22%2C%22pswd%22%3A%228835d2c1351d221b4ab016fbf9e8253f%22%2C%22_code%22%3A%22f779dcd011f4e2581c716d1e1b945861%22%7D; key=%E9%87%8D%E5%BA%86%E5%95%84%E6%9C%A8%E9%B8%9F%E7%BD%91%E7%BB%9C%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8; think_language=zh-cn; SERVERID=a66d7d08fa1c8b2e37dbdc6ffff82d9e|1444973193|1444967835; CNZZDATA1254842228=1433864393-1442810831-%7C1444972138&quot;
+        headers = {
+            &apos;User-Agent&apos;: &apos;mozilla/5.0 (compatible; baiduspider/2.0; +http://www.baidu.com/search/spider.html)&apos;,
+            &apos;cookie&apos;: cookies_str
+        }
+        return super(MySpider, self).fetch(
+            url, headers=headers, request_timeout=1
+        )
+
+    def handle_html(self, url, html):
+        print(url, html)
+
+
+def main():
+    urls = []
+    for page in range(1, 100):
+        urls.append(&apos;http://www.baidu.com?page=%s&apos; % page)
+    s = MySpider(urls)
+    s.run()
+
+
+if __name__ == &apos;__main__&apos;:
+    main()
+</code></pre><hr>
+<p>###如何模拟成浏览器?<br>使用requests库可以很方便的给请求加上header，具体可以参考requests的文档。</p>
+<hr>
+<p>###如何提交表单？模拟登录<br>一般是查找html源代码找到form，然后看form提交的地址，就可以直接使用requests的post方法提交数据。<br>另外requests还有个Session模块，使用起来很方便。<br>有些网站如果是需要登录的，我们可以直接把登录后自己的cookies复制下来，直接作为requests的cookies参数传进去。</p>
+<hr>
+<p>###如何模拟成搜索引擎？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 模仿百度蜘蛛</span><br><span class="line"># 模拟成搜索引擎只需要改下header的User-Agent，比如模拟百度爬虫:</span><br><span class="line">headers = &#123;</span><br><span class="line">    &apos;User-Agent&apos;: &apos;Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)&apos;,</span><br><span class="line">&#125;</span><br><span class="line">r = requests.get(url, headers=headers)</span><br></pre></td></tr></table></figure>
+<p>其他常见搜索引擎:<br>Baiduspider:<br><code>Mozilla/5.0 (compatible; Baiduspider/2.0; + http://www.baidu.com/search/spider.html)</code></p>
+<p>Googlebot:<br><code>Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)</code></p>
+<hr>
+<p>###如何抓取手机app的内容？<br>手机内容一般通过发送请求使用json等数据格式通信，所以可以使用抓包软件fiddle等来抓取请求，分析请求来源，之后就可以模拟<br>发送请求抓取数据。抓包也可以使用mitmproxy，一个python开发的强大的代理软件，只需要用命令行启动mitmproxy，之后将手机wifi<br>代理更改成为电脑的ip和mitmproxy启动时指定的端口号，就可以看到app发送的请求了。接下来要做的就是仔细过滤请求，看看需要的<br>信息是通过什么请求发送的，我们就可以直接使用requests手工模拟获取数据了。</p>
+<hr>
+<p>###碰到验证码怎么办?<br>上边提到过一个OCR库Tesseract, 简单的验证码可以使用这个命令行工具搞定.</p>
+<hr>
+<p>###遇到动态生成的内容怎么办？<br>一种方法是打开浏览器的开发者工具，追踪到浏览器发送的请求，然后直接模拟。<br>还有一种方法是Selenium+PhantomJs库，具体可以参考网上的教程或者附录参考书。</p>
+<p>#Ref<br><a href="http://book.douban.com/subject/26284925/" target="_blank" rel="noopener">Web Scraping with Python</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/10/04/python/ubuntu-nginx-supervisor部署tornado/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/09/18/python/python多线程、异步、多进程＋异步爬虫/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

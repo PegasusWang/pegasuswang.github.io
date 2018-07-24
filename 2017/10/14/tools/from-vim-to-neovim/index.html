@@ -1,0 +1,230 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>From Vim To Neovim [视频] | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="From Vim To Neovim [视频]"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2017-10-14T08:22:34.000Z"><a href="/2017/10/14/tools/from-vim-to-neovim/">周六, 10月 14 2017, 4:22:34 下午</a></time>
+
+  
+    <h1 class="title">From Vim To Neovim [视频]</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/tools/">tools</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/vim/">vim</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Think more, type less. Aim for minimalism, fewer states, less mutability, and just enough code for the known, relevant parts of the problem.</p>
+</blockquote>
+<p>最近一直忙着写公司业务代码(大家应该发现知乎可以上传和观看小视频啦^_^)，很久没更新博客了。不过笔者最近从 vim 迁移到了 neovim，花了几个晚上的时间修改配置文件，现在已经可以全面在 neovim 下写 python 了，就简单介绍下 neovim 吧。以前使用 vim7.4 还是有一些比较X疼的地方的，比如复制粘贴问题，大文件卡顿，一些插件会导致 vim 被 freeze 等，切到 neovim 之后使用体验比以前好了很多，没白瞎我几个晚上修改配置（之前自定义了很多快捷键也安装了很多插件）。</p>
+<a id="more"></a>
+<p>之前使用过一段时间的 Pycharm，后来还是不太习惯，又切回了 vim，平常用的是 tmux + vim 工作流。一般我会开多个 tmux session，每个 session 里打开一个项目，多的时候会同时打开很多项目(甚至十来个代码仓库)，每个 session 下会建立多个窗口，一个大窗口用 vim 编辑文件，其他的窗口会分开多个屏幕（tmux panel），一些用来跑测试，一些用来启动 server，一些用来执行 git 命令等。这种工作方式的好处就是可以在本地机器和开发机上实现一致的开发体验(以前团队有直接在服务器写代码的)，并且可以大大减少对鼠标的使用，而且很省资源， 同时打开十几个项目也占不了多少内存，也方便在多项目中快速切换。</p>
+<hr>
+<h2 id="安装-neovim"><a href="#安装-neovim" class="headerlink" title="安装 neovim"></a>安装 neovim</h2><p>官方文档比较详细了，无论你用什么平台都可以，笔者工作之余自己使用的是一台 14 年的低配 mac air（这应该也是我没法用 Pycharm 的一个原因），不过依旧可以在终端里用 vim 撸代码。</p>
+<p><code>brew install neovim</code></p>
+<hr>
+<h2 id="懒人配置"><a href="#懒人配置" class="headerlink" title="懒人配置"></a>懒人配置</h2><p>在网上搜到一个强大到有点变态的 neovim 配置，用一个项目管理整个配置文件，笔者 clone<br>了一份新建个分之然后调教了一下，照着以前的配置改了下，用着比较顺手了(不过已经和原生的 vim 使用起来完全不一样了)。通过插件可以支持任何主流前后端编程语言，当前这个配置支持 python，go和前端 html，css，js 等。</p>
+<p><a href="https://github.com/PegasusWang/vim-config/tree/wnn" target="_blank" rel="noopener">https://github.com/PegasusWang/vim-config/tree/wnn</a></p>
+<p>只需要把这个配置 clone 到 ~/.config/nvim 目录下就好。</p>
+<hr>
+<h2 id="tmux-vim-workflow"><a href="#tmux-vim-workflow" class="headerlink" title="tmux + vim workflow"></a>tmux + vim workflow</h2><p>在我的老 mac 上给大家录制了一个视频（献丑了），有啥好用的工具可以一起交流下。油管上搜 “vim tmux workflow”<br>能看到一些类似的视频。全程都是键盘操作，全部在 terminal 下完成。演示步骤大概如下：</p>
+<ol>
+<li>从 github 上 clone tornado 项目，包含 demos</li>
+<li>新建 tmux session 命名为 tornado</li>
+<li>打开两个 window，其中一个 window 分屏，一个用来跑 server，执行 shell 命令等，一个用来编辑文件。（其实 neovim 支持在 vim 里起 terminal）</li>
+<li>使用 nvim 修改 py 文件。插件 python-mode 集成了 autopep8, pylint, isort 等工具，帮助我们执行格式化、lint、导入包排序等功能。</li>
+<li>在 tmux 中切换 panel 看效果</li>
+</ol>
+<video width="480" height="320" controls="controls"><br>    <source src="http://7ktuty.com1.z0.glb.clouddn.com/neovim_python.mp4" type="video/mp4"><br></video>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2017/11/28/python/tornado-use-gevent-wsgi/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2017/08/05/web/build-python-web-framework/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>ubuntu常用工具和python虚拟环境安装脚本 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="ubuntu常用工具和python虚拟环境安装脚本"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-05-12T13:36:43.000Z"><a href="/2016/05/12/Linux/ubuntu常用工具和python虚拟环境安装脚本/">周四, 5月 12 2016, 9:36:43 晚上</a></time>
+
+  
+    <h1 class="title">ubuntu常用工具和python虚拟环境安装脚本</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/Linux/">Linux</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/ubuntu/">ubuntu</a>, <a href="/tags/python/">python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Make it easy to reuse. If it’s easy to reuse, people will. Create an environment that supports reuse.</p>
+</blockquote>
+<p>经常装ubuntu的环境，每次都要重新把vim，tmux等工具安装上，最近整理了一下安装脚本。地址在这个<a href="https://github.com/PegasusWang/linux_config" target="_blank" rel="noopener">https://github.com/PegasusWang/linux_config</a>。包含了tmux,vim,docker,zsh等开发常用的工具，vim为python做了配置，包含了各种常用功能。</p>
+<a id="more"></a>
+<pre><code>#!/usr/bin/env bash
+
+#for zh-cn utf8 ubuntu14.04
+sudo apt-get update
+sudo apt-get install -y language-pack-zh-hant-base language-pack-zh-hans-base language-pack-zh
+sudo locale-gen zh_CN.UTF-8
+echo &apos;LC_ALL=&quot;zh_CN.UTF-8&quot;&apos; | sudo tee -a /etc/environment
+sudo dpkg-reconfigure locales
+
+#for ubuntu common tools
+sudo apt-get install -y vim curl tmux build-essential zsh git wget ssh make
+sudo apt-get install -y silversearcher-ag
+sudo apt-get install -y gnome-tweak-tool
+sudo apt-get install -y trash-cli
+
+# open terminal in finder
+sudo apt-get install -y nautilus-open-terminal
+nautilus -q
+
+# install zsh
+wget --no-check-certificate https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | sh
+chsh -s /bin/zsh
+cp ./ubuntu_zshrc ~/.zshrc
+
+
+# for docker install ubuntu14.04
+#sudo apt-get update
+#sudo apt-get install -y apt-transport-https ca-certificates
+#sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+#echo &apos;deb https://apt.dockerproject.org/repo ubuntu-trusty main&apos; | sudo tee /etc/apt/sources.list.d/docker.list
+#sudo apt-get update
+#sudo apt-get purge lxc-docker
+#sudo apt-cache policy docker-engine
+#sudo apt-get install -y docker-engine
+#sudo service docker start
+#sudo docker run hello-world
+
+# https://get.daocloud.io
+curl -sSL https://get.daocloud.io/docker | sh
+curl -L https://get.daocloud.io/docker/compose/releases/download/1.7.1/docker-compose-`uname -s`-`uname -m` &gt; /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+
+# for vim
+git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+cp ./ubuntu_vimrc ~/.vimrc
+vim +PluginInstall +qall
+
+
+# modify capslock to ctrl
+# sudo vi /etc/default/keyboard
+echo &apos;XKBOPTIONS=&quot;ctrl:nocaps&quot;&apos; | sudo tee -a /etc/default/keyboard
+sudo dpkg-reconfigure keyboard-configuration
+
+
+# restart
+sudo reboot -h 0
+
+# if you want to use terminal solarized color
+# https://github.com/Anthony25/gnome-terminal-colors-solarized
+
+
+# install nvm and nodejs
+curl https://raw.githubusercontent.com/creationix/nvm/v0.25.0/install.sh | bash
+echo &apos;registry =https://registry.npm.taobao.org&apos; &gt; ~/.npmrc
+</code></pre><p>还有一个python虚拟环境的安装，为了避免各种依赖问题，从docker hub的python镜像里边抠出来需要安装的各种依赖，基本上不会再碰到pip各种安装失败的问题。python虚拟环境使用pyenv。注意用source执行这个脚本。你可以按需修改，我在虚拟机测试成功，省了不少事情。</p>
+<pre><code>#!/usr/bin/env bash
+
+# !!!note: use &quot;source py_install.sh&quot; instead of ./py_install.sh
+# pyenv need
+sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev \
+    libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev
+
+
+sudo apt-get install -y build-essential libssl-dev libevent-dev libjpeg-dev libxml2-dev libxslt-dev build-dep libpq-dev
+sudo apt-get install -y python-pip
+sudo apt-get install -y python-distribute
+sudo apt-get install -y python-dev
+sudo apt-get install -y ipython
+sudo apt-get install -y zlib1g-dev
+sudo apt-get install -y libudev-dev
+sudo apt-get install -y libffi-dev   # for brycpt
+
+# https://github.com/docker-library/buildpack-deps/blob/e7534be05255522954f50542ebf9c5f06485838d/jessie/Dockerfile
+sudo apt-get install -y --no-install-recommends \
+        autoconf \
+        automake \
+        bzip2 \
+        file \
+        g++ \
+        gcc \
+        imagemagick \
+        libbz2-dev \
+        libc6-dev \
+        libcurl4-openssl-dev \
+        libdb-dev \
+        libevent-dev \
+        libffi-dev \
+        libgeoip-dev \
+        libglib2.0-dev \
+        libjpeg-dev \
+        liblzma-dev \
+        libmagickcore-dev \
+        libmagickwand-dev \
+        libmysqlclient-dev \
+        libncurses-dev \
+        libpng-dev \
+        libpq-dev \
+        libreadline-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        libtool \
+        libwebp-dev \
+        libxml2-dev \
+        libxslt-dev \
+        libyaml-dev \
+        make \
+        patch \
+        xz-utils \
+        zlib1g-dev \
+
+
+
+# https://github.com/yyuu/pyenv
+curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
+cp ./ubuntu_zshenv ~/.zshenv
+alias pyenv=&quot;~/.pyenv/bin/pyenv&quot;
+#exec &quot;$SHELL&quot;
+pyenv install 2.7.11
+pyenv install 3.5.0
+
+# https://github.com/yyuu/pyenv-virtualenv
+pyenv virtualenv 2.7.11 pyenv_2.7.11
+pyenv virtualenv 3.5.0 pyenv_3.5.0
+
+mkdir -p ~/project/pyenv_2.7.11
+mkdir -p ~/project/pyenv_3.5.0
+
+exit
+</code></pre><p>嗯，具体的可以参考github目录，包括zshrc配置和vimrc的配置。主要是针对python开发环境，还有前端的coffee和js等。vim有一些很棒的插件可以在vimawesome这个网站找到，我把排名前几的都安装了，确实方便不少。</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/05/12/python/用docker-compose构建flask应用/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/04/11/python/python-web入门一年/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

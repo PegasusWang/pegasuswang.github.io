@@ -1,0 +1,326 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Python如何用协程模拟线程,tornado爬虫示例 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Python如何用协程模拟线程,tornado爬虫示例"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-12-25T03:02:04.000Z"><a href="/2015/12/25/python/Python如何用协程模拟线程/">周五, 12月 25 2015, 11:02:04 上午</a></time>
+
+  
+    <h1 class="title">Python如何用协程模拟线程,tornado爬虫示例</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p><a href="http://pyhome.org/python-coroutine-simulate-thread/" target="_blank" rel="noopener">Python如何用协程模拟线程</a><br>之前贴过一个tornado改写的爬虫示例<a href="http://pyhome.org/jb51-spider-python/" target="_blank" rel="noopener">脚本之家全站文章爬虫</a>，可能有些python初学者看得有点头晕。其实笔者学python也不久，协程一直没太能理解，从tornado示例改写成这个爬虫类的时候碰到了很多问题，最不能理解的就是为什么那个异步爬虫可以模拟出并发来。这次又重新回顾了一下，加深了理解。下边就解释一下。之所以使用异步爬虫而不是多线程爬虫，是因为线程开销比较大，开多了线程会导致切换变慢，而且一般线程占用资源也比较多，虽然多线程处理IO密集型任务还是可以提升很多效率的，但是处理网络请求的时候还是倾向于用异步机制。<br><a id="more"></a></p>
+<p>###协程模拟线程的例子<br>先看一个简单的例子，来自《Python Cookbook》，这本书会在<a href="http://pyhome.org/tag/book/" target="_blank" rel="noopener">书籍</a>里分享。</p>
+<pre><code>#!/usr/bin/env python3
+
+def countdown(n):
+    while n &gt; 0:
+        print(&apos;T-minus&apos;, n)
+        yield
+        n -= 1
+    print(&quot;Blastoff!&quot;)
+
+
+def countup(n):
+    x = 0
+    while x &lt; n:
+        print(&apos;Counting up&apos;, x)
+        yield
+        x += 1
+
+from collections import deque
+
+class TaskScheduler:
+    def __init__(self):
+        self._task_queue = deque()
+
+    def new_task(self, task):
+        &quot;&quot;&quot;Admit a newly started task to the scheduler&quot;&quot;&quot;
+        self._task_queue.append(task)
+
+    def run(self):
+        &quot;&quot;&quot;run until there are no more tasks&quot;&quot;&quot;
+        while self._task_queue:
+            task = self._task_queue.popleft()
+            try:
+                # Run until the next yield statement
+                next(task)
+                self._task_queue.append(task)
+            except StopIteration:
+                # Generator is no longer executing
+                pass
+
+
+def main():
+    sched = TaskScheduler()
+    sched.new_task(countdown(10))
+    sched.new_task(countdown(5))
+    sched.new_task(countup(15))
+    sched.run()
+
+
+if __name__ == &apos;__main__&apos;:
+    main()
+</code></pre><p>这里只有两个协程和一个调度类，执行这段代码以后，有如下输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">(&apos;T-minus&apos;, 10)</span><br><span class="line">(&apos;T-minus&apos;, 5)</span><br><span class="line">(&apos;Counting up&apos;, 0)</span><br><span class="line">(&apos;T-minus&apos;, 9)</span><br><span class="line">(&apos;T-minus&apos;, 4)</span><br><span class="line">(&apos;Counting up&apos;, 1)</span><br><span class="line">(&apos;T-minus&apos;, 8)</span><br><span class="line">(&apos;T-minus&apos;, 3)</span><br><span class="line">(&apos;Counting up&apos;, 2)</span><br><span class="line">(&apos;T-minus&apos;, 7)</span><br><span class="line">(&apos;T-minus&apos;, 2)</span><br><span class="line">(&apos;Counting up&apos;, 3)</span><br><span class="line">(&apos;T-minus&apos;, 6)</span><br><span class="line">(&apos;T-minus&apos;, 1)</span><br><span class="line">(&apos;Counting up&apos;, 4)</span><br><span class="line">(&apos;T-minus&apos;, 5)</span><br><span class="line">Blastoff!</span><br><span class="line">(&apos;Counting up&apos;, 5)</span><br><span class="line">(&apos;T-minus&apos;, 4)</span><br><span class="line">(&apos;Counting up&apos;, 6)</span><br><span class="line">(&apos;T-minus&apos;, 3)</span><br><span class="line">(&apos;Counting up&apos;, 7)</span><br><span class="line">(&apos;T-minus&apos;, 2)</span><br><span class="line">(&apos;Counting up&apos;, 8)</span><br><span class="line">(&apos;T-minus&apos;, 1)</span><br><span class="line">(&apos;Counting up&apos;, 9)</span><br><span class="line">Blastoff!</span><br><span class="line">(&apos;Counting up&apos;, 10)</span><br><span class="line">(&apos;Counting up&apos;, 11)</span><br><span class="line">(&apos;Counting up&apos;, 12)</span><br><span class="line">(&apos;Counting up&apos;, 13)</span><br><span class="line">(&apos;Counting up&apos;, 14)</span><br></pre></td></tr></table></figure>
+<p>看起来是不是很像开了三个线程在并发执行的结果，但实际上却是一个线程。这里没有使用系统线程，而是用协程来模拟线程，又叫做用户级线程或者绿色线程。解释器遇到yield会挂起执行，在任务调度器类里TaskScheduler用队列进行任务切换，就模拟出了线程的效果。可见，用协程模拟线程主要在于如何调度和驱动这些coroutine的执行。</p>
+<p>###怎么用tornado写一个高性能异步爬虫<br>之前写的那个小爬虫用来处理10万级以下的页面完全没有太大压力，现在就来一步一步试试怎么写出来。<br>先来看怎么用tornado写抓一个网页的例子:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/env python</span><br><span class="line"># -*- coding:utf-8 -*-</span><br><span class="line"></span><br><span class="line">from tornado import gen</span><br><span class="line">import tornado.httpclient</span><br><span class="line">import tornado.ioloop</span><br><span class="line"></span><br><span class="line">@gen.coroutine</span><br><span class="line">def main():</span><br><span class="line">    http_client = tornado.httpclient.AsyncHTTPClient()</span><br><span class="line">    response = yield http_client.fetch(&apos;http://httpbin.org/get&apos;)</span><br><span class="line">    print(response.body)</span><br><span class="line"></span><br><span class="line">tornado.ioloop.IOLoop.current().run_sync(main)</span><br></pre></td></tr></table></figure>
+<p>当然你也可以试试python3.5的async/await语法。写成下边这样子:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/env python3.5</span><br><span class="line"># -*- coding:utf-8 -*-</span><br><span class="line"></span><br><span class="line">from tornado import gen</span><br><span class="line">import tornado.httpclient</span><br><span class="line">import tornado.ioloop</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">async def main():</span><br><span class="line">    http_client = tornado.httpclient.AsyncHTTPClient()</span><br><span class="line">    response = await http_client.fetch(&apos;http://httpbin.org/get&apos;)</span><br><span class="line">    print(response.body)</span><br><span class="line"></span><br><span class="line">tornado.ioloop.IOLoop.current().run_sync(main)</span><br></pre></td></tr></table></figure>
+<p>这里的run_sync方法启动IOLoop，运行传入的函数，然后结束loop。<br>照着这个思路，如果有很多网页需要抓，我们需要抓取、解析等函数，同样使用异步的httpclient，<br>首先是用异步AsyncHTTPClient发请求得到一个response对象。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">from tornado.httpclient import AsyncHTTPClient</span><br><span class="line">from tornado import ioloop, gen, queues</span><br><span class="line">@gen.coroutine</span><br><span class="line">def fetch(url):</span><br><span class="line">    print(&apos;fetcing&apos;, url)</span><br><span class="line">    response = yield AsyncHTTPClient().fetch(url, raise_error=False)</span><br><span class="line">    raise gen.Return(response)</span><br></pre></td></tr></table></figure></p>
+<p>这里使用了装饰器gen.coroutine，我们知道协程对象需要先send(None)或者用next()方法『启动』一下，，但是经常忘记这么做。所以可以写个装饰器做这个事情来启动协程。下边就是个简单的coroutine实现（只是为了说明coroutine工作原理，和爬虫示例无关）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">def coroutine(func):</span><br><span class="line">    def start(*args, **kwargs):</span><br><span class="line">        rc = func(*args, **kwargs)</span><br><span class="line">        next(rc)</span><br><span class="line">        return rc</span><br><span class="line">    return start</span><br></pre></td></tr></table></figure>
+<p>现在有了一个异步httpclient发请求了，还要干啥呢，当然是拿到请求的结果然后处理了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">from bs4 import BeautifulSoup</span><br><span class="line">_q = queues.Queue()    # tornado.queues</span><br><span class="line"></span><br><span class="line">@gen.coroutine</span><br><span class="line">def run():</span><br><span class="line">    try:</span><br><span class="line">        url = yield _q.get()</span><br><span class="line">        res = yield fetch(url)</span><br><span class="line">        html = res.body</span><br><span class="line">        soup = BeautifulSoup(html)</span><br><span class="line">        print(str(soup.find(&apos;title&apos;)))</span><br><span class="line">    finally:</span><br><span class="line">        _q.task_done()</span><br></pre></td></tr></table></figure>
+<p>这里依旧很简单，这个run方法从队列里拿到url并发送请求（注意这个队列是tornado提供的支持协程的队列），得到页面的html，这里用bs4库抠出来title标签。接下来是一个worker，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@gen.coroutine</span><br><span class="line">def worker():</span><br><span class="line">    while not _q.empty():</span><br><span class="line">        yield run()</span><br></pre></td></tr></table></figure>
+<p>为什么需要一个worker呢，我们需要抓取的过程一直能够进行，直到队列为空为止，这里的worker就是个死循环，一直yield任务。最后写一个main函数执行:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@gen.coroutine</span><br><span class="line">def main():</span><br><span class="line">    for i in range(73000, 73100):</span><br><span class="line">        url = &quot;http://www.jb51.net/article/%d.htm&quot; % i</span><br><span class="line">        _q.put(url)</span><br><span class="line">    for _ in range(10):    # 跑十个，十个worker一直从队列取任务执行</span><br><span class="line">        worker()</span><br><span class="line">    yield _q.join(timeout=timedelta(seconds=30))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">if __name__ == &apos;__main__&apos;:</span><br><span class="line">    ioloop.IOLoop.current().run_sync(main)</span><br></pre></td></tr></table></figure>
+<p>下边是完整代码:</p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+
+from datetime import timedelta
+from bs4 import BeautifulSoup
+from tornado.httpclient import AsyncHTTPClient
+from tornado import ioloop, gen, queues
+
+
+@gen.coroutine
+def fetch(url):
+    print(&apos;fetcing&apos;, url)
+    response = yield AsyncHTTPClient().fetch(url, raise_error=False)
+    raise gen.Return(response)
+
+_q = queues.Queue()
+
+
+@gen.coroutine
+def run():
+    try:
+        url = yield _q.get()
+        res = yield fetch(url)
+        html = res.body
+        soup = BeautifulSoup(html)
+        print(str(soup.find(&apos;title&apos;)))
+    finally:
+        _q.task_done()
+
+
+@gen.coroutine
+def worker():
+    while not _q.empty():
+        yield run()
+
+
+@gen.coroutine
+def main():
+    for i in range(73000, 73100):    # 放100个链接进去
+        url = &quot;http://www.jb51.net/article/%d.htm&quot; % i
+        yield _q.put(url)
+    for _ in range(100):    # 模拟100个线程
+        worker()
+    yield _q.join(timeout=timedelta(seconds=30))
+
+
+if __name__ == &apos;__main__&apos;:
+    ioloop.IOLoop.current().run_sync(main)
+</code></pre><p>不到50行的代码一个速度还不错的小爬虫就出来了。你也可以把『并发数量』10改成100，可以看见几乎一瞬间100个网页就解析出来了，真他喵的强悍。</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/01/18/python/获取拉勾指定地区职位的小脚本/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/12/19/python/pyhome-intruction/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

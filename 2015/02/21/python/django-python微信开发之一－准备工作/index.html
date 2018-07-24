@@ -1,0 +1,220 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>django+python微信开发之一－WeiPython的准备工作 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="django+python微信开发之一－WeiPython的准备工作"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-02-21T01:49:47.000Z"><a href="/2015/02/21/python/django-python微信开发之一－准备工作/">周六, 2月 21 2015, 9:49:47 上午</a></time>
+
+  
+    <h1 class="title">django+python微信开发之一－WeiPython的准备工作</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/django/">django</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>###准备工作<br>放假没事做就折腾了下微信开发，采用的是python2.7＋django1.4框架。如果您对微信开发有兴趣并且是初学者，希望这几篇文章能够帮助你。你可以参考<a href="http://ningning.today/2015/02/09/python/django-sae%E5%BE%AE%E4%BF%A1%E5%BC%80%E5%8F%91%EF%BC%8D%E7%AE%80%E5%8D%95%E7%9A%84%E9%B9%A6%E9%B9%89%E5%AD%A6%E8%88%8C%E5%8A%9F%E8%83%BD/">django-sae微信开发－简单的鹦鹉学舌功能</a>简单了解下大致流程，这片文章只是个简单的例子。以下几篇文章力图将常用的消息、操作等进行封装，形成一个小框架，你只需要实现一个函数即可完成业务功能。<br>本系列文章采用协议<a href="https://creativecommons.org/licenses/by-nc-sa/2.5/cn/" target="_blank" rel="noopener">署名-非商业性使用-相同方式共享 2.5 中国大陆 (CC BY-NC-SA 2.5 CN)</a>，您可以任意转载共享，但必须保留署名和原文链接，并禁止商业用途。代码采用<a href="http://zh.wikipedia.org/zh-hans/MIT%E8%A8%B1%E5%8F%AF%E8%AD%89" target="_blank" rel="noopener">MIT许可证</a>被授权人有权利使用、复制、修改、合并、出版发行、散布、再授权和/或贩售软体及软体的副本，及授予被供应人同等权利，惟服从以下义务:在软体和软体的所有副本中都必须包含以上版权声明和本许可声明。</p>
+<ul>
+<li>知识准备：基础的python和django知识，sae的使用，微信开发文档。我会把我折腾过程中参考的一些教程和书籍列出来帮助你学习，即使你不了解这些东西也不用担心，这些知识只要有基础的编程能力都可以在短短几天之内学会。</li>
+<li>能学到什么？包括版本控制工具的使用；<a href="http://www.liferay.com/community/forums/-/message_boards/message/4775410" target="_blank" rel="noopener">开源协议</a>；python和django知识；xml解析写入知识，lxml的应用；简单的http协议等。当然本人也是初学者，有什么问题和错误可以一起讨论，作为一个很小的项目就用来练练手。<a id="more"></a>
+</li>
+</ul>
+<hr>
+<p>###搭建本地开发环境<br>强烈建议先看看之前鹦鹉学舌的文章，了解下大致流程，之前sae上的版本为1，现在我们创建新的版本2用来开发<br><code>django-admin.py startproject mysite    # 创建项目</code><br><code>mv mysite 2    # 改名字</code><br>来看下最终的版本2里边有什么，用<code>tree 2</code>命令来查看文件夹树：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">2</span><br><span class="line">├── LICENSE</span><br><span class="line">├── README.md</span><br><span class="line">├── config.yaml</span><br><span class="line">├── index.wsgi</span><br><span class="line">├── manage.py</span><br><span class="line">├── mysite</span><br><span class="line">│   ├── __init__.py</span><br><span class="line">│   ├── settings.py</span><br><span class="line">│   ├── urls.py</span><br><span class="line">│   └── wsgi.py</span><br><span class="line">└── wechat</span><br><span class="line">    ├── __init__.py</span><br><span class="line">    ├── models.py</span><br><span class="line">    ├── tests.py</span><br><span class="line">    ├── urls.py</span><br><span class="line">    ├── views.py</span><br><span class="line">    ├── wechatEvent.py</span><br><span class="line">    ├── wechatMessage.py</span><br><span class="line">    ├── wechatReply.py</span><br><span class="line">    ├── wechatService.py</span><br><span class="line">    └── wechatUtil.py</span><br></pre></td></tr></table></figure>
+<p>里边的文件后几篇教程再介绍，先创建一个app名为wechat:<br><code>django-admin.py startapp wechat</code><br>然后我们在2/mysite/settings.py中INSTALLED_APPS中添加创建的wechat应用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">INSTALLED_APPS = (</span><br><span class="line">    &apos;django.contrib.auth&apos;,</span><br><span class="line">    &apos;django.contrib.contenttypes&apos;,</span><br><span class="line">    &apos;django.contrib.sessions&apos;,</span><br><span class="line">    &apos;django.contrib.sites&apos;,</span><br><span class="line">    &apos;django.contrib.messages&apos;,</span><br><span class="line">    &apos;django.contrib.staticfiles&apos;,</span><br><span class="line">    &apos;wechat&apos;,    # my wechat app</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>其它设置按需修改就可以，这里添加app是必要的。接下来编写需要的python文件，我也是python初学者，写的烂请见谅。<br>项目地址：<a href="https://github.com/PegasusWang/WeiPython" target="_blank" rel="noopener">WeiPython</a></p>
+<embed src="http://www.xiami.com/widget/0_1773892669/singlePlayer.swf" type="application/x-shockwave-flash" width="257" height="33" wmode="transparent">
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/02/21/python/django-python微信开发之二－封装消息类/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/02/09/python/django-sae微信开发－简单的鹦鹉学舌功能/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

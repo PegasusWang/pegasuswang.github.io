@@ -1,0 +1,301 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>做一个树莓派微博机器人 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="做一个树莓派微博机器人"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-08-01T04:13:01.000Z"><a href="/2015/08/01/python/做一个树莓派微博机器人/">周六, 8月 1 2015, 12:13:01 中午</a></time>
+
+  
+    <h1 class="title">做一个树莓派微博机器人</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/weibo/">weibo</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>###准备<br>首先得有一个树莓派，如果你还不知道什么是树莓派，可以先去淘宝一百多淘一个，就是一个小巧的卡片电脑，可以安装linux操作系统，就用树莓派配置一个crontab定时跑就可以。如果没有的话，vps或者虚拟机都可以，不过树莓派比较方便，可以搭建一个简单的服务器没日没夜拼命地跑。机器人的话可以做微博推广，自己定制内容。比如我的叫做『老王讲段子』，每个小时自己发一个段子、搞笑图片或者无节操的gif。当然目前还不太好控制发的内容，就是有时候担心发的太没节操。冏。。。</p>
+<p>###微博接口<br>建议之前先看看微博的开发者文档，了解一下一些接口的调用。不过有人已经封装了微博的python接口，直接<code>pip install weibo</code>就可以安装（感谢这位代码贡献者）。这里使用它继续封装成一个类，使用更加方便。</p>
+<pre><code>from weibo import Client
+
+class WeiboApp(object):
+    &quot;&quot;&quot;WeiboApp client.&quot;&quot;&quot;
+    def __init__(self, api_key, api_secret, callback_url, username,
+                 password, uid):
+        self._c = Client(api_key, api_secret, callback_url,
+                         username=username, password=password)
+        self._uid = uid
+
+    def get_show(self):
+        return self._c.get(&apos;users/show&apos;, uid=self._uid)
+
+    def post_text(self, text):
+        text = text if len(text) &lt;= 139 else text[0:139]
+        self._c.post(&apos;statuses/update&apos;, status=text)
+
+    def post_img(self, text, img_ori):
+        text = text if len(text) &lt;= 139 else text[0:139]
+        self._c.post(&apos;statuses/upload&apos;, status=text, pic=img_ori)
+</code></pre><p>用这个类初始化一个对象，传入你的配置就可以使用了。<br><a id="more"></a></p>
+<p>###内容来源<br>当然是爬虫啦，找到你想爬的内容，比如我这里用的是糗事百科的内容，我在项目文件里建立了一个文件夹crawler，不同网站的爬虫都可以塞进去，建立一个crawler基类，以后每个网站的爬虫都可以继承它。当然也可以直接用scrapy框架，不过微博api接口有频率限制，爬虫就是简单的就好，不需要多线程的。</p>
+<pre><code>form bs4 import BeautifulSoup
+import lxml
+
+class QiubaiCrawler(object):
+
+    def __init__(self, url):
+        self._url = url
+
+    def get_html(self):
+        user_agent = &apos;Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)&apos;
+        headers = {&apos;User-Agent&apos;: user_agent}
+        try:
+            html = requests.get(self._url, headers=headers, timeout=10).text
+        except:
+            html = &apos;&apos;
+            traceback.print_exc()
+        return html
+
+    def get_hot(self, html):
+        soup = BeautifulSoup(html, &apos;lxml&apos;)
+        article_tag_list = soup.find_all(&apos;div&apos;,
+                                         class_=&apos;article block untagged mb15&apos;)
+        res_list = []
+        try:
+            for article_tag in article_tag_list:
+                author_a_tag = article_tag.find(&apos;div&apos;, class_=&apos;author&apos;)
+                if author_a_tag:
+                    author_tag = author_a_tag.find(&apos;a&apos;)
+                    author = author_tag.text if author_tag else &apos;&apos;
+                else:
+                    author = &apos;&apos;
+                content_tag = article_tag.find(&apos;div&apos;, class_=&apos;content&apos;)
+                content = content_tag.text if content_tag else &apos;&apos;
+                thumb_tag = article_tag.find(&apos;div&apos;, class_=&apos;thumb&apos;)
+                img = thumb_tag.find(&apos;img&apos;).get(&apos;src&apos;) if thumb_tag else &apos;&apos;
+
+                d = {&apos;content&apos;: content, &apos;img&apos;: img, &apos;author&apos;: author}
+                res_list.append(d)
+        except:
+            traceback.print_exc()
+
+        return res_list
+
+    def get_duanzi(self, html):
+        return self.get_hot(html)
+
+    def get_img(self, html):
+        return self.get_hot(html)
+</code></pre><p>###存储内容<br>爬虫爬下来的内容有些可以不用保存，有些还是想把它保存下来，比如煎蛋的妹子图和一些好玩的没节操的gif，这里就使用一些云存储服务，比如leancloud或者qiniu，把爬下来的东西直接上传上去就好。存个上万几十万的无压力，还有外链。你可能需要看下lencloud或者qiniu的文档了解下如何上传和检索。<br>比如一个简单的上传文件的例子，用的leancloud，不过File对象没法直接检索，只能迂回。新建一个类，然后把File文件类作为它的一个成员。比如为图片文件创建一个类叫做ImgFile。以后查询检索等都是用ImgFile。</p>
+<pre><code>from leancload import File
+
+def upload_file(file_abspath):
+    filename = os.path.basename(file_abspath)    # filename have suffix
+    with open(file_abspath, &apos;r&apos;) as f:
+        upload_file = File(filename, f)
+        upload_file.save()
+        print &apos;uploaded&apos;, file_abspath
+        img_file = ImgFile()
+        img_file.set(&apos;File&apos;, upload_file)
+        img_file.set(&apos;filename&apos;, filename)
+        img_file.save()
+</code></pre><p>###定期发微博<br>有了前面这些铺垫，就可以发微博了。实际上有了第一个类就可以直接发了，后边都是为了寻找发送内容的。为了实现定期发送微博，需要用crontab配置每小时发一个，写个shell脚本跑。</p>
+<pre><code>#!/bin/bash
+
+PREFIX=$(cd &quot;$(dirname &quot;$0&quot;)&quot;; pwd)
+cd $PREFIX
+
+python weibo_app.py
+</code></pre><p>到这里就大功告成了，把代码clone到树莓派上，用<code>pip install -r requirements.txt</code>安装所有依赖，就可以用crontab每个小时跑这个shell脚本了。不过最主要的不是代码，而是找到高(wu)质(jie)量(cao)的内容发送，这样才会有人(qiu)关(guan)注(zhu)。</p>
+<p>项目地址：<br><a href="https://github.com/PegasusWang/WeiboApp.git" target="_blank" rel="noopener">https://github.com/PegasusWang/WeiboApp.git</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/09/18/python/python多线程、异步、多进程＋异步爬虫/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/07/30/web/Python脚本ping百度和google/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

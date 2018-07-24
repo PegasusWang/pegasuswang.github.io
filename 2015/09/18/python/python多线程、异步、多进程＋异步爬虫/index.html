@@ -1,0 +1,518 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>python多线程、异步、异步＋多进程爬虫 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="python多线程、异步、异步＋多进程爬虫"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-09-18T09:21:02.000Z"><a href="/2015/09/18/python/python多线程、异步、多进程＋异步爬虫/">周五, 9月 18 2015, 5:21:02 下午</a></time>
+
+  
+    <h1 class="title">python多线程、异步、异步＋多进程爬虫</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/tornado/">tornado</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>###安装Tornado<br>省事点可以直接用grequests库，下面用的是tornado的异步client。<br>异步用到了tornado，根据官方文档的例子修改得到一个简单的异步爬虫类。可以参考下最新的文档学习下。<br><code>pip install tornado</code></p>
+<p>###异步爬虫<br><a id="more"></a></p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+import time
+from datetime import timedelta
+from tornado import httpclient, gen, ioloop, queues
+import traceback
+
+
+class AsySpider(object):
+    &quot;&quot;&quot;A simple class of asynchronous spider.&quot;&quot;&quot;
+    def __init__(self, urls, concurrency=10, **kwargs):
+        urls.reverse()
+        self.urls = urls
+        self.concurrency = concurrency
+        self._q = queues.Queue()
+        self._fetching = set()
+        self._fetched = set()
+
+    def fetch(self, url, **kwargs):
+        fetch = getattr(httpclient.AsyncHTTPClient(), &apos;fetch&apos;)
+        return fetch(url, **kwargs)
+
+    def handle_html(self, url, html):
+        &quot;&quot;&quot;handle html page&quot;&quot;&quot;
+        print(url)
+
+    def handle_response(self, url, response):
+        &quot;&quot;&quot;inherit and rewrite this method&quot;&quot;&quot;
+        if response.code == 200:
+            self.handle_html(url, response.body)
+
+        elif response.code == 599:    # retry
+            self._fetching.remove(url)
+            self._q.put(url)
+
+    @gen.coroutine
+    def get_page(self, url):
+        try:
+            response = yield self.fetch(url)
+            print(&apos;######fetched %s&apos; % url)
+        except Exception as e:
+            print(&apos;Exception: %s %s&apos; % (e, url))
+            raise gen.Return(e)
+        raise gen.Return(response)
+
+    @gen.coroutine
+    def _run(self):
+        @gen.coroutine
+        def fetch_url():
+            current_url = yield self._q.get()
+            try:
+                if current_url in self._fetching:
+                    return
+
+                print(&apos;fetching****** %s&apos; % current_url)
+                self._fetching.add(current_url)
+
+                response = yield self.get_page(current_url)
+                self.handle_response(current_url, response)    # handle reponse
+
+                self._fetched.add(current_url)
+
+                for i in range(self.concurrency):
+                    if self.urls:
+                        yield self._q.put(self.urls.pop())
+
+            finally:
+                self._q.task_done()
+
+        @gen.coroutine
+        def worker():
+            while True:
+                yield fetch_url()
+
+        self._q.put(self.urls.pop())    # add first url
+
+        # Start workers, then wait for the work queue to be empty.
+        for _ in range(self.concurrency):
+            worker()
+
+        yield self._q.join(timeout=timedelta(seconds=300000))
+        assert self._fetching == self._fetched
+
+    def run(self):
+        io_loop = ioloop.IOLoop.current()
+        io_loop.run_sync(self._run)
+
+
+class MySpider(AsySpider):
+
+    def fetch(self, url, **kwargs):
+        &quot;&quot;&quot;重写父类fetch方法可以添加cookies，headers，timeout等信息&quot;&quot;&quot;
+        cookies_str = &quot;PHPSESSID=j1tt66a829idnms56ppb70jri4; pspt=%7B%22id%22%3A%2233153%22%2C%22pswd%22%3A%228835d2c1351d221b4ab016fbf9e8253f%22%2C%22_code%22%3A%22f779dcd011f4e2581c716d1e1b945861%22%7D; key=%E9%87%8D%E5%BA%86%E5%95%84%E6%9C%A8%E9%B8%9F%E7%BD%91%E7%BB%9C%E7%A7%91%E6%8A%80%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8; think_language=zh-cn; SERVERID=a66d7d08fa1c8b2e37dbdc6ffff82d9e|1444973193|1444967835; CNZZDATA1254842228=1433864393-1442810831-%7C1444972138&quot;    # 从浏览器拷贝cookie字符串
+        headers = {
+            &apos;User-Agent&apos;: &apos;mozilla/5.0 (compatible; baiduspider/2.0; +http://www.baidu.com/search/spider.html)&apos;,
+            &apos;cookie&apos;: cookies_str
+        }
+        return super(MySpider, self).fetch(   # 参数参考tornado文档
+            url, headers=headers, request_timeout=1
+        )
+
+    def handle_html(self, url, html):
+        print(url, html)
+
+
+def main():
+    urls = []
+    for page in range(1, 100):
+        urls.append(&apos;http://www.baidu.com?page=%s&apos; % page)
+    s = MySpider(urls)
+    s.run()
+
+
+if __name__ == &apos;__main__&apos;:
+    main()
+</code></pre><p>可以继承这个类，塞一些url进去，然后重写handle_page处理得到的页面。</p>
+<p>###异步＋多进程爬虫<br>还可以再变态点，加个进程池，使用了multiprocessing模块。效率飕飕的,</p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+import time
+from multiprocessing import Pool
+from datetime import timedelta
+from tornado import httpclient, gen, ioloop, queues
+
+
+class AsySpider(object):
+    &quot;&quot;&quot;A simple class of asynchronous spider.&quot;&quot;&quot;
+    def __init__(self, urls, concurrency):
+        urls.reverse()
+        self.urls = urls
+        self.concurrency = concurrency
+        self._q = queues.Queue()
+        self._fetching = set()
+        self._fetched = set()
+
+    def handle_page(self, url, html):
+        filename = url.rsplit(&apos;/&apos;, 1)[1]
+        with open(filename, &apos;w+&apos;) as f:
+            f.write(html)
+
+    @gen.coroutine
+    def get_page(self, url):
+        try:
+            response = yield httpclient.AsyncHTTPClient().fetch(url)
+            print(&apos;######fetched %s&apos; % url)
+        except Exception as e:
+            print(&apos;Exception: %s %s&apos; % (e, url))
+            raise gen.Return(&apos;&apos;)
+        raise gen.Return(response.body)
+
+    @gen.coroutine
+    def _run(self):
+
+        @gen.coroutine
+        def fetch_url():
+            current_url = yield self._q.get()
+            try:
+                if current_url in self._fetching:
+                    return
+
+                print(&apos;fetching****** %s&apos; % current_url)
+                self._fetching.add(current_url)
+                html = yield self.get_page(current_url)
+                self._fetched.add(current_url)
+
+                self.handle_page(current_url, html)
+
+                for i in range(self.concurrency):
+                    if self.urls:
+                        yield self._q.put(self.urls.pop())
+
+            finally:
+                self._q.task_done()
+
+        @gen.coroutine
+        def worker():
+            while True:
+                yield fetch_url()
+
+        self._q.put(self.urls.pop())
+
+        # Start workers, then wait for the work queue to be empty.
+        for _ in range(self.concurrency):
+            worker()
+        yield self._q.join(timeout=timedelta(seconds=300000))
+        assert self._fetching == self._fetched
+
+    def run(self):
+        io_loop = ioloop.IOLoop.current()
+        io_loop.run_sync(self._run)
+
+
+def run_spider(beg, end):
+    urls = []
+    for page in range(beg, end):
+        urls.append(&apos;http://127.0.0.1/%s.htm&apos; % page)
+    s = AsySpider(urls, 10)
+    s.run()
+
+
+def main():
+    _st = time.time()
+    p = Pool()
+    all_num = 73000
+    num = 4    # number of cpu cores
+    per_num, left = divmod(all_num, num)
+    s = range(0, all_num, per_num)
+    res = []
+    for i in range(len(s)-1):
+        res.append((s[i], s[i+1]))
+    res.append((s[len(s)-1], all_num))
+    print res
+
+    for i in res:
+        p.apply_async(run_spider, args=(i[0], i[1],))
+    p.close()
+    p.join()
+
+    print time.time()-_st
+
+
+if __name__ == &apos;__main__&apos;:
+    main()
+</code></pre><p>###多线程爬虫<br>线程池实现.</p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+import Queue
+import sys
+import requests
+import os
+import threading
+import time
+
+class Worker(threading.Thread):    # 处理工作请求
+    def __init__(self, workQueue, resultQueue, **kwds):
+        threading.Thread.__init__(self, **kwds)
+        self.setDaemon(True)
+        self.workQueue = workQueue
+        self.resultQueue = resultQueue
+
+
+    def run(self):
+        while 1:
+            try:
+                callable, args, kwds = self.workQueue.get(False)    # get task
+                res = callable(*args, **kwds)
+                self.resultQueue.put(res)    # put result
+            except Queue.Empty:
+                break
+
+class WorkManager:    # 线程池管理,创建
+    def __init__(self, num_of_workers=10):
+        self.workQueue = Queue.Queue()    # 请求队列
+        self.resultQueue = Queue.Queue()    # 输出结果的队列
+        self.workers = []
+        self._recruitThreads(num_of_workers)
+
+    def _recruitThreads(self, num_of_workers):
+        for i in range(num_of_workers):
+            worker = Worker(self.workQueue, self.resultQueue)    # 创建工作线程
+            self.workers.append(worker)    # 加入到线程队列
+
+
+    def start(self):
+        for w in self.workers:
+            w.start()
+
+    def wait_for_complete(self):
+        while len(self.workers):
+            worker = self.workers.pop()    # 从池中取出一个线程处理请求
+            worker.join()
+            if worker.isAlive() and not self.workQueue.empty():
+                self.workers.append(worker)    # 重新加入线程池中
+        print &apos;All jobs were complete.&apos;
+
+
+    def add_job(self, callable, *args, **kwds):
+        self.workQueue.put((callable, args, kwds))    # 向工作队列中加入请求
+
+    def get_result(self, *args, **kwds):
+        return self.resultQueue.get(*args, **kwds)
+
+
+def download_file(url):
+    #print &apos;beg download&apos;, url
+    requests.get(url).text
+
+
+def main():
+    try:
+        num_of_threads = int(sys.argv[1])
+    except:
+        num_of_threads = 10
+    _st = time.time()
+    wm = WorkManager(num_of_threads)
+    print num_of_threads
+    urls = [&apos;http://www.baidu.com&apos;] * 1000
+    for i in urls:
+        wm.add_job(download_file, i)
+    wm.start()
+    wm.wait_for_complete()
+    print time.time() - _st
+
+if __name__ == &apos;__main__&apos;:
+    main()
+</code></pre><p>这三种随便一种都有很高的效率，但是这么跑会给网站服务器不小的压力，尤其是小站点，还是有点节操为好。</p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MjM5NzU0MzU0Nw==&amp;mid=2651372476&amp;idx=1&amp;sn=4c38eb821d4f63c3ece9f6e88f5ec995&amp;chksm=bd2470a88a53f9beb34d84f3d016c0b85cc62421338fa297446e10efed45e565c11cd7cea5b6&amp;mpshare=1&amp;scene=23&amp;srcid=1124ML4Cv94uuRbQ9MUEeDdv#rd" target="_blank" rel="noopener">Quora的Python异步编程实践</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/10/04/python/Python爬虫的一些总结/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/08/01/python/做一个树莓派微博机器人/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

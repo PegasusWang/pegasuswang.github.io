@@ -1,0 +1,248 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>软件设计的一些基本原则 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="软件设计的一些基本原则"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2017-02-16T01:20:39.000Z"><a href="/2017/02/16/design/software-design-principle/">周四, 2月 16 2017, 9:20:39 上午</a></time>
+
+  
+    <h1 class="title">软件设计的一些基本原则</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/design/">design</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/design/">design</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Everything Should Be Made as Simple as Possible, But Not Simpler. - Albert Einstein</p>
+</blockquote>
+<p>我觉得编写软件的过程就是和和复杂度斗争的过程，无论是编写传统的pc软件还是web应用。对于python这种动态语言，很多问题是在运行时才暴露出来的，而且动态语言相对难以维护和重构。我一直感觉使用动态语言的时候要更加重视项目工程的管理，控制复杂度，防止代码仓库失控。了解一些常用原则降低复杂度还是有必要的。</p>
+<a id="more"></a>
+<h2 id="简单"><a href="#简单" class="headerlink" title="简单"></a>简单</h2><p>软件天然错综复杂，当你衡量一个东西是否过于简单的时候，首先回答是对谁而言以及对什么时候而言。对于工程师而言，简单是让别的工程师以一种最容易的方式使用你的方案。</p>
+<ul>
+<li>隐藏复杂与构建抽象:软件变庞大之后很难一窥全貌，无法保持简单，但是可以保持局部简单。达到局部简单的主要方式实在设计和实现两个方面上，任何单个的类、模块、应用的设计目标和工作原理能被快速理解，而不需要深入到里头的细节。添加抽象层，隐藏复杂性。</li>
+<li>避免过度设计：好的设计是能在后期不断添加新的功能特性，而不是一开始就开发一个大系统。每次进行软件设计的时候问题自己，这个设计是否可以更简单而且在将来依然可以保持弹性？斟酌权衡</li>
+<li>尝试测试驱动开发：在某些方法上搞TDD可以获得一个全新的视角。TDD能然你避免写冗余的无用代码，同事单元测试用例可以被当做文档，暂时代码的意图、用法、期望结果等。同时TDD能然你以使用者的角度看待接口，从而简化API。无论是否使用TDD，你都要以用户（使用API）的人的视角思考，提高接口易用性。</li>
+<li>从软件设计的简化范例中学习：Grails，Hadoop，Google Maps API。</li>
+</ul>
+<h2 id="低耦合"><a href="#低耦合" class="headerlink" title="低耦合"></a>低耦合</h2><p>低耦合对系统的健康和伸缩至关重要。</p>
+<ul>
+<li>促进低耦合：小心管理依赖，类之间、模块之间、应用之间的以依赖。类应该只有一个目的，是最小的抽象粒度，尽量少暴露类的内部信息。</li>
+<li>避免不必要的耦合：尽可能多隐藏，少暴露。画系统设计图可以暴露循环依赖，一个良好的模块架构图应该看起来像一棵树（有向无环图），而不是社交网络图。</li>
+<li>低耦合范式：通过阅读别人的代码吸取经验。比如unix的命令行及管道的设计。</li>
+</ul>
+<h2 id="DRY"><a href="#DRY" class="headerlink" title="DRY"></a>DRY</h2><p>软件开发工程中低效的地方有很多，代码重复、缺乏自动化的重复（部署、测试、配置等）、大量复制粘贴代码、不必要的重复发明轮子等，“代码不会用第二次就凑合一下”的态度</p>
+<ul>
+<li>复制粘贴代码：使用抽象，组合继承等消除重复，使用设计模式、共享类库等消除重复。</li>
+</ul>
+<h2 id="基于约定编程"><a href="#基于约定编程" class="headerlink" title="基于约定编程"></a>基于约定编程</h2><p>基于约定编程或者说基于接口编程，是将客户端代码和功能提供者代码解耦的重要方式。让客户端依赖于约定编程。 约定在不同层次有不同的意义，比如低层次就是方法和函数的签名，高层次可以是web服务的文档。HTTP协议就是个著名的例子。<br>另一个小例子就是参数校验，来自外部的参数(比如用户表单)都是不可信任的，必须做参数校验，但是内部接口如果我约定好了你就需要按照指定的参数和类型传给我（动态语言还有鸭子类型），而不是需要在所有内部接口到处做参数校验。</p>
+<h2 id="画架构图"><a href="#画架构图" class="headerlink" title="画架构图"></a>画架构图</h2><p>有些时候需要做前期设计，可以帮助自己和他人更好了解设计。</p>
+<ul>
+<li>用例图：定义系统用户是谁，可以做哪些操作。</li>
+<li>类图：接口、类、关键方法名和它们之间的关系，展现类、接口及其交互关系。</li>
+<li>模块图：模块之间的依赖和交互，可以是一个包或者组件。</li>
+</ul>
+<h2 id="单一职责"><a href="#单一职责" class="headerlink" title="单一职责"></a>单一职责</h2><p>类应该只有一个职责。<br>－改善单一职责：类的代码不过长，确保类的以来不超过５个接口／类，确保一个类有一个明确的目标，能用一句话总结类的职责作为注释。</p>
+<h2 id="开闭原则"><a href="#开闭原则" class="headerlink" title="开闭原则"></a>开闭原则</h2><p>需求变更或者增加新功能时，你不需要修改现有代码。想扩展开放，对修改关关闭。MVC就是个好例子。重构代码分解任务并能复用。</p>
+<h2 id="依赖注入"><a href="#依赖注入" class="headerlink" title="依赖注入"></a>依赖注入</h2><p>一种降低耦合并且改善开闭特性的技术。依赖注入对类需要创建的对象提供一个引用实例，而无需类自己创建依赖对象。一般是把类需要的对象当成一个参数传递进去。这样类就能聚焦自己的主要职责，无需知道谁来提供依赖的实例。比如我们要实现一个播放器类，播放器必须有CD才能播放，我们可以在构造函数中把CD的实例作为构造函数的参数传递进去。</p>
+<h2 id="控制反转-IOC"><a href="#控制反转-IOC" class="headerlink" title="控制反转(IOC)"></a>控制反转(IOC)</h2><p>IOC是一种从类中移除职责的方法，从而使类更简单，与系统其他部分更少耦合。就是你的类实例不必知道自己何时被创建、被谁使用、自己的依赖又是如何被创建的。你的类是一个插件，外部决定这些类什么时候被创建，如何被使用。</p>
+<h2 id="为伸缩性设计"><a href="#为伸缩性设计" class="headerlink" title="为伸缩性设计"></a>为伸缩性设计</h2><p>伸缩性方案可以被浓缩成三个基本设计方法：</p>
+<ul>
+<li>增加副本：同一组件重复部署到多态服务器，最适用于无状态的服务，有状态的服务难以用这种方式伸缩。该方案需要找个方法同步状态。</li>
+<li>功能分割: 基于功能将系统分隔成独立的子系统，常用于底层。</li>
+<li>数据分片: 在每台服务器上只部署一部分数据，无共享架构，每个节点完全自治，几乎有无限的伸缩性。但是也是代价最高、最昂贵的技术，难点在于要访问数据需要找到数据所在的分区服务器，如果一个查询在涉及分区，实现会变得低效和困难。</li>
+</ul>
+<h2 id="自愈设计"><a href="#自愈设计" class="headerlink" title="自愈设计"></a>自愈设计</h2><p>设计系统要考虑高可用和系统自愈能力，设计一个伸缩性架构必须把各种失效状态视为常态，而不是特殊对待，要不停地想哪里会出错，出错后怎么办。系统能在最短时间内恢复，并且能自动化完成，就是自愈。</p>
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h2><p><a href="http://python-web-guide.readthedocs.io/zh/latest/codingstyle/codingstyle.html" target="_blank" rel="noopener">编码之前碎碎念</a> - 我在这里也列举了很多之前碰到的细节问题，上边提到的很多有点假大空，具体还要在代码里实践，大到一个模块，小到一个函数<br>《Web Scalability for Startup Engineers》 - 讲创业公司如何构建可伸缩的web应用的书</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2017/02/24/python/quick-start-backend-use-cookiecutter-flask/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2017/02/13/tools/practical-vim/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

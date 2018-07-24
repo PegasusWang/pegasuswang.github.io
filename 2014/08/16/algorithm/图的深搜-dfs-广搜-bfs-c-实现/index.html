@@ -1,0 +1,210 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>图的深搜(dfs)广搜(bfs)c++实现 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="图的深搜(dfs)广搜(bfs)c++实现"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2014-08-16T13:45:08.000Z"><a href="/2014/08/16/algorithm/图的深搜-dfs-广搜-bfs-c-实现/">周六, 8月 16 2014, 9:45:08 晚上</a></time>
+
+  
+    <h1 class="title">图的深搜(dfs)广搜(bfs)c++实现</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/algorithm/">algorithm</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/algorithm/">algorithm</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>以下是基于图的链表表示的：<br>dfs和bfs的演示：(具体见《算法导论》)<br>［深搜](<a href="http://sjjg.js.zwu.edu.cn/SFXX/sf1/gdyxbl.html" target="_blank" rel="noopener">http://sjjg.js.zwu.edu.cn/SFXX/sf1/gdyxbl.html</a>)<br>［广搜](<a href="http://sjjg.js.zwu.edu.cn/SFXX/sf1/sdyxbl.html" target="_blank" rel="noopener">http://sjjg.js.zwu.edu.cn/SFXX/sf1/sdyxbl.html</a>)<br>bfs通过检测边发现点，被发现点（但未探索）入队。（被探索是指是否检测过与该点相关联的临近顶点）一个顶点被完全探索当且仅当他的所有边被检测。一个顶点探索完选另一个顶点，被选点应位于被发现但未被探索点队列的队首。待探索点集为空时算法结束。（bfs探索顺序与发现顺序一致，dfs发现后马上探索）<br><a id="more"></a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;iostream&gt;</span><br><span class="line">#include &lt;cstdio&gt;</span><br><span class="line">#include &lt;list&gt;</span><br><span class="line">#include &lt;vector&gt;</span><br><span class="line">#include &lt;queue&gt;</span><br><span class="line">using namespace std;</span><br><span class="line">int n;</span><br><span class="line">vector&lt; list&lt;int&gt; &gt; graph;</span><br><span class="line">bool visited[100] = &#123;0&#125;;</span><br><span class="line">void dfs(int v)</span><br><span class="line">&#123;</span><br><span class="line">    list&lt;int&gt;::iterator it;</span><br><span class="line">    visited[v] = true;</span><br><span class="line">    printf(&quot;%5d&quot;, v);</span><br><span class="line">    for (it = graph[v].begin(); it != graph[v].end(); ++it)</span><br><span class="line">        if (!visited[*it])</span><br><span class="line">            dfs(*it);</span><br><span class="line">&#125;</span><br><span class="line">void bfs(int v)</span><br><span class="line">&#123;</span><br><span class="line">    list&lt;int&gt;::iterator it;</span><br><span class="line">    printf(&quot;%5d&quot;, v);</span><br><span class="line">    visited[v] = true;</span><br><span class="line">    queue&lt;int&gt; t;</span><br><span class="line">    t.push(v);</span><br><span class="line">    while (!t.empty())</span><br><span class="line">    &#123;</span><br><span class="line">        v = t.front();</span><br><span class="line">        t.pop();</span><br><span class="line">        for (it = graph[v].begin(); it != graph[v].end(); ++it)</span><br><span class="line">            if (!visited[*it])</span><br><span class="line">            &#123;</span><br><span class="line">                printf(&quot;%5d&quot;, *it);</span><br><span class="line">                t.push(*it);</span><br><span class="line">                visited[*it] = true;</span><br><span class="line">            &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; endl;</span><br><span class="line">&#125;</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">    //freopen(&quot;in.txt&quot;, &quot;r&quot;, stdin);</span><br><span class="line">    cout &lt;&lt; &quot;input the vertex num:&quot;&lt;&lt; endl;</span><br><span class="line">    cin &gt;&gt; n;</span><br><span class="line">    vector&lt; list&lt;int&gt; &gt;::iterator it;</span><br><span class="line">    for (int i = 0; i &lt; n; ++i)</span><br><span class="line">    &#123;</span><br><span class="line">        list&lt;int&gt; il;</span><br><span class="line">        int t;</span><br><span class="line">        while (cin &gt;&gt; t &amp;&amp; t != n)</span><br><span class="line">            il.push_back(t);</span><br><span class="line">        graph.push_back(il);</span><br><span class="line">    &#125;</span><br><span class="line">    cout &lt;&lt; &quot;result for bfs:&quot; &lt;&lt; endl;</span><br><span class="line">    bfs(0);</span><br><span class="line">    memset(visited, 0, sizeof(visited));                   //重新初始化标志数组</span><br><span class="line">    cout &lt;&lt; &quot;result for dfs:&quot; &lt;&lt; endl;</span><br><span class="line">    dfs(0);</span><br><span class="line">    system(&quot;pause&quot;);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="http://images.cnitblog.com/blog/434467/201304/06204631-6ba55fd3e8e84364b437e12571d32cd0.jpg" alt="演示图"><br>按照链表表示输入以下数据：<br>8<br>0 1 2 8<br>1 0 3 4 8<br>2 0 5 6 8<br>3 1 7 8<br>4 1 7 8<br>5 2 7 8<br>6 2 7 8<br>7 3 4 5 6 8<br>最后一个8用来标识这个节点输入结束。可以得到深搜和广搜的结果。</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2014/08/16/mylife/如何处理你的负面情绪/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2014/08/16/c++/c-c-测试程序运行时间/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

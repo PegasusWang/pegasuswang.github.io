@@ -1,0 +1,259 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>使用docker-compose运行错误收集工具Sentry | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="使用docker-compose运行错误收集工具Sentry"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-10-18T14:49:09.000Z"><a href="/2016/10/18/python/docker-sentry/">周二, 10月 18 2016, 10:49:09 晚上</a></time>
+
+  
+    <h1 class="title">使用docker-compose运行错误收集工具Sentry</h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/sentry/">sentry</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Use exceptions for exceptional problems. Exceptions can suffer from all the readability and maintainability problems of classic spaghetti code. Reserve exceptions for exceptional things.</p>
+</blockquote>
+<p>最近在尝试搭建错误日志收集工具Sentry，发现用docker-compose工具运行起来非常方便。 目前的项目捕捉异常比较简陋，一般代码发生异常之后，写个函数发一封邮件把异常信息附上。 一开始只是在邮件附带了异常消息，但是没有加上函数调用的参数和变量值，导致问题排查起来比较困难。 后来函数加上了个locals()返回的字典返回当前函数内部变量信息，算是方便了一点。不过最近发现了神器 <a href="https://sentry.io/welcome/" target="_blank" rel="noopener">Sentry</a>， Sentry’s real-time error tracking gives you insight into production deployments and information to reproduce and fix crashes.</p>
+<p>在ubuntu server上搭建个一个尝试了一下（也可以直接用官方提供的服务），感觉还是非常强大的，界面也比较漂亮。</p>
+<a id="more"></a>
+<p>  用Sentry来记录异常信息是个不错的选择，记录日志可能还有些问题，一旦log过多sentry本身可能就会有性能问题，但是一般异常发生的次数还是很少的（代码还可以的话），用来记录异常不用担心性能问题。 Sentry除了支持python之外，还支持js，go，php，java，ruby等很多编程语言和web框架。 Sentry本身使用django写成，好吧，又对django多了些好感，django确实出来过很多杀手级项目（sentry，pinterest，Instagram等）。</p>
+<h2 id="安装docker和docker-compose"><a href="#安装docker和docker-compose" class="headerlink" title="安装docker和docker-compose"></a>安装docker和docker-compose</h2><p>使用了阿里云的ubuntu14.04服务器版本，使用docker-compose运行起来特别方便，傻瓜化</p>
+<pre><code># ubuntu14.04 install docker
+sudo apt-get update
+sudo apt-get install apt-transport-https ca-certificates
+sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+sudo echo &quot;deb https://apt.dockerproject.org/repo ubuntu-trusty main&quot; &gt; /etc/apt/sources.list.d/docker.list
+sudo apt-get update
+sudo apt-get install docker-engine
+sudo service docker start
+
+
+# install docker-compose
+sudo pip install docker-compose
+</code></pre><h2 id="克隆Dockerfile文件"><a href="#克隆Dockerfile文件" class="headerlink" title="克隆Dockerfile文件"></a>克隆Dockerfile文件</h2><p>官方给出了一个项目dockerfile，可以直接clone下来使用。请在服务器预留足够内存，否则运行docker-compose之后可能会出现PostgreSQL崩溃的情况。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/getsentry/onpremise</span><br><span class="line">cd onpremise</span><br><span class="line"># https://docs.sentry.io/server/installation/docker/</span><br><span class="line"># 上面有使用docker安装的过程，不过docker-compose的教程目前还没merge到master，暂时看不到，不过用</span><br><span class="line"># docker-compose非常方便</span><br><span class="line">make build</span><br><span class="line">mkdir -p data/&#123;sentry,postgres&#125;    # Make our local database and sentry config directories.`</span><br><span class="line">docker-compose run --rm web config generate-secret-key    # Generate a secret key.</span><br><span class="line"># Add it to `docker-compose.yml` in `base` as `SENTRY_SECRET_KEY`.（把上一步key写到docker-compose.yml里）</span><br><span class="line"># 中间会提示要不要创建超级用户，选填</span><br><span class="line">docker-compose run --rm web upgrade    #  Build the database.  Use the interactive prompts to create a user account.</span><br><span class="line">docker-compose up -d    # - Lift all services (detached/background mode).</span><br></pre></td></tr></table></figure>
+<p>现在访问你的 <a href="http://your-vps-host:9000" target="_blank" rel="noopener">http://your-vps-host:9000</a> 就可以访问sentry了.界面如下<br><img src="http://7ktuty.com1.z0.glb.clouddn.com/sentry0.png" alt="Sentry登录"></p>
+<h2 id="在flask中使用sentry"><a href="#在flask中使用sentry" class="headerlink" title="在flask中使用sentry"></a>在flask中使用sentry</h2><p>用一个很简单的例子演示下使用方式。登录后右上角选择New Project,创建一个新项目，比如名字就叫做testflask，然后选择框架选择flask项目，之后会生成一个配置界面提示你怎么用。 首先安装依赖库<code>pip install raven[flask]</code> 之后写个简单的flask文件app.py:</p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+
+from flask import Flask
+from raven.contrib.flask import Sentry
+app = Flask(__name__)
+
+sentry = Sentry(
+    app,
+    dsn=&apos;&apos;    # 在这里填上sentry给你生成的dsn
+)
+
+
+@app.route(&apos;/&apos;)
+def hello():
+    # 随意写上一些变量
+    a = 1
+    b = 0
+    d = dict(a=1, b=2)
+    l = [1, 2, 3]
+    try:
+        a / b
+    except Exception:
+        sentry.captureException()
+    return &apos;hello&apos;
+
+if __name__ == &apos;__main__&apos;:
+    app.run(port=8888)
+</code></pre><p>之后<code>python app.py</code>然后访问 <code>http://localhost:8888</code>首先可以看到看板里多出了一条异常记录：</p>
+<p><img src="http://7ktuty.com1.z0.glb.clouddn.com/sentry1.png" alt="看板记录"></p>
+<p>点进去以后我们可以看到该异常的具体信息， 包括调用栈信息和用户访问的浏览器信息等，对于排查代码异常还是很有帮助的。</p>
+<p><img src="http://7ktuty.com1.z0.glb.clouddn.com/sentry2.png" alt="异常具体信息"></p>
+<p>此外我们还可以在Sentry里建立组和不同的项目，对异常信息进行统计等。感兴趣的人可以在项目中尝试一下这个好用的工具。如果你们项目有类似的日志和错误收集经验，也可以留言分享下^_^</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/11/09/tools/vim-tmux-zsh-autojump/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/08/27/python/python单元测试/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

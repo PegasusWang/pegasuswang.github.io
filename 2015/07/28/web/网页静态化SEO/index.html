@@ -1,0 +1,215 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>网页静态化SEO | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="网页静态化SEO"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-07-28T09:39:48.000Z"><a href="/2015/07/28/web/网页静态化SEO/">周二, 7月 28 2015, 5:39:48 下午</a></time>
+
+  
+    <h1 class="title">网页静态化SEO</h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/SEO/">SEO</a>, <a href="/tags/Python/">Python</a>, <a href="/tags/Node-js/">Node.js</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>###为什么需要网站静态化？<br>对于搜索引擎而言，很多动态页面的参数机制不利于搜索引擎收录，而静态页面更容易收录。此外，页面静态化在一定程度上也提高了页面访问速度和系统性能及稳定性。以<a href="http://alpha.tech2ipo.com" target="_blank" rel="noopener">http://alpha.tech2ipo.com</a> 网站为例子，为了搜索引擎优化，这里对每一篇文章生成静态页面。当爬虫访问网站文章的时候，实际上是转发到文章的静态页面。实现方式如下：首先使用python脚本定期生成或者更新sitemap文件，在网站后台使用ejs模板为每一篇文章生成指定格式的静态页面，最后修改nginx.conf配置文件把搜索引擎的访问转发到静态页面上去。这样就实现了爬虫访问网站文章时实际上访问的就是静态页面。下面是具体步骤：</p>
+<a id="more"></a>
+<hr>
+<p>###1.生成sitemap和sitemap索引<br>按照google生成站点地图的格式，这里使用的python脚本生成自己网站的站点地图。创建站点地图代码可以参考这一篇<a href="http://ningning.today/2015/07/23/web/%E7%94%A8Python%E8%84%9A%E6%9C%AC%E7%94%9F%E6%88%90sitemap-xml/">用python脚本生成sitemap.xml</a>.</p>
+<hr>
+<p>###2.生成静态页面<br>项目网站后台使用了Node.js, Express模板引擎Ejs，数据存储使用了Leancloud的服务。这里可能需要为不同的搜索引擎定义不同的模板，以百度为例子，在定义好Ejs模板后，就可以在后台拿到Leancloud上的文章内容，渲染Ejs模板后就生成了静态页面。<br>这个是自定义的Ejs模板：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">&lt;meta charset=utf-8&gt;</span><br><span class="line">&lt;title&gt;&lt;%= post_title %&gt;&lt;/title&gt;</span><br><span class="line">&lt;link rel=stylesheet href=//dn-s798.qbox.me/static/css/init.147fb604.css&gt;</span><br><span class="line">&lt;link rel=stylesheet href=//dn-s798.qbox.me/static/css/minisite/post_read.895c7e59.css&gt;</span><br><span class="line">&lt;link rel=stylesheet href=//dn-s798.qbox.me/static/css/minisite/html.ba7fe361.css&gt;</span><br><span class="line">&lt;meta name=viewport content=&quot;width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no&quot;&gt;</span><br><span class="line">&lt;link rel=&quot;shortcut icon&quot; type=image/x-icon href=&quot;&lt;%= site_favicon %&gt;&quot;&gt;</span><br><span class="line">&lt;link rel=canonical href=&quot;http://&lt;%= default_host %&gt;/&lt;%= post_ID %&gt;&quot;&gt;</span><br><span class="line"></span><br><span class="line">&lt;% if (query_site == &apos;xiaozhi&apos;) &#123; %&gt;</span><br><span class="line">&lt;style&gt;</span><br><span class="line">.replyLi&#123;display:none&#125;</span><br><span class="line">.post_read a&#123;pointer-events:none;color:#000&#125;</span><br><span class="line">.post_read p&#123;font-size:16px;text-indent:2em;&#125;</span><br><span class="line">&lt;/style&gt;</span><br><span class="line">&lt;% &#125; %&gt;</span><br><span class="line"></span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;div class=phone&gt;</span><br><span class="line">    &lt;div class=head&gt;</span><br><span class="line">        &lt;h1 class=logo&gt;</span><br><span class="line">            &lt;a href=&quot;/&quot; class=name&gt;</span><br><span class="line">                &lt;%= site_name %&gt;</span><br><span class="line">            &lt;/a&gt;</span><br><span class="line">            &lt;div class=slogo&gt;</span><br><span class="line">                &lt;%= site_slogo %&gt;</span><br><span class="line">            &lt;/div&gt;</span><br><span class="line">        &lt;/h1&gt;</span><br><span class="line">        &lt;h1 class=title&gt;</span><br><span class="line">            &lt;%= post_title %&gt;</span><br><span class="line">        &lt;/h1&gt;</span><br><span class="line">        &lt;p class=author&gt;</span><br><span class="line">            &lt;%= post_author %&gt;</span><br><span class="line">        &lt;span&gt;</span><br><span class="line">            &lt;%= post_time %&gt;</span><br><span class="line">        &lt;/span&gt;</span><br><span class="line">        &lt;/p&gt;</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">    &lt;div class=post_read&gt;</span><br><span class="line">        &lt;%- post_html %&gt;</span><br><span class="line">        &lt;% if (post_txt.length) &#123; %&gt;</span><br><span class="line">            &lt;div class=replyLi&gt;</span><br><span class="line">                &lt;div class=bar&gt;</span><br><span class="line">                    &lt;%= post_txt.length %&gt; 评论</span><br><span class="line">                &lt;/div&gt;</span><br><span class="line">                &lt;% for (var i = 0; i &lt; post_txt.length; ++i) &#123; %&gt;</span><br><span class="line">                    &lt;div class=C&gt;</span><br><span class="line">                        &lt;%- post_txt[i].txt %&gt;</span><br><span class="line">                        &lt;p class=author&gt;</span><br><span class="line">                        &lt;%= post_txt[i].owner[1] %&gt;</span><br><span class="line">                        &lt;/p&gt;</span><br><span class="line">                    &lt;/div&gt;</span><br><span class="line">                &lt;% &#125; %&gt;</span><br><span class="line">            &lt;/div&gt;</span><br><span class="line">        &lt;% &#125; %&gt;</span><br><span class="line">    &lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br></pre></td></tr></table></figure>
+<p>对应的route函数如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">app = require(&quot;app&quot;)</span><br><span class="line">require &quot;cloud/db/post&quot;</span><br><span class="line">marked = require(&apos;marked&apos;)</span><br><span class="line">DB = require &quot;cloud/_db&quot;</span><br><span class="line"></span><br><span class="line">marked.setOptions(&#123;</span><br><span class="line">    renderer: new marked.Renderer()</span><br><span class="line">    breaks: true</span><br><span class="line">    sanitize: true</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.get(&apos;/post/:host/:post_ID&apos;, (request, res) -&gt;</span><br><span class="line">    host = request.params.host.toLowerCase()</span><br><span class="line">    post_ID = request.params.post_ID</span><br><span class="line">    query_site = request.query.site</span><br><span class="line">    DB.Site.by_host(</span><br><span class="line">        &#123;host&#125;</span><br><span class="line">        success:(_site) -&gt;</span><br><span class="line">            if not _site</span><br><span class="line">                res.send &apos;404&apos;</span><br><span class="line">                return</span><br><span class="line">            site = DB.Site(_site)</span><br><span class="line"></span><br><span class="line">            DB.Post.by_id(&#123;</span><br><span class="line">                ID:post_ID-0    # trans to number, not str</span><br><span class="line">                host:host</span><br><span class="line">            &#125;, success:(post)-&gt;</span><br><span class="line">                if post</span><br><span class="line">                    DB.PostTxt.by_post(&#123;</span><br><span class="line">                        post_id: post.id</span><br><span class="line">                        site_id: site.id</span><br><span class="line">                    &#125;, success: (post_txt_list) -&gt;</span><br><span class="line">                            for i in post_txt_list</span><br><span class="line">                                i.txt = marked(i.txt)</span><br><span class="line">                            d = post.updatedAt</span><br><span class="line">                            res.render(</span><br><span class="line">                                &apos;static&apos;,</span><br><span class="line">                                &#123;</span><br><span class="line">                                    query_site: query_site</span><br><span class="line">                                    site_name: site.name</span><br><span class="line">                                    site_slogo: site.slogo</span><br><span class="line">                                    site_favicon: site.favicon</span><br><span class="line">                                    site_host: host</span><br><span class="line"></span><br><span class="line">                                    post_ID: post_ID</span><br><span class="line">                                    post_title: post.get(&apos;title&apos;)</span><br><span class="line">                                    post_author: post.get(&apos;author&apos;)</span><br><span class="line">                                    post_time: d.getFullYear() + &apos;-&apos; + (d.getMonth() + 1) + &apos;-&apos; + d.getDate()</span><br><span class="line">                                    post_html: post.get(&apos;html&apos;)</span><br><span class="line">                                    post_txt: post_txt_list</span><br><span class="line">                                &#125;</span><br><span class="line">                            )</span><br><span class="line"></span><br><span class="line">                )</span><br><span class="line">                else</span><br><span class="line">                    res.send &apos;404&apos;</span><br><span class="line">            )</span><br><span class="line">    )</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<hr>
+<p>###3.修改nginx配置文件<br>最后一步就是修改nginx配置文件，当网络爬虫访问到网站的文章时，就转发到静态页面。配置如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">location ~* ^/(\d+).html &#123;</span><br><span class="line">  proxy_pass http://$&#123;CONFIG.LEANCLOUD.HOST&#125;/post/$host/$1;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">location ~* ^/(\d+) &#123;</span><br><span class="line">  if (</span><br><span class="line">    $http_user_agent ~* &quot;baiduspider|googlebot|360spider|qihoobot|mediapartners-google|adsbot-google|feedfetcher-google|yahoo! slurp|yahoo! slurp china|youdaobot|sosospider|sogou spider|sogou web spider|msnbot|ia_archiver|tomato bot|twitterbot|facebookexternalhit|yandex|yeti|gigabot|bingbot|developers\.google\.com&quot;</span><br><span class="line">  ) &#123;</span><br><span class="line">    proxy_pass http://$&#123;CONFIG.LEANCLOUD.HOST&#125;/post/$host/$1;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">    rewrite ^/(.*) /$&#123;page&#125;.html break;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<p>###项目地址<br>具体代码可以参考项目地址：<br><a href="https://github.com/noman798/798" target="_blank" rel="noopener">https://github.com/noman798/798</a><br><a href="https://github.com/noman798/leancloud_798" target="_blank" rel="noopener">https://github.com/noman798/leancloud_798</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/07/30/web/Python脚本ping百度和google/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/07/23/web/用Python脚本生成sitemap-xml/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

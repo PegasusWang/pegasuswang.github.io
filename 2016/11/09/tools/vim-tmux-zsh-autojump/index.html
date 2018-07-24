@@ -1,0 +1,312 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>使用vim+tmux+zsh+autojump提升效率 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="使用vim+tmux+zsh+autojump提升效率"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-11-09T15:40:34.000Z"><a href="/2016/11/09/tools/vim-tmux-zsh-autojump/">周三, 11月 9 2016, 11:40:34 晚上</a></time>
+
+  
+    <h1 class="title">使用vim+tmux+zsh+autojump提升效率</h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/tools/">tools</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Unix was not designed to stop its users from doing stupid things, as that would also stop them from doing clever things.</p>
+</blockquote>
+<p>如果你是用mac或者linux，这些工具的配合能大幅提高工作(装逼)效率(并且在服务器上也能用)，本文不打算具体介绍安装方式，请自行google，主要介绍下vim一些好用的插件，说实话，真正感觉vim好用是因为github上很多牛人写的好用的插件。（当然如果你用IDE我强烈推荐Pycharm, 其实编辑器用不好反而容易写出烂代码，还是推荐不想折腾的用PyCharm，最好用的python开发工具，pycharm+vim插件也比较爽）。无论用什么工具，首要目的都是提升开发效率。</p>
+<hr>
+<p>##vim小Tips</p>
+<ul>
+<li>更改键盘设置映射capslock到ctrl，ctrl使用非常频繁</li>
+<li>使用ctrl+[ 或者 ctr+c 代替 Esc</li>
+<li>vimrc中加入两行<code>inoremap &lt;c-l&gt; &lt;c-o&gt;:w&lt;cr&gt;</code> 和 <code>nnoremap &lt;c-l&gt; :w&lt;cr&gt;</code> 保存文件，再也不用每次都使用:w了，insert和normal模式下都可以用</li>
+<li>Chrome安装vimium可以在浏览器里使用vim命令浏览网页</li>
+<li>高亮当前选中单词，写代码的时候高亮选中的相同单词，方便查找引用。F3激活<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">autocmd CursorMoved * exe exists(&quot;HlUnderCursor&quot;)?HlUnderCursor?printf(&apos;match IncSearch /\V\&lt;%s\&gt;/&apos;, escape(expand(&apos;&lt;cword&gt;&apos;), &apos;/\&apos;)):&apos;match none&apos;:&quot;&quot;</span><br><span class="line">nnoremap &lt;silent&gt; &lt;F3&gt; :exe &quot;let HlUnderCursor=exists(\&quot;HlUnderCursor\&quot;)?HlUnderCursor*-1+1:1&quot;&lt;CR&gt;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<a id="more"></a>
+<hr>
+<p>##如何安装插件</p>
+<ul>
+<li>首先安装Vundle: git clone <a href="https://github.com/gmarik/Vundle.vim.git" target="_blank" rel="noopener">https://github.com/gmarik/Vundle.vim.git</a> ~/.vim/bundle/Vundle.vim</li>
+<li>在vimrc中加入下边代码</li>
+</ul>
+<pre><code>set nocompatible              &quot; required
+filetype off                  &quot; required
+
+&quot; set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+&quot; alternatively, pass a path where Vundle should install plugins
+&quot;call vundle#begin(&apos;~/some/path/here&apos;)
+
+&quot; let Vundle manage Vundle, required, 如果有新的插件，直接把名称放到这里
+Plugin &apos;gmarik/Vundle.vim&apos;
+
+&quot; Add all your plugins here (note older versions of Vundle used Bundle instead of Plugin)
+
+
+&quot; All of your Plugins must be added before the following line
+call vundle#end()            &quot; required
+filetype plugin indent on    &quot; required
+</code></pre><ul>
+<li>进入vi执行:BundleInstall就可以了</li>
+</ul>
+<hr>
+<h2 id="vim插件之-代码篇"><a href="#vim插件之-代码篇" class="headerlink" title="vim插件之-代码篇"></a>vim插件之-代码篇</h2><ul>
+<li>Bundle ‘klen/python-mode’，拥有python几乎所有IDE的功能，吐血推荐 ，杀手级python插件</li>
+<li>Plugin ‘jmcantrell/vim-virtualenv’，虚拟环境python支持</li>
+<li>Plugin ‘pangloss/vim-javascript’, js支持</li>
+<li>Bundle ‘mattn/emmet-vim’, 书写html和css，前端支持</li>
+<li>Bundle ‘SirVer/ultisnips’和 Plugin ‘honza/vim-snippets’, 代码片段补全</li>
+<li>Bundle ‘scrooloose/syntastic’, 支持各种流行编程语言的语法检测</li>
+<li>Bundle ‘majutsushi/tagbar’，支持大纲浏览</li>
+<li>Plugin ‘tpope/vim-fugitive’, git支持，直接在vim中执行git命令。一个特别方便的命令就是:Gblame，可以看到每一行代码是谁在啥时候提交的(有问题能直接找他问)。</li>
+<li>Plugin ‘Valloric/YouCompleteMe’， 支持c/c++/python/go等流行编程语言的代码补全</li>
+<li>Bundle ‘scrooloose/nerdcommenter’，快速注释，支持几乎所有编程语言</li>
+</ul>
+<p>到此为止你就已经有了一个python全栈开发IDE了，并且这套配置用ssh登录到服务器上也可以愉快地写代码了，笔者经常因为本地有些服务不好配置直接ssh到服务器写代码。</p>
+<hr>
+<h2 id="vim插件之-移动篇"><a href="#vim插件之-移动篇" class="headerlink" title="vim插件之-移动篇"></a>vim插件之-移动篇</h2><ul>
+<li>Plugin ‘easymotion/vim-easymotion’, 快速移动插件, ‘,,w’可以在单词上出现前缀，然后快速跳转</li>
+<li>Plugin ‘haya14busa/incsearch.vim’</li>
+<li>Plugin ‘haya14busa/incsearch-fuzzy.vim’，模糊搜索，自带搜索比较弱，这个模糊搜索很快速</li>
+</ul>
+<hr>
+<h2 id="vim插件之-文件浏览"><a href="#vim插件之-文件浏览" class="headerlink" title="vim插件之-文件浏览"></a>vim插件之-文件浏览</h2><ul>
+<li>Bundle ‘scrooloose/nerdtree’， 在vim里文件树浏览</li>
+<li>Bundle ‘kien/ctrlp.vim’, 必备神器之一， 快速文件搜索和跳转，支持mru搜索，基本就可以放弃文件树了</li>
+</ul>
+<hr>
+<h2 id="vim插件之-外观篇"><a href="#vim插件之-外观篇" class="headerlink" title="vim插件之-外观篇"></a>vim插件之-外观篇</h2><ul>
+<li>Plugin ‘yggdroot/indentline’, 缩进线条，可以set cursorline加上水平线条，python里这个还是很必要的</li>
+<li>Plugin ‘mhinz/vim-startify’, 启动的时候显示一些编程相关的名言警句和最近打开文件,很有意思</li>
+<li>Plugin ‘bling/vim-airline’ 和 Plugin ‘vim-airline/vim-airline, 底下的文件信息提示行,彩虹效果</li>
+<li>Plugin ‘kien/rainbow_parentheses.vim’，彩虹括号，让嵌套括号容易分辨，花里胡哨的^_^<br>提示，如果airline在tmux中的vim不能用，在你的bashrc或者zshrc中加入<code>export TERM=&quot;xterm-256color&quot;</code></li>
+</ul>
+<p>目前为止你就已经有了一个轻量而又炫酷的vim开发环境了，从此不再羡慕任何IDE，一套vimrc配置走天下。happy coding，在服务器上也可以直接写代码了。在本地开发的话如果机器好可以用pycharm+vim插件。<br><img src="http://7ktuty.com1.z0.glb.clouddn.com/vim.png" alt="vim效果图"><br><img src="http://7ktuty.com1.z0.glb.clouddn.com/vim_tmux_tdd.gif" alt="vim+tmux+python+tdd"></p>
+<hr>
+<p>##使用tmux</p>
+<ul>
+<li>终端复用</li>
+<li>分屏神器</li>
+<li>后台进程托管</li>
+<li>最近在youtube上看到，不同的人attach到同一个session还可以用来结对编程，相当基情</li>
+</ul>
+<p>vim+tmux工作流几乎可以在写代码的时候完全脱离鼠标。笔者目前写代码基本上都是 ssh 到服务器上，每个项目开个 tmux 相当于一个工作区，每个区域下开多个窗口，一些窗口用来查看 git，一些窗口调试或者运行测试等，一个全屏窗口打开 vim 编辑。</p>
+<hr>
+<p>##on-my-zsh</p>
+<ul>
+<li>wget –no-check-certificate <a href="https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh" target="_blank" rel="noopener">https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh</a> -O - | sh</li>
+<li>功能强大，替代bash</li>
+<li>主题支持，很多炫酷主题可以选</li>
+<li>智能补全</li>
+<li>插件支持（git，autojump等）</li>
+</ul>
+<hr>
+<p>###autojump<br><a href="https://www.google.co.jp/url?sa=t&amp;rct=j&amp;q=&amp;esrc=s&amp;source=web&amp;cd=1&amp;cad=rja&amp;uact=8&amp;ved=0ahUKEwjk_dKlhZzQAhXB2LwKHaUWCKYQFggdMAA&amp;url=https%3A%2F%2Fgithub.com%2Fwting%2Fautojump&amp;usg=AFQjCNHLb6RDBtNTnB3FmuEhyolwZbDY4A" target="_blank" rel="noopener">autojump</a><br>这玩意跳转到目录相当方便，各种模糊匹配，大大节省了你来回cd到各种目录的时间。</p>
+<hr>
+<p>###让ubuntu vim支持python3<br>直接拷贝下边命令到终端，喝杯茶，之后在vimrc里边<br><code>let g:pymode_python = &#39;python3&#39;</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get build-dep vim</span><br><span class="line">cd /tmp &amp;&amp; git clone https://github.com/vim/vim.git &amp;&amp; cd vim</span><br><span class="line">./configure --with-features=huge --enable-multibyte --enable-python3interp \</span><br><span class="line">        --enable-gui=gtk-2 --prefix=/usr</span><br><span class="line"></span><br><span class="line">make VIMRUNTIMEDIR=/usr/share/vim/vim74</span><br><span class="line">sudo make install</span><br><span class="line">alias vi=&apos;vim&apos;</span><br></pre></td></tr></table></figure>
+<p>掌握以上工具基本就能在终端里游刃有余了，至于editor你随便选个趁手的就行，很多时间还是要花在editor上的。附录有关于mac上各种开发环境的配置参考，感兴趣可以看看。</p>
+<hr>
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref:"></a>Ref:</h2><p><a href="http://macshuo.com/?p=676" target="_blank" rel="noopener">终极Shell</a></p>
+<p><a href="https://github.com/wting/autojump" target="_blank" rel="noopener">autojump</a></p>
+<p><a href="http://codingpy.com/article/vim-and-python-match-in-heaven/" target="_blank" rel="noopener">vim-python天作之合</a></p>
+<p><a href="http://vimawesome.com" target="_blank" rel="noopener">vimawesome，更多插件等你探索</a></p>
+<p><a href="http://blog.jobbole.com/86571/" target="_blank" rel="noopener">文本三巨头：zsh、tmux 和 vim</a></p>
+<p><a href="https://github.com/PegasusWang/linux_config" target="_blank" rel="noopener">linux_config我的vim配置</a></p>
+<p><a href="http://sourabhbajaj.com/mac-setup/" target="_blank" rel="noopener">http://sourabhbajaj.com/mac-setup/</a></p>
+<p><a href="https://github.com/donnemartin/dev-setup" target="_blank" rel="noopener">https://github.com/donnemartin/dev-setup</a></p>
+<p><a href="https://github.com/nicolashery/mac-dev-setup" target="_blank" rel="noopener">https://github.com/nicolashery/mac-dev-setup</a></p>
+<p><a href="https://vim.rtorr.com/lang/zh_cn/" target="_blank" rel="noopener">vim cheet sheet</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/11/22/python/flask-unittest/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/10/18/python/docker-sentry/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>python generators, coroutines, native coroutines and async/await | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="python generators, coroutines, native coroutines and async/await"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2017-02-06T03:46:07.000Z"><a href="/2017/02/06/python/python-generators-coroutines-native-coroutines-and-async-await/">周一, 2月 6 2017, 11:46:07 中午</a></time>
+
+  
+    <h1 class="title">python generators, coroutines, native coroutines and async/await</h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python-coroutine/">python, coroutine</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Abstraction is not about vagueness, it is about being precise at a new semantic level. - Dijkstra</p>
+</blockquote>
+<p>笔者之前学习python的时候就对这几个概念有些困惑，尤其是python3之后又不断添加了<code>yield from, async, await</code>等关键字用来支持异步编程。最近看到一篇比较好的博客就结合自己的理解翻译并解释一下这些概念，包括生成器，协程，原生协程和python3.5引入的async/await。 请使用python3.5运行代码示例。</p>
+<a id="more"></a>
+<hr>
+<h2 id="Generators-生成器"><a href="#Generators-生成器" class="headerlink" title="Generators(生成器)"></a>Generators(生成器)</h2><p>python中生成器是用来生成值的函数。通常函数使用<code>return</code>返回值然后作用域被销毁，再次调用函数会重新执行。但是生成器可以<code>yield</code>一个值之后暂停函数执行，然后控制权交给调用者，之后我们可以恢复其执行并且获取下一个值，我们看一个例子：</p>
+<pre><code>def simple_gen():
+    yield &apos;hello&apos;
+    yield &apos;world&apos;
+
+gen = simple_gen()
+print(type(gen))    # &lt;class &apos;generator&apos;&gt;
+print(next(gen))    # &apos;hello&apos;
+print(next(gen))    # &apos;world&apos;
+</code></pre><p>注意生成器函数调用的时候不会直接返回值，而是返回一个类似于可迭代对象(iterable)的生成器对象(generator object)，我们可以对生成器对象调用<code>next()</code>函数来迭代值，或者使用<code>for</code>循环。<br>生成器常用来节省内存，比如我们可以使用生成器函数yield值来替代返回一个耗费内存的大序列:</p>
+<pre><code>def f(n):
+    res = []
+    for i in range(n):
+        res.append(i)
+    return res
+
+def yield_n(n):
+    for i in range(n):
+        yield i
+</code></pre><hr>
+<h2 id="Coroutines-协程"><a href="#Coroutines-协程" class="headerlink" title="Coroutines(协程)"></a>Coroutines(协程)</h2><p>上一节讲到了使用使用生成器来从函数中获取数据(pull data)，但是如果我们想发送一些数据呢（push data）?这时候协程就发挥作用了。<code>yield</code>关键字既可以用来获取数据也可以在函数中作为表达式(在=右边的时候)。我们可以对生成器对象使用<code>send()</code>方法来给函数发送值。这叫做『基于生成器的协程』(generator based coroutines)，下边是一个示例:</p>
+<pre><code>def coro():
+    hello = yield &apos;hello&apos;    # yield关键字在=右边作为表达式，可以被send值
+    yield hello
+
+
+c = coro()
+print(next(c))    # 输出 &apos;hello&apos;
+print(c.send(&apos;world&apos;))    # 输出 &apos;world&apos;
+</code></pre><p>这里发生了什么？和之前一样我们先调用了<code>next()</code>函数，代码执行到<code>yield &#39;hello&#39;</code>然后我们得到了’hello’之后我们使用了<code>send</code>函数发送了一个值’world’, 它使<code>coro</code>恢复执行并且赋了参数’world’给hello这个变量，接着执行到下一行的yield语句并将hello变量的值’world’返回。所以我们得到了<code>send()</code>方法的返回值’world’。</p>
+<p>当我们使用基于生成器的协程(generator based coroutines)时候，术语”generator”和”coroutine”通常表示一个东西，尽管实际上不是。而python3.5以后增加了async/await关键字用来支持原生协程(native coroutines)，我们在后边讨论。</p>
+<hr>
+<h2 id="Async-I-O-and-the-asyncio-module-（异步IO和asyncio模块）"><a href="#Async-I-O-and-the-asyncio-module-（异步IO和asyncio模块）" class="headerlink" title="Async I/O and the asyncio module （异步IO和asyncio模块）"></a>Async I/O and the <code>asyncio</code> module （异步IO和asyncio模块）</h2><p>python3.4以后标准库增加了新的asyncio模块来支持更加简洁的异步编程。我们可以在asyncio模块使用协程轻松实现异步IO，下边是一个来自官方文档的示例：</p>
+<pre><code>import asyncio
+import datetime
+import random
+
+
+@asyncio.coroutine
+def display_date(num, loop):
+    end_time = loop.time() + 50.0
+    while True:
+        print(&apos;Loop: {} Time: {}&apos;.format(num, datetime.datetime.now()))
+        if (loop.time() + 1.0) &gt;= end_time:
+            break
+        yield from asyncio.sleep(random.randint(0, 5))
+
+
+loop = asyncio.get_event_loop()
+asyncio.ensure_future(display_date(1, loop))
+asyncio.ensure_future(display_date(2, loop))
+loop.run_forever()
+</code></pre><p>我们创建了一个协程display_date(num, loop)，它接收一个数字和event loop作为参数，然后持续输出当前时间。然后使用<code>yield from</code>关键字来await从<code>asyncio.sleep()</code>执行的结果。<code>asyncio.sleep()</code>是一个协程，在指定时间以后完成。之后我们在默认的事件循环(event loop)中使用<code>asyncio.ensure_future()</code>来调度协程的执行，最后通知事件循环一直执行下去。</p>
+<p>如果我们执行这段代码，可以看到两个协程是并发执行的。当我们用<code>yield from</code>的时候，事件循环知道它将(这里指sleep函数)将会忙碌一段时间然后暂停这个协程的执行转而执行另一个协程。所以这两个协程能够并发执行（注意并发不是并行，因为event loop是单线程的，所以不是真正意义上的『同时执行』）。</p>
+<p>这里只需要知道<code>yield from</code>是一个语法糖用来替代下边这种形式的写法，这种形式使代码更加简洁。</p>
+<pre><code># yield from 等价方式 yield from asyncio.sleep(random.randint(0, 5))
+for x in asycio.sleep(random.randint(0, 5)):
+    yield x
+</code></pre><hr>
+<h2 id="Native-Coroutines-and-async-await-原生线程与async-await"><a href="#Native-Coroutines-and-async-await-原生线程与async-await" class="headerlink" title="Native Coroutines and async/await (原生线程与async/await)"></a>Native Coroutines and async/await (原生线程与async/await)</h2><p>记住到目前为止，我们仍然使用的是 基于生成器的协程(generators based coroutines)，在python3.5中，python增加了使用async/await语法的原生协程(native coroutines)。之前的函数用async/await语法可以这么写:</p>
+<pre><code>import asyncio
+import datetime
+import random
+
+async def display_date(num, loop):
+    end_time = loop.time() + 50.0
+    while True:
+        print(&apos;Loop: {} Time: {}&apos;.format(num, datetime.datetime.now()))
+        if (loop.time() + 1.0) &gt;= end_time:
+            break
+        await asyncio.sleep(random.randint(0, 5))
+
+
+loop = asyncio.get_event_loop()
+asyncio.ensure_future(display_date(1, loop))
+asyncio.ensure_future(display_date(2, loop))
+loop.run_forever()
+</code></pre><p>你能看出变化吗？实际上就是去掉了装饰器<a href="mailto:`@asyncio.coroutine" target="_blank" rel="noopener">`@asyncio.coroutine</a><code>，然后在定义前加上</code>async<code>关键字，之后把</code>yield from<code>替换成</code>await`。写法是不是更加简洁了？</p>
+<hr>
+<h2 id="Native-vs-Generator-Based-Coroutines-Interoperability-（原生协程-vs-基于生成器的协程）"><a href="#Native-vs-Generator-Based-Coroutines-Interoperability-（原生协程-vs-基于生成器的协程）" class="headerlink" title="Native vs Generator Based Coroutines: Interoperability （原生协程 vs 基于生成器的协程）"></a>Native vs Generator Based Coroutines: Interoperability （原生协程 vs 基于生成器的协程）</h2><p>实际上除了语法之外原生协程(async/await)和基于生成器的协程(@asyncio.coroutine/yield from)并没有功能上的区别。但是注意，这两种写法不能混用，就是说你不能在generator based coroutines里使用<code>await</code>，或者在naive coroutines里头使用<code>yield</code>或者<code>yield from</code>。</p>
+<p>除此之外，两种写法是互通的，我们可以同时使用，比如我们可以在原生协程里<code>await</code>一个基于生成器的协程，也可以在基于生成器的协程里<code>yield from</code>一个使用<code>async</code>定义的原生协程。<br>比如我们同时在一个时间循环里使用两种协程:</p>
+<pre><code>import asyncio
+import datetime
+import random
+import types
+
+
+@types.coroutine
+def my_sleep_func():
+    yield from asyncio.sleep(random.randint(0, 5))    # 注意这里就不能用 await
+
+
+async def display_date(num, loop):
+    end_time = loop.time() + 50.0
+    while True:
+        print(&apos;Loop: {} Time: {}&apos;.format(num, datetime.datetime.now()))
+        if (loop.time() + 1.0) &gt;= end_time:
+            break
+        await my_sleep_func()    # 注意这里就不能用 async
+
+
+loop = asyncio.get_event_loop()
+asyncio.ensure_future(display_date(1, loop))
+asyncio.ensure_future(display_date(2, loop))
+loop.run_forever()
+</code></pre><hr>
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h2><p><a href="http://masnun.com/2015/11/13/python-generators-coroutines-native-coroutines-and-async-await.html#comment-307394" target="_blank" rel="noopener">python: generators, coroutines, native coroutines and async/await</a></p>
+<p><a href="https://snarky.ca/how-the-heck-does-async-await-work-in-python-3-5/" target="_blank" rel="noopener">How the heck does async/await work in Python 3.5?</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2017/02/13/database/深入浅出mysql/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2017/02/05/python/high-performance-python/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

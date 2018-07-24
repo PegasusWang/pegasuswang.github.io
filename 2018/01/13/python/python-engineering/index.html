@@ -1,0 +1,279 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Python 项目工程实践 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="Python 项目工程实践"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2018-01-13T01:50:04.000Z"><a href="/2018/01/13/python/python-engineering/">周六, 1月 13 2018, 9:50:04 上午</a></time>
+
+  
+    <h1 class="title">Python 项目工程实践</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python-软件工程/">python, 软件工程</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>动态语言一时爽，代码重构火葬场</p>
+</blockquote>
+<p>随着公司产品周期迭代和业务发展，使用 python 这种动态语言开发慢慢也暴露出一些问题，比如性能低、易出错、难重构、难维护等。 网上大部分是技术相关文章，工程相关的比较少。笔者就之前几年写 python 和维护 python 后端项目的经验简单介绍下如何提升 python 项目工程质量。</p>
+<a id="more"></a>
+<hr>
+<h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>很多创业公司初期为了市场竞争，产品快速迭代，使用了 python，ruby 之类的动态语言开发，动态语言的优势在于表达能力强，比较灵活，初期开发的时候速度比较快。如果公司顺利活下来，之后产品会更加注重性能、稳定性等，这个时候动态语言的缺点也开始慢慢暴露起来。有时候换语言和架构的成本是巨大的，而且很多场景也没必要更换（比如 Instagram 一直用的 python，都优化到了解释器级别，当然国内大部分公司没这个能力），我们尽量通过工程手段来控制项目质量，对动态语言扬长避短，更愉快地做项目。</p>
+<hr>
+<h1 id="知乎为什么继续用-python"><a href="#知乎为什么继续用-python" class="headerlink" title="知乎为什么继续用 python"></a>知乎为什么继续用 python</h1><p>出于以下几点原因吧：</p>
+<ul>
+<li>历史遗留问题，大量 python 项目</li>
+<li>写起来爽，做业务初期开发速度快</li>
+<li>基础设施支持比较完善</li>
+<li>有不少懂 python 的程序员</li>
+<li>大部分项目 IO 密集，初期使用 python 不会遇到性能问题</li>
+</ul>
+<p>目前来看只有少数非常吃性能的项目用 golang 重写(golang 在并发和工程上非常不错)，大部分场景 Python 够用，而且有时候新项目老板给的时间太短，换个技术栈还真不一定快速把业务做出来（少加班）</p>
+<hr>
+<h1 id="为什么要重视代码和工程质量"><a href="#为什么要重视代码和工程质量" class="headerlink" title="为什么要重视代码和工程质量"></a>为什么要重视代码和工程质量</h1><p>笔者这几年经历过各种 python 项目，见识过很多 python 程序员。之前维护过一些比较难以上手的代码仓库（无文档、无注释、无规范、风格混乱）等，深知一个恶心的代码仓库多么要人命。 实际上当初写 <a href="http://python-web-guide.readthedocs.io/zh/latest/index.html" target="_blank" rel="noopener">python web 入坑指南</a> 并不是出于什么高尚的目的，只是实在受不了难以维护的 python 项目，把很多问题都总结了一下。</p>
+<ul>
+<li>方便新手和团队其他成员快速熟悉代码</li>
+<li>减少 bug，降低在修 bug 上的时间浪费</li>
+<li>方便业务快速迭代，兼顾开发效率（减少无意义加班吧）</li>
+</ul>
+<p>很多时候一开始写代码只是很小一块，后来维护、修改 bug、增加新需求等，如果代码写得糙，后期修改成本就会很高。</p>
+<hr>
+<h1 id="动态语言做工程的缺点"><a href="#动态语言做工程的缺点" class="headerlink" title="动态语言做工程的缺点"></a>动态语言做工程的缺点</h1><p>主要有以下一些问题：</p>
+<ul>
+<li>解释性语言执行效率低，大部分时间用在 IO 密集场景，比如 web 后端</li>
+<li>开发工具支持不够完善，不如 java 有那么完善的 IDE</li>
+<li>难以重构。基本上重构只能依据字符串匹配，老实说每次重构有稍微大一些的改动都会有点担心</li>
+<li>滥用动态特性导致代码不好维护。这是个双刃剑，但是对工程来说还是不要滥用</li>
+<li>没有类型声明，看不出一些复杂类型的数据结构（Python、php 都在不遗余力地加上 type hint）</li>
+<li>缺少一些最佳实践（技术、小白文章偏多，工程实践文章比较少）</li>
+</ul>
+<p>笔者当时选择去做 python 后端也是因为比较喜欢 python 语言，轮子多、生产力高、写起来爽等，但是一旦开始真正项目协作的时候，很多问题也必须要重视（不仅仅是技术问题）。 下面从开发环境、工具、流程、规范等问题上总结下如何提升工程质量吧。</p>
+<hr>
+<h1 id="开发环境"><a href="#开发环境" class="headerlink" title="开发环境"></a>开发环境</h1><p>最好统一每个开发人员的开发环境，当然我们不能强制要求所有人都用一样的操作系统和编辑器、IDE 等，但是有些小问题还是比较麻烦的，比如不同系统的编码、编辑器的 tab 空格、自动换行等。笔者当初实习的时候团队里所有人都是登录到服务器上用 vim 写代码的，环境比较统一，现在基本大家都是 mac，一致的环境。当团队每个人用不同的工具的时候，可以采用以下一些工具来构建统一开发和编辑环境。</p>
+<ul>
+<li><a href="http://editorconfig.org/" target="_blank" rel="noopener">EditorConfig</a>: 用来统一编辑器配置。如果成员用不同的操作系统和编辑器，建议使用。尤其是对于<br>python 这种使用缩进的语言。需要编辑器安装相应的插件，并且配置一个共同的配置文件加入到版本库（可以配置编码、缩进等）</li>
+<li>Vagrant: 一款用于构建及配置虚拟开发环境的软件，基于Ruby, 主要以命令行的方式运行(没实战过)</li>
+<li>buildout: 知乎在用，把依赖包等安装到当前项目下。这样可以不用 virtualenv 之类的环境</li>
+<li>pienv/virtualenv: 构建 python 虚拟环境，之前没用 buildout 之前都是使用 virtualenv 构建本地开发环境</li>
+<li><a href="https://github.com/audreyr/cookiecutter" target="_blank" rel="noopener">cookiecutter</a>: 项目模板生成工具，每个项目最好用统一的模板生成，防止各个项目都是不同的风格，同时也能快速启动新项目。（知乎内部有自己的生成模板）</li>
+</ul>
+<hr>
+<h1 id="开发规范"><a href="#开发规范" class="headerlink" title="开发规范"></a>开发规范</h1><p>一般来说都是遵守 pep8，适当放宽下行长度限制，比如 120 列。如果有成员不使用 IDE，应当在其编辑器里加上对应的 pep8<br>检测插件。</p>
+<ul>
+<li>autopep8: 可以集成在很多开发工具里，尽量都用工具来格式化，避免风格不一致的问题。</li>
+<li>isort: 整理 python 包导入顺序，支持自定义配置，不用每次都费劲想着如何按照 pep8 顺序导入</li>
+<li>pylint: 静态检测，能检测出很多代码缺陷和不合规范的地方，笔者强烈推荐。最好集成到 CI 构建工具里。默认的 pylint<br>检测过于严格，我们可以自定义忽略一些提示，可以参考这个 <a href="https://github.com/PegasusWang/linux_config/blob/master/pylintrc" target="_blank" rel="noopener">pylintrc</a> 文件</li>
+</ul>
+<p>我个人的想法就是尽量能用工具做的就不要让人去做，工具能保证风格统一，减少出错可能，让我们把更多精力放在业务逻辑而不是调整格式上。项目大了以后代码的格式和排版等是很能影响开发心情的。笔者个人用的是 vim 的 python-mode 插件，基本上这些工具都支持，笔者写代码的时候格式也比较随意，只是改完文件后执行下 autopep8 和 isort，一切就又整洁了(类似于 golang 的 gofmt)。感兴趣的可以自己试试。</p>
+<hr>
+<h1 id="开发工具"><a href="#开发工具" class="headerlink" title="开发工具"></a>开发工具</h1><p>这个之前总结过很多用过的工具，感兴趣的看看 <a href="http://python-web-guide.readthedocs.io/zh/latest/codingtools/codingtools.html" target="_blank" rel="noopener">开发和编程工具</a></p>
+<hr>
+<h1 id="开发流程"><a href="#开发流程" class="headerlink" title="开发流程"></a>开发流程</h1><p>很多公司慢慢把版本控制迁移到了 git，使用 gitlab 管理代码项目。一般我们的 git 开发流程是这样的：</p>
+<ul>
+<li>fork 一份代码仓库</li>
+<li>本地新建代码分支开发新功能、修 bug 等</li>
+<li>开发完成后提交 merge request，有其他成员进行 code review。注意 commit 信息不能太随意，一般我们有一些提交模板</li>
+<li>确认代码没问题合并到主干，每次构建都会执行单测、pylint 检测等</li>
+</ul>
+<p>基本上这套 git 工作流程比较简单，目前也出过什么大问题。</p>
+<hr>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>每种语言都有自己的优势劣势，适用场景，通过规范、流程、工具等尽量提升我们的开发、协作效率、工程质量，争取更愉快地开发，减少无意义的加班。</p>
+<blockquote>
+<p>Life is short, You need Python</p>
+</blockquote>
+<hr>
+<h1 id="Ref"><a href="#Ref" class="headerlink" title="Ref:"></a>Ref:</h1><p><a href="http://python-web-guide.readthedocs.io/zh/latest/codingstyle/codingstyle.html" target="_blank" rel="noopener">编码之前碎碎念(工程实践)</a></p>
+<p><a href="http://python.jobbole.com/87814/" target="_blank" rel="noopener">Python + Django 如何支撑了 7 亿月活用户的 Instagram？</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2018/01/14/理财/职场小白指数基金懒人定投指南/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2017/12/10/python/fluent-python-note/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

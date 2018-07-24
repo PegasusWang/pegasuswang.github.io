@@ -1,0 +1,342 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>使用python编写vim插件 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="使用python编写vim插件"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2017-01-26T15:05:19.000Z"><a href="/2017/01/26/python/use-python-write-vim-plugin/">周四, 1月 26 2017, 11:05:19 晚上</a></time>
+
+  
+    <h1 class="title">使用python编写vim插件</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/vim-python/">vim, python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Use a single editor well. The editor should be an extension of your hand; make sure your editor is configurable, extensible, and programmable. - Andrew Hunt</p>
+</blockquote>
+<p>平常总是用那些大神们写的vim插件，今天闲来无事学写了一下vim插件，顺便写一个简单的教程。<br>先来看下我一个旺盛的<strong>需求</strong>：平常总会遇到分享本机或者服务器代码的情况，我经常使用<a href="http://paste.ubuntu.com/" target="_blank" rel="noopener">paste.ubuntu.com</a>网站粘贴代码(我记性不好总是忘记scp咋使的)，然后把链接分享给别人。类似github的gist服务，不过比较简单，而且gist国内用户访问有时候会出现奇奇怪怪的问题，所以一般我用ubuntu的pastebin多一些。但是步骤麻烦点，我写这个插件就是要一个命令帮我完成在vim里直接贴代码到paste.ubuntu.com的功能。</p>
+<a id="more"></a>
+<p>步骤如下:<br>看了一个youtube视频讲怎么用python写vim插件的，笔者以前的经验只限于使用vim，并不会vim脚本。现学现卖，同想写插件的可以看看，即使不用深入理解，照葫芦画瓢也不难。简单的插件从学习到实现大概只会花你半天到一天左右的时间，以后你就可以定制你的vim编辑器了。<br><a href="https://www.youtube.com/watch?v=vMAeYp8mX_M" target="_blank" rel="noopener">Writing Vim plugins with Python</a></p>
+<hr>
+<h2 id="让vim支持python函数"><a href="#让vim支持python函数" class="headerlink" title="让vim支持python函数"></a>让vim支持python函数</h2><p>首先确认你的vim编译时支持python或者python3，用<code>vim --version | grep +python</code>查看输出，否则你可能要重新编译安装vim。 笔者之前没有写过vim脚本，由于对python比较熟悉，现在用python实现。这里举个简单的例子，vim example.vim</p>
+<pre><code>function! HelloVim()
+    echo &quot;Hello Vim&quot;
+endfunction
+</code></pre><p>然后在vim里执行 <code>:source %</code>，之后在 <code>:call HelloVim()</code> 就能看到函数执行结果了。</p>
+<p>怎么在vim脚本里使用python函数呢？这里有个简单的文档 <a href="http://vimdoc.sourceforge.net/htmldoc/if_pyth.html" target="_blank" rel="noopener">Vim documentation: if_pyth</a><br>来用python实现一个类似的Hello函数</p>
+<pre><code>&quot; vim sript function
+function! HelloVim()
+    echo &quot;Hello Vim&quot;
+endfunction
+
+&quot; use python function, vim compiled with +python or +python3
+function! HelloPython()
+python3 &lt;&lt; endOfPython
+
+print(&apos;Hello Python&apos;)
+
+endOfPython
+endfunction
+</code></pre><p>我的vim使用+python3编译的，你可能需要把上边的python3换成python。然后在vim里执行 <code>:source %</code>，之后在 <code>:call HelloVim()</code> 就能看到函数执行结果了。</p>
+<hr>
+<h2 id="vim插件的目录结构"><a href="#vim插件的目录结构" class="headerlink" title="vim插件的目录结构"></a>vim插件的目录结构</h2><p>我们直接偷懒使用项目生成框架starter kit(就和我直接偷懒用flask-cookitecutter一样)，项目仓库在这里<a href="https://github.com/JarrodCTaylor/vim-plugin-starter-kit" target="_blank" rel="noopener">vim-plugin-starter-kit</a> 如果你有兴趣也可以看看这个项目的wiki，有一些教程。 直接克隆项目，进入文件夹以后执行python create_plugin_scaffold.py然后填写一下项目名称就好了，直接帮助你生成一个项目模板。我的项目树如下:</p>
+<pre><code>vim-ubuntu-pastebin
+├── README.md
+├── doc
+│   └── vim-ubuntu-pastebin.txt
+└── plugin
+    ├── __init__.py
+    ├── test.txt
+    ├── tests
+    │   ├── __init__.py
+    │   └── vim_ubuntu_pastebin_tests.py
+    ├── vim_ubuntu_pastebin.py
+    └── vim_ubuntu_pastebin.vim
+</code></pre><hr>
+<h2 id="编写简单的vim插件"><a href="#编写简单的vim插件" class="headerlink" title="编写简单的vim插件"></a>编写简单的vim插件</h2><p>我的需求有两个，一个是把当前的文本发送到 paste.ubuntu.com ，还有一个是把该功能集成到vim里。第一个功能我们使用python完成，功能也比较简单。我们去网站上随便粘贴一段文本用浏览器开发者工具观察发送的post请求就好了，之后用requests模拟提交（也可以用python内置的urllib，不过这里还要兼容python2和python3，所以直接用requests方便很多），编辑vim_ubuntu_pastebin_tests.py文件如下:</p>
+<pre><code># -*- coding: utf-8 -*-
+
+import os
+import requests
+import webbrowser
+
+try:
+    from urllib import urlencode    # py2
+except ImportError:
+    from urllib.parse import urlencode   # py3
+
+
+PASTEBIN_SUPPORT_TYPE = frozenset([
+    &apos;text&apos;, &apos;Cucumber&apos;, &apos;abap&apos;, &apos;ada&apos;, &apos;ahk&apos;, &apos;antlr&apos;, &apos;antlr-as&apos;, &apos;antlr-cpp&apos;, &apos;antlr-csharp&apos;, &apos;antlr-java&apos;, &apos;antlr-objc&apos;, &apos;antlr-perl&apos;, &apos;antlr-python&apos;, &apos;antlr-ruby&apos;, &apos;apacheconf&apos;, &apos;applescript&apos;, &apos;as&apos;, &apos;as3&apos;, &apos;aspx-cs&apos;, &apos;aspx-vb&apos;, &apos;asy&apos;, &apos;basemake&apos;, &apos;bash&apos;, &apos;bat&apos;, &apos;bbcode&apos;, &apos;befunge&apos;, &apos;blitzmax&apos;, &apos;boo&apos;, &apos;c&apos;, &apos;c-objdump&apos;, &apos;cfm&apos;, &apos;cfs&apos;, &apos;cheetah&apos;, &apos;clojure&apos;, &apos;cmake&apos;, &apos;coffee-script&apos;, &apos;common-lisp&apos;, &apos;console&apos;, &apos;control&apos;, &apos;cpp&apos;, &apos;cpp-objdump&apos;, &apos;csharp&apos;, &apos;css&apos;, &apos;css+django&apos;, &apos;css+erb&apos;, &apos;css+genshitext&apos;, &apos;css+mako&apos;, &apos;css+myghty&apos;, &apos;css+php&apos;, &apos;css+smarty&apos;, &apos;cython&apos;, &apos;d&apos;, &apos;d-objdump&apos;, &apos;delphi&apos;, &apos;diff&apos;, &apos;django&apos;, &apos;dpatch&apos;, &apos;duel&apos;, &apos;dylan&apos;, &apos;erb&apos;, &apos;erl&apos;, &apos;erlang&apos;, &apos;evoque&apos;, &apos;factor&apos;, &apos;felix&apos;, &apos;fortran&apos;, &apos;gas&apos;, &apos;genshi&apos;, &apos;genshitext&apos;, &apos;glsl&apos;, &apos;gnuplot&apos;, &apos;go&apos;, &apos;gooddata-cl&apos;, &apos;groff&apos;, &apos;haml&apos;, &apos;haskell&apos;, &apos;html&apos;, &apos;html+cheetah&apos;, &apos;html+django&apos;, &apos;html+evoque&apos;, &apos;html+genshi&apos;, &apos;html+mako&apos;, &apos;html+myghty&apos;, &apos;html+php&apos;, &apos;html+smarty&apos;, &apos;html+velocity&apos;, &apos;hx&apos;, &apos;hybris&apos;, &apos;ini&apos;, &apos;io&apos;, &apos;ioke&apos;, &apos;irc&apos;, &apos;jade&apos;, &apos;java&apos;, &apos;js&apos;, &apos;js+cheetah&apos;, &apos;js+django&apos;, &apos;js+erb&apos;, &apos;js+genshitext&apos;, &apos;js+mako&apos;, &apos;js+myghty&apos;, &apos;js+php&apos;, &apos;js+smarty&apos;, &apos;jsp&apos;, &apos;lhs&apos;, &apos;lighty&apos;, &apos;llvm&apos;, &apos;logtalk&apos;, &apos;lua&apos;, &apos;make&apos;, &apos;mako&apos;, &apos;maql&apos;, &apos;mason&apos;, &apos;matlab&apos;, &apos;matlabsession&apos;, &apos;minid&apos;, &apos;modelica&apos;, &apos;modula2&apos;, &apos;moocode&apos;, &apos;mupad&apos;, &apos;mxml&apos;, &apos;myghty&apos;, &apos;mysql&apos;, &apos;nasm&apos;, &apos;newspeak&apos;, &apos;nginx&apos;, &apos;numpy&apos;, &apos;objdump&apos;, &apos;objective-c&apos;, &apos;objective-j&apos;, &apos;ocaml&apos;, &apos;ooc&apos;, &apos;perl&apos;, &apos;php&apos;, &apos;postscript&apos;, &apos;pot&apos;, &apos;pov&apos;, &apos;prolog&apos;, &apos;properties&apos;, &apos;protobuf&apos;, &apos;py3tb&apos;, &apos;pycon&apos;, &apos;pytb&apos;, &apos;python&apos;, &apos;python3&apos;, &apos;ragel&apos;, &apos;ragel-c&apos;, &apos;ragel-cpp&apos;, &apos;ragel-d&apos;, &apos;ragel-em&apos;, &apos;ragel-java&apos;, &apos;ragel-objc&apos;, &apos;ragel-ruby&apos;, &apos;raw&apos;, &apos;rb&apos;, &apos;rbcon&apos;, &apos;rconsole&apos;, &apos;rebol&apos;, &apos;redcode&apos;, &apos;rhtml&apos;, &apos;rst&apos;, &apos;sass&apos;, &apos;scala&apos;, &apos;scaml&apos;, &apos;scheme&apos;, &apos;scss&apos;, &apos;smalltalk&apos;, &apos;smarty&apos;, &apos;sourceslist&apos;, &apos;splus&apos;, &apos;sql&apos;, &apos;sqlite3&apos;, &apos;squidconf&apos;, &apos;ssp&apos;, &apos;tcl&apos;, &apos;tcsh&apos;, &apos;tex&apos;, &apos;text&apos;, &apos;trac-wiki&apos;, &apos;v&apos;, &apos;vala&apos;, &apos;vb.net&apos;, &apos;velocity&apos;, &apos;vim&apos;, &apos;xml&apos;, &apos;xml+cheetah&apos;, &apos;xml+django&apos;, &apos;xml+erb&apos;, &apos;xml+evoque&apos;, &apos;xml+mako&apos;, &apos;xml+myghty&apos;, &apos;xml+php&apos;, &apos;xml+smarty&apos;, &apos;xml+velocity&apos;, &apos;xquery&apos;, &apos;xslt&apos;, &apos;yaml&apos;, ])
+
+
+def post_buffer_to_ubuntu_pastebin(buffer, filetype, open_in_borwser=True):
+    &quot;&quot;&quot; post current file buffer content to http://paste.ubuntu.com/
+    and return url.
+
+    Args:
+        buffer (vim.current.buffer)
+        filetype (str)
+
+    Returns:
+        url (str)
+    &quot;&quot;&quot;
+    lines = os.linesep.join(list(buffer))
+    url = &apos;http://paste.ubuntu.com/&apos;
+    data = urlencode(
+        {
+            &apos;poster&apos;: os.environ.get(&apos;USER&apos;, &apos;anonymous&apos;),
+            &apos;syntax&apos;: filetype if filetype in PASTEBIN_SUPPORT_TYPE else &apos;text&apos;,
+            &apos;content&apos;: lines
+        }
+    ).encode(&apos;utf-8&apos;)
+    r = requests.post(url, data=data, allow_redirects=True)
+    if open_in_borwser:
+        webbrowser.open_new_tab(r.url)
+    return r.url
+</code></pre><p>这样发送文本内容到 paste.ubuntu.com 的需求就完成了，还差一步就是怎么在vim里能够使用这段python代码。接下来编辑 vim_ubuntu_pastebin.vim文件，看着也挺简单:</p>
+<pre><code>&quot; --------------------------------
+&quot; Add our plugin to the path
+&quot; --------------------------------
+
+if !(has(&apos;python3&apos;) || has(&apos;python&apos;))
+    echo &quot;Error: Required vim compiled with +python or +python3&quot;
+    finish
+endif
+
+
+if has(&apos;python3&apos;)
+python3 import sys
+python3 import vim
+python3 sys.path.append(vim.eval(&apos;expand(&quot;&lt;sfile&gt;:h&quot;)&apos;))
+
+function! Pastebin()
+python3 &lt;&lt; endOfPython
+
+from vim_ubuntu_pastebin import post_buffer_to_ubuntu_pastebin
+filetype = vim.eval(&apos;&amp;filetype&apos;)    &quot; 获取文件类型
+url = post_buffer_to_ubuntu_pastebin(vim.current.buffer, filetype)
+print(url)
+
+endOfPython
+endfunction
+endif
+
+
+&quot; 下边代码仅仅是&apos;python3&apos;替换成了&apos;python&apos;
+if has(&apos;python&apos;)
+python import sys
+python import vim
+python sys.path.append(vim.eval(&apos;expand(&quot;&lt;sfile&gt;:h&quot;)&apos;))
+
+function! Pastebin()
+python &lt;&lt; endOfPython
+
+from vim_ubuntu_pastebin import post_buffer_to_ubuntu_pastebin
+filetype = vim.eval(&apos;&amp;filetype&apos;)
+url = post_buffer_to_ubuntu_pastebin(vim.current.buffer, filetype)
+print(url)
+
+endOfPython
+endfunction
+endif
+
+&quot; 定义一个命令Pastebin就可以在终端
+command! -nargs=0 Pastebin call Pastebin()
+</code></pre><p>我们直接在这个vim脚本里调用上边的python函数就可以了，使用list(vim.current.buffer)就能获取当前buffer里每行的内容，用换行符拼起来，之后把内容发送出去就好了。这样就实现了一个简单的vim插件了，是不是挺容易的。把当前项目推到github上，别人就可以使用Bundle等工具使用你的插件了。亲测有效，以后贴代码方便多了，在你的vim里头执行命令 <code>:Pastebin</code> 当前文件就自动贴到 paste.ubuntu.com 上并且输出url了，如果是桌面版操作系统还会自动帮你打开页面。</p>
+<hr>
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref:"></a>Ref:</h2><p><a href="https://github.com/PegasusWang/vim-ubuntu-pastebin" target="_blank" rel="noopener">vim-ubuntu-pastebin</a> - 上边小项目的代码<br><a href="http://vimdoc.sourceforge.net/htmldoc/if_pyth.html" target="_blank" rel="noopener">Vim documentation: if_pyth</a> - 你需要看一下python操作vim buffer的接口</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2017/01/28/psychology/刻意练习/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2017/01/25/python/simple-python-metaclass/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

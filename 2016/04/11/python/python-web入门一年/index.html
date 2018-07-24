@@ -1,0 +1,255 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>python web入门一年(附python web入坑指南) | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="python web入门一年(附python web入坑指南)"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-04-11T04:12:57.000Z"><a href="/2016/04/11/python/python-web入门一年/">周一, 4月 11 2016, 12:12:57 中午</a></time>
+
+  
+    <h1 class="title">python web入门一年(附python web入坑指南)</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Invest regularly in your knowledge portfolio. Make learning a habit.</p>
+</blockquote>
+<p>从大四实习到现在，做python web相关的东西也一年左右了，从一个毫无web基础的菜鸟成为一个仅仅算是入门的python工程师。上周拿到了木瓜移动的offer，入职之前写一下自己的经历帮助希望想要入门python web的同学吧，同时也希望国内的python圈可以发展更好，有更多喜欢python的同学能加入到python程序员的世界里。</p>
+<hr>
+<p>###why python?<br>都说牛逼的程序员是不能按照语言来分的，但是没办法，作为菜鸟的我有语言洁癖。自从我在大三暑假实习(做C++测试）的时候接触了python，就再也不想写别的语言了。写c++再写python，让我感觉就像学了汇编之后再学c，估计用了c之后再也不想写汇编了。于是买了一本《python核心编程》我的python学习之路就开始了。</p>
+<a id="more"></a>
+<hr>
+<p>###入门python web<br>毕设的时候我学了django，当时用django做了我的毕业设计，还写了一个简单的公众号。毕业前夕在天使汇找了实习，十分幸运跟着技术大牛教主做项目。但是我的表现十分糟糕，一开始使用nodejs写tech2ipo.com，无奈我什么都不会，调试的时候连chrome浏览器开发工具我都没用过，什么nginx/mongdb/redis我都没听过，每天就边查文档边写点代码，好多时候教主亲自把我写的都给改了，因为写得实在是太烂，每天过得很惶恐，甚至我怀疑我不是做web开发的料。不过既然入了web开发的门，就不能轻易放弃。慢慢地看书写代码，不断练习，总算是可以自己实现一些小功能了。</p>
+<hr>
+<p>###从python写爬虫学起<br>后来做项目需要爬虫，告别了nodej开始写起来python爬虫。期间学习了python的request库，beautifulsoup解析库，tornado异步爬虫等东西。其实做web写爬虫算是一个很好的入门方式，爬虫需要你对http协议（http图解），前端基础知识(html/css/js)，python基本用法（多线程，多进程，异步等），浏览器开发者工具，nginx服务器，mongdb/redis等nosql，数据处理等等都有所了解，在写了一段时间爬虫之后，算是对python web加深了理解。</p>
+<hr>
+<p>###入门python web框架<br>写网站毕竟还是需要web框架来快速做东西，『天下武功，唯快不破』，这也是很多创业公司选择python/ruby/nodejs之类敏捷开发语言的理由。python的web框架实在是太多了，各有各的优势，不过公司用了tornado，我就学起了tornado。业余就自己用工作中学到的一些东西，比如leancloud/mongodb/redis等东西做点小玩意，比如做了一个小的瀑布流图片网站，图片抓的tumblr；写了个微博机器人；用tornado写了博客；最近写了一个微信阅读聚合方便看自己平常订阅的公众号；用nodejs的博客ghost搭建了一个pyhome.org收集了很多python的文章。慢慢也算是对web开发入了一个门。这时候可能需要了解的就是一些web相关的东西，比如用户密码加密，表单验证，数据库设计，业务逻辑等东西，还有前端一框架jquery，avalon，工具gulp，webpack等东西。python的轮子很多，几乎都有现成的东西可以直接拿来用，开发效率还是很高的。缺点就是可能慢慢就成了api工程师，基本的东西就忘记了。</p>
+<hr>
+<p>###面试受挫<br>遗憾的是做的python项目终止了。公司逐渐迁移到java，我也就想到了跳槽，并不是觉得java不好，java有很多自己的优势，但是自己还是想继续做python。年前面试了礼物说和手机搜狐两家，自己感觉就不太好，结果都跪了。礼物说用的flask，笔试题只有三道题，第一题谁都会，第二题是数据库设计和手写sql，最后是思维发散题。题目没什么区分度，自己数据库没有多少设计经验，而且一般是用的nosql，回答很烂，直接跪了。手机搜狐直接聊了聊，涉及基础算法，数据结构，学校经历等，后来和thefire聊了一会，感觉自己某些知识掌握确实很肤浅，计算机网络也没学好，最后就没有然后了。</p>
+<hr>
+<p>###拿到offer<br>上周又面试了两家新浪微博搜索部门测试开发和木瓜移动的python后端。微博测试开发笔试题不少是测试相关的，python涉及到基础的语法和类，linux命令等。题目还是比较中规中矩的，和面试官聊了下，也学到了测试用例设计等问题。之前小公司测试上确实做得太差，几乎没有测试。不过还是喜欢web开发吧，最终木瓜移动拿了offer，正好离得近，直接走过去上班，木瓜08年开始用python，算是国内比较早的。木瓜笔试也比较中规中矩，都是acm涉及到的基础问题，虽然没任何准备，还是写出来了。最终聊的感觉还可以，马上要入职了，还是有些忐忑吧，希望自己可以胜任。面试有时候还是很靠运气的，短时间内很难全方位衡量一个人的能力，如果正好合口味可能回答不错，不合口味可能就会跪，当然跪了也未必是坏事，至少知道了自己的欠缺。最重要的应该是持续学习的能力和动机。</p>
+<hr>
+<p>###python的优点与缺点<br>这是我搞python一年多的浅见吧：<br>优点：容易上手，开发效率高，代码易读，轮子多，应用范围广（数据，运维，爬虫，web）,性价比高<br>缺点：招人不好招（学校不教的同学们就不深入学啊），效率问题（解释型语言的通病），项目管理问题（动态语言一时爽，代码重构火葬场）, 2和3不兼容（不过果断舍弃不好的特性才是python的未来）</p>
+<p>还好对于web应用这种io密集型应用，python的运行效率是可以接受的，真正遇到了瓶颈可以再继续优化。</p>
+<hr>
+<p>###入门与提高：<br>python是一门易学易用的语言(但是我感觉很容易写出烂代码)，so，你的竞争力在哪呢？实际上学一门语言成本不高，难的在于技术栈，比如后端需要对linux/mysql/nosql/web framework/数据结构/算法/网络/git/操作系统等都需要了解，很多东西都是慢慢积累的。有时候我也在想，自己跟那些大牛差距在哪。我是个承认智商的人，我一直觉得智商决定上限，努力决定下限。我可能成不了牛人，但是至少要做一个合格的python工程师。想说下学习方法吧，除了智商之外，就是学习方式和练习的问题了（更多学习方法论可以看看《程序员的思维修炼》)：</p>
+<ol>
+<li><strong>刻意</strong>练习，多写。看书的时候边看边写，哪怕照着书敲一遍，看的效率记忆率非常低。我看过很多之后脑子基本记不住多少，真正自己用过了才有感觉。编程无他，唯手熟尔。</li>
+<li>看源码。如果不想只是做api工程师，就开始看各个模块的实现。尝试模仿使用一些高级用法，有的代码实现非常精巧，像高手多学习提升编码能力。当然也不是刻意玩弄语言技巧，还是要遵守KEEP原则，语言技巧只在适当的时候用在合适的地方。<a href="http://www.dongwm.com/" target="_blank" rel="noopener">董伟明</a>的博客有很多python库代码的心得，大家可以参考下。</li>
+<li>做自己的小项目。学了很快就忘记了，不断做项目，不断练习所学的东西。你可以把学到的东西都用上，比如我会爬虫，就写过拉勾的职位分析，写过微博机器人，写过微信公众号聚合。用自己学到的东西解决问题是比较有成就感的事情。不过到现在前端也学得很艰难，囧。。。</li>
+<li>跟牛人学习。如果你的周围你是最厉害的，那恐怕你该换个地方了。同事很多是行业里比较厉害的牛人，多和他们接触能学到很多东西。我这一年跟着教主和同事学到了不少新玩意。。。</li>
+<li>善用工具。前辈们开发了很多好用的工具，比如前端的gulp,webpack；linux上的vi和命令行工具; mac上的dash文档查询，iterm终端,tmux, zsh等。</li>
+<li>社区交流。github,stackoverflow是非常好用的网站，各种牛人混迹于此。还可以参加一些技术分享，订阅一些技术博客，时刻关注下社区的最新动态。</li>
+<li>反思总结。看看问题出在哪了，怎么去改善。技术，沟通，需求理解，工程管理，思维方式等等很多环节都会出问题，不断总结反馈，改善自己。</li>
+<li>记录。写博客或者用gitbooks等工具构建自己的知识体系。好的博客也是别人快速了解你的工具</li>
+</ol>
+<hr>
+<p>###知识点<br>如果你想做python web相关的东西，下边这些东西可以参考学习：</p>
+<ul>
+<li>基础：linux命令，计算机网络，python语言，http协议，基础算法数据结构</li>
+<li>python: 内置库,爬虫库,web框架,数据库接口等。</li>
+<li>代码: pep8，代码组织，文档注释，TDD，敏捷等。markdown/sphinx/docstring/readthedoc等<br>（使用vim的话推荐python-mode插件，或者直接用IDE工具pycharm）</li>
+<li>相关框架(库)：django/flask/tornado/requests/sqlalchemy/unittest/celery等等</li>
+<li>数据库：mysql/mongodb/redis/memcached</li>
+<li>前端基础：html/css/js/jQuery/mvvm框架/coffeescript/gulp/webpack</li>
+<li>版本控制：git/github使用</li>
+<li>服务器运维: ssh/docker/nginx/linux命令/CI工具</li>
+<li>善用工具：vim/pycharm/sublime/atom/tmux/zsh/<br>ipython/jupyter/mysql-workbench/mongochef/postman/curl</li>
+</ul>
+<p>很多东西稍微了解下就可以，感兴趣的可以自己钻研。不过基础的开发能力还是要有的。<br>目前正打算写一下自己的入门和学习经验，希望可以给非科班人士提供一些建议，目前资历尚浅，希望有经验的Python高手可以一起协作。<br><a href="https://github.com/PegasusWang/python-web-guide" target="_blank" rel="noopener">pthon web guide 项目地址</a><br><a href="http://python-web-guide.readthedocs.io/zh/latest/" target="_blank" rel="noopener">python web 入坑指南</a></p>
+<hr>
+<p>###未来<br>工作之后我就在想，工作是为什么。有些程序员工作是为了养家糊口，有些是为了财务自由，有些程序员兴趣浓厚，为了实现自己的价值，有些人认为技术只是实现商业目标的工具, 不同的人看到的不一样，不同层次看到的也不一样。这和心理学的成就动机和马斯洛的需求层次有关了。扯远了。。。教主说看懂金融才能看清世界运转的规律，老实说很多东西我是越来越看不懂了。慢慢摸索，与君共勉，做一个平凡快乐的人也没什么不好。</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/05/12/Linux/ubuntu常用工具和python虚拟环境安装脚本/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/03/07/python/python-requests-tor-crawler/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

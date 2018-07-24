@@ -1,0 +1,267 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>python用requests+tor搭建轮换ip爬虫 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="python用requests+tor搭建轮换ip爬虫"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-03-07T14:50:00.000Z"><a href="/2016/03/07/python/python-requests-tor-crawler/">周一, 3月 7 2016, 10:50:00 晚上</a></time>
+
+  
+    <h1 class="title">python用requests+tor搭建轮换ip爬虫</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/爬虫/">爬虫</a>, <a href="/tags/tor/">tor</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>一般防爬虫有很多办法，最基本的是判断header是不是浏览器，比如python有个robot-detection库可以判断，不过这个太好模拟了，没有用。然后可以通过分析日志限定用户ip一定时间段内访问次数，或者通过cookie、session限定特定用户的访问次数等。理论上说，凡可以看到的内容都是可以通过技术手段爬到的，只是难易的差别。<br>下面记录一下在ubuntu server上用<a href="https://www.torproject.org/" target="_blank" rel="noopener">tor</a>搭建一个轮换IP的代理，如果爬虫一定时间段内没有得到内容，就可以换一个IP了。你可以先参考最后的几个链接大致了解下。系统用的vultr日本机房ubuntu server14.04。这是一种不用花钱的解决方案，也可以直接购买一些提供IP代理的服务，不需要自己折腾了。(注意：国内的服务器提供商使用的ISP可能限制了tor，如果你按照下边方法发现总是ttl超时，看下tor的log。推荐用国外的服务器跑爬虫）</p>
+<a id="more"></a>
+<hr>
+<p>###安装</p>
+<p>安装tor，先sudo su一下。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">apt-get update</span><br><span class="line">apt-get install tor</span><br><span class="line">/etc/init.d/tor restart</span><br></pre></td></tr></table></figure>
+<p>启动后socks监听9050端口。</p>
+<p><code>tor --hash-password mypassword</code>生成你的密码，之后编辑/etc/tor/torrc</p>
+<p>加上</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ControlPort 9051</span><br><span class="line">HashedControlPassword 16:872860B76453A77D60CA2BB8C1A7042072093276A3D701AD684053EC4C</span><br></pre></td></tr></table></figure>
+<p>让ControlPort监听9051端口，后边那个16:开头的hash就是上一步得到的。</p>
+<p><code>/etc/init.d/tor restart</code>重启下tor。</p>
+<hr>
+<p>###Python使用</p>
+<p><code>pip install requesocks</code></p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+import os
+import requests
+import requesocks
+
+url = &apos;https://api.ipify.org?format=json&apos;
+
+
+def getip_requests(url):
+    print &quot;(+) Sending request with plain requests...&quot;
+    r = requests.get(url)
+    print &quot;(+) IP is: &quot; + r.text.replace(&quot;\n&quot;, &quot;&quot;)
+
+
+def getip_requesocks(url):
+    print &quot;(+) Sending request with requesocks...&quot;
+    session = requesocks.session()
+    session.proxies = {&apos;http&apos;: &apos;socks5://127.0.0.1:9050&apos;,
+                       &apos;https&apos;: &apos;socks5://127.0.0.1:9050&apos;}
+    r = session.get(url)
+    print &quot;(+) IP is: &quot; + r.text.replace(&quot;\n&quot;, &quot;&quot;)
+
+
+def main():
+    print &quot;Running tests...&quot;
+    getip_requests(url)
+    getip_requesocks(url)
+    os.system(&quot;&quot;&quot;(echo authenticate &apos;&quot;yourpassword&quot;&apos;; echo signal newnym; echo quit) | nc localhost 9051&quot;&quot;&quot;)
+    getip_requesocks(url)
+
+
+if __name__ == &quot;__main__&quot;:
+    main()
+</code></pre><p>注意中间os.system这句，是用来重新生成一个新的ip的。一般在代码里根据内容是否有效判断是不是需要更新ip了，可以抛出一个异常之后执行这一句重新换个ip。</p>
+<p>update：新的requests库版本2.10.0已经支持socks代理了，这下就非常方便了，代理写法和http一样，具体参考其文档，如此一来搭建一个轮换IP的爬虫就非常容易了。</p>
+<hr>
+<p>###参考<br><a href="http://robbinfan.com/blog/11/anti-crawler-strategy" target="_blank" rel="noopener">http://robbinfan.com/blog/11/anti-crawler-strategy</a></p>
+<p><a href="http://sacharya.com/crawling-anonymously-with-tor-in-python/" target="_blank" rel="noopener">http://sacharya.com/crawling-anonymously-with-tor-in-python/</a></p>
+<p><a href="http://stackoverflow.com/questions/1969958/how-to-change-tor-exit-node-programmatically" target="_blank" rel="noopener">http://stackoverflow.com/questions/1969958/how-to-change-tor-exit-node-programmatically</a></p>
+<p><a href="https://github.com/dvska/requesocks" target="_blank" rel="noopener">https://github.com/dvska/requesocks</a></p>
+<p><a href="https://github.com/PegasusWang/PySiteCrawler" target="_blank" rel="noopener">https://github.com/PegasusWang/PySiteCrawler</a></p>
+<p><a href="http://platinhom.github.io/2016/01/21/proxy-py/" target="_blank" rel="noopener">http://platinhom.github.io/2016/01/21/proxy-py/</a></p>
+<p><a href="http://tor.stackexchange.com/questions/4538/bootstrapped-at-10-for-hours" target="_blank" rel="noopener">http://tor.stackexchange.com/questions/4538/bootstrapped-at-10-for-hours</a> ttl超时请参考这个方法使用obfsproxy</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/04/11/python/python-web入门一年/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/01/31/python/python缓存的一些用法/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

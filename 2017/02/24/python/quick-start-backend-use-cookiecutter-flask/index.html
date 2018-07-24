@@ -1,0 +1,370 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>使用cookiecutter-flask快速生成python后端项目 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="使用cookiecutter-flask快速生成python后端项目"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2017-02-24T15:30:21.000Z"><a href="/2017/02/24/python/quick-start-backend-use-cookiecutter-flask/">周五, 2月 24 2017, 11:30:21 晚上</a></time>
+
+  
+    <h1 class="title">使用cookiecutter-flask快速生成python后端项目</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Write code that writes code. Code generators increase your productivity and help avoid duplication.</p>
+</blockquote>
+<hr>
+<h2 id="天下武功，唯快不破"><a href="#天下武功，唯快不破" class="headerlink" title="天下武功，唯快不破"></a>天下武功，唯快不破</h2><p>每当我们启动一个新项目的时候，总有很多重复性工作，创建后端app模板就是其中之一。如果是使用django还好，django提供了生成项目app的命令直接创建，不过貌似现在很多pythoner都倾向于用flask这种微框架。虽然很多成功的项目是基于django（Instagram，Disqus，Pinterest等）构建，不过笔者还是更喜欢flask这种微框架。flask的好处在于你可以随意替换插件（ORM，模板等），相比django更加灵活。缺点就是有时候会选择困难，不知道如何组织大型项目，而且需要学习各种flask的插件，实际上把flask一套插件都整明白也需要一定的学习成本。今天笔者介绍的这个<a href="https://github.com/audreyr/cookiecutter" target="_blank" rel="noopener">Cookiecutter</a>项目就是专门用来解决项目模板生成问题的，经过了python3.5.2生产环境的检验。</p>
+<a id="more"></a>
+<hr>
+<h2 id="使用cookiecutter-flask生成模板"><a href="#使用cookiecutter-flask生成模板" class="headerlink" title="使用cookiecutter-flask生成模板"></a>使用cookiecutter-flask生成模板</h2><p>使用很简单(需要具备基本的flask框架知识)，<a href="https://github.com/sloria/cookiecutter-flask" target="_blank" rel="noopener">cookiecutter-flask</a>项目地址:</p>
+<pre><code>$ pip install cookiecutter
+$ cookiecutter https://github.com/sloria/cookiecutter-flask.git
+</code></pre><p>执行完以后按照提示填写app名称（注意app名称符合python包名规范）就可以生成了，非常方便。后边注意了，有新手在github的issue里提出没有一个新手指引，实际上生成到README里了。</p>
+<pre><code>===============================
+flaskapp
+===============================
+
+Test flask-cookiecutter
+
+
+Quickstart
+----------
+
+First, set your app&apos;s secret key as an environment variable. For example,
+add the following to ``.bashrc`` or ``.bash_profile``.
+
+.. code-block:: bash
+
+    export APP_SECRET=&apos;something-really-secret&apos;
+
+Before running shell commands, set the ``FLASK_APP`` and ``FLASK_DEBUG``
+environment variables ::
+
+    export FLASK_APP=/path/to/autoapp.py
+    export FLASK_DEBUG=1
+
+Then run the following commands to bootstrap your environment ::
+
+    git clone https://github.com/PegasusWang/app
+    cd app
+    pip install -r requirements/dev.txt
+    bower install
+    flask run
+
+You will see a pretty welcome screen.
+
+Once you have installed your DBMS, run the following to create your app&apos;s
+database tables and perform the initial migration ::
+
+    flask db init
+    flask db migrate
+    flask db upgrade
+    flask run
+
+
+Deployment
+----------
+
+In your production environment, make sure the ``FLASK_DEBUG`` environment
+variable is unset or is set to ``0``, so that ``ProdConfig`` is used.
+
+
+Shell
+-----
+
+To open the interactive shell, run ::
+
+    flask shell
+
+By default, you will have access to the flask ``app``.
+
+
+Running Tests
+-------------
+
+To run all tests, run ::
+
+    flask test
+
+
+Migrations
+----------
+
+Whenever a database migration needs to be made. Run the following commands ::
+
+    flask db migrate
+
+This will generate a new migration script. Then run ::
+
+    flask db upgrade
+
+To apply the migration.
+
+For a full migration command reference, run ``flask db --help``.
+</code></pre><p>按照步骤执行一次就能看到效果了。你只需要新建自己的蓝图，开始填写自己的业务就行了。</p>
+<hr>
+<h2 id="添加flask-restful-redis，sentry，flask-admin等支持"><a href="#添加flask-restful-redis，sentry，flask-admin等支持" class="headerlink" title="添加flask_restful, redis，sentry，flask_admin等支持"></a>添加flask_restful, redis，sentry，flask_admin等支持</h2><p>项目自动生成的模板里头已经引入了很多插件了，不过还有几个比较常用的插件，比如redis支持，sentry支持（sentry记录异常信息非常好用），flask_admin(类似django的后台管理）等。最后笔者的extensions.py如下:</p>
+<pre><code># -*- coding: utf-8 -*-
+&quot;&quot;&quot;Extensions module. Each extension is initialized in the app factory located
+in app.py.&quot;&quot;&quot;
+
+import os
+import types
+
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+from flask_babel import Babel
+from flask_bcrypt import Bcrypt
+from flask_caching import Cache
+from flask_debugtoolbar import DebugToolbarExtension
+from flask_login import LoginManager
+from flask_mail import Mail
+from flask_migrate import Migrate
+from flask_redis import FlaskRedis
+from flask_restful import Api
+from flask_sqlalchemy import SQLAlchemy
+from flask_wtf.csrf import CsrfProtect
+from mockredis import MockRedis
+from raven.contrib.flask import Sentry
+
+
+bcrypt = Bcrypt()
+csrf_protect = CsrfProtect()
+login_manager = LoginManager()
+db = SQLAlchemy()
+migrate = Migrate()
+cache = Cache()
+debug_toolbar = DebugToolbarExtension()
+api = Api(decorators=[csrf_protect.exempt])
+mail = Mail()
+babel = Babel()    # 用babel处理时区转换问题
+admin = Admin()
+sentry = Sentry()    # settings里配置Setnry服务器地址
+
+
+def api_route(self, *args, **kwargs):
+    &quot;&quot;&quot; 给flask api加上route功能，避免直接调用api.add_resource函数了.
+    具体请参考crm_backend.employee.api里的使用
+    http://flask.pocoo.org/snippets/129/
+    &quot;&quot;&quot;
+    def wrapper(cls):
+        self.add_resource(cls, *args, **kwargs)
+        return cls
+    return wrapper
+
+
+api.route = types.MethodType(api_route, api)
+
+
+class MockRedisWrapper(MockRedis):
+    &quot;&quot;&quot;A wrapper to add the `from_url` classmethod
+    https://github.com/underyx/flask-redis
+    &quot;&quot;&quot;
+    @classmethod
+    def from_url(cls, *args, **kwargs):
+        return cls(decode_responses=True)
+
+
+if os.environ.get(&apos;USE_CONFIG&apos;) == &apos;prod&apos;:
+    redis_store = FlaskRedis(decode_responses=True)
+else:
+    redis_store = FlaskRedis.from_custom_provider(MockRedisWrapper)
+</code></pre><p>当然也可以按照你自己的需求自己增删功能，最近的flask版本在DEBUG模式下支持自动检测重启，开发起来还是非常爽快的，笔者最近的几个后端项目都是用cookiecutter-flask生成后自己按需修改，感兴趣的可以试试。</p>
+<h2 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h2><p><a href="https://github.com/sloria/cookiecutter-flask" target="_blank" rel="noopener">cookiecutter-flask</a></p>
+<p><a href="https://github.com/audreyr/cookiecutter" target="_blank" rel="noopener">cookiecutter</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2017/05/27/软件工程/code-complete-note/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2017/02/16/design/software-design-principle/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

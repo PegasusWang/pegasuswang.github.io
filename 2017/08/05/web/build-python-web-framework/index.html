@@ -1,0 +1,507 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>编写简单的 python web 框架 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="编写简单的 python web 框架"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2017-08-05T09:22:02.000Z"><a href="/2017/08/05/web/build-python-web-framework/">周六, 8月 5 2017, 5:22:02 下午</a></time>
+
+  
+    <h1 class="title">编写简单的 python web 框架</h1>
+  
+
+
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Reinventing the wheel is great if your goal is to learn more about wheels.” – James Tauber</p>
+</blockquote>
+<p>  Python web 框架众多，大而全的 django，小巧的 flask，支持异步的 tornado 等，可能是因为用 python 实现个 web 框架太简单了吧，python 的框架层出不穷。 下边一步步介绍下一个 web 框架的基础组成，以及如何写个简单的 web 框架(使用 python3)，从而了解下 web 框架的工作原理。</p>
+<a id="more"></a>
+<hr>
+<h2 id="WSGI"><a href="#WSGI" class="headerlink" title="WSGI"></a>WSGI</h2><p>首先要了解 WSGI 规范的概念，WSGI(Web Server Gateway Interface)规范描述了web server(Gunicorn,uWSGI等)如何与web application(flask, django等)交互、web application如何处理请求，定义在 <a href="https://www.python.org/dev/peps/pep-3333/" target="_blank" rel="noopener">pep 3333</a>。正是有了 WSGI 规范，我们才能在任意 web server 上跑各种 web 应用。WSGI API 定义看起来很简单:</p>
+<pre><code>def application(environ, start_response)
+</code></pre><ul>
+<li>application 就是 WSGI app，一个可调用对象</li>
+<li>参数:<ul>
+<li>environ: 一个包含 WSGI 环境信息的字典，由 WSGI 服务器提供，常见的 key 有 PATH_INFO，QUERY_STRING 等</li>
+<li>start_response: 生成 WSGI 响应的回调函数，接收两个参数，status 和 headers</li>
+</ul>
+</li>
+<li>函数返回响应体的迭代器</li>
+</ul>
+<p>下面举个简单的例子，比如一个返回 hello world 的应用：</p>
+<pre><code>def application(environ, start_response):
+    status = &apos;200 OK&apos;
+    headers = [(&apos;Content-Type&apos;, &apos;text/html; charset=utf8&apos;)]
+    start_response(status, headers)
+    return  [b&quot;&lt;h1&gt;Hello, World!&lt;/h1&gt;&quot;]
+</code></pre><p>接下来我们使用 python 内置的 wsgi server 来跑这个应用:</p>
+<pre><code># 导入python内置的WSGI server
+from wsgiref.simple_server import make_server
+
+def application(environ, start_response):
+    print(environ)    # 我建议你打出来这个字典看看有哪些参数
+    status = &apos;200 OK&apos;
+    headers = [(&apos;Content-Type&apos;, &apos;text/html; charset=utf8&apos;)]
+    start_response(status, headers)
+    return [b&quot;&lt;h1&gt;Hello, World!&lt;/h1&gt;&quot;]    # WSGI applications return iterables that yield bytes
+
+if __name__ == &apos;__main__&apos;:
+    httpd = make_server(&apos;127.0.0.1&apos;, 8888, application)
+    httpd.serve_forever()
+</code></pre><p>运行这个文件，使用浏览器或者 curl 等工具访问 <a href="http://localhost:8888" target="_blank" rel="noopener">http://localhost:8888</a> 就能看到结果了。如果你打出来了 environ，能看到很多由 WSGI 服务器提供的环境信息，常见的有以下几个:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PATH_INFO</td>
+<td>请求路径，比如 /foo/bar/</td>
+</tr>
+<tr>
+<td>QUERY_STRING</td>
+<td>GET 请求参数，比如 foo=bar&amp;bar=spam，我们可以从这个变量中获取用户的请求参数</td>
+</tr>
+<tr>
+<td>HTTP_{HEADER}</td>
+<td>http 头信息，比如 HTTP_HOST 等</td>
+</tr>
+<tr>
+<td>wsgi.input</td>
+<td>包含请求内容的类文件对象(file-like object)，比如 post 请求数据</td>
+</tr>
+</tbody>
+</table>
+<p>接下来看看 start_response 这个可调用对象：</p>
+<pre><code>status = &apos;200 OK&apos;
+headers = [(&apos;Content-Type&apos;, &apos;text/html; charset=utf8&apos;)]
+start_response(status, headers)
+</code></pre><p>start_response 接收两个参数 :</p>
+<pre><code>start_response(status, headers)
+&quot;&quot;&quot;
+status: 一个包含 http 状态码和描述的字符串, 比如 &apos;200 OK&apos;
+headers: 一个包含 http 头的元祖列表，[(&apos;Content-Type&apos;, &apos;text/html; charset=utf8&apos;)]
+&quot;&quot;&quot;
+</code></pre><p>最后 WSGI 应用返回一个可迭代的 bytes 序列，比如</p>
+<pre><code># 注意返回的 bytes 编码要符合你指定的返回头
+def app(environ, start_response):
+    # ...
+    return [b&apos;hello&apos;, b&apos;world&apos;]
+
+def app(environ, start_response):
+    # ...
+    yield b&apos;hello&apos;
+    yield b&apos;world&apos;
+</code></pre><p>到这里我们就知道如何编写一个最简单的 WSGI 应用了，我们做个简单的练习，当用户访问 <a href="http://localhost:8888/?name=John" target="_blank" rel="noopener">http://localhost:8888/?name=John</a> 的时候， 在网页上输出 “Hello John”。代码如下：</p>
+<pre><code>#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+
+from wsgiref.simple_server import make_server
+
+
+def application(environ, start_response):
+    # print(environ)
+    status = &apos;200 OK&apos;
+    headers = [(&apos;Content-Type&apos;, &apos;text/html; charset=utf8&apos;)]
+
+    query_string = environ[&apos;QUERY_STRING&apos;]    # 这里是 &quot;name=John&quot;
+    name = query_string.split(&quot;=&quot;)[1]    # 从查询字符串 &quot;name=John&quot; 里获取 &quot;John&quot;
+    start_response(status, headers)
+    return [b&quot;&lt;h1&gt;Hello, {}!&lt;/h1&gt;&quot;.format(name)]
+
+
+if __name__ == &apos;__main__&apos;:
+    httpd = make_server(&apos;127.0.0.1&apos;, 8888, application)
+    httpd.serve_forever()
+</code></pre><hr>
+<h2 id="抽象-Request-和-Response-对象"><a href="#抽象-Request-和-Response-对象" class="headerlink" title="抽象 Request 和 Response 对象"></a>抽象 Request 和 Response 对象</h2><p>前面看到我们可以直接编写符合 WSGI 规范的应用，但是要做的工作量比较多，比如我们得直接去处理 query string，大部分 web 框架会抽象出 Request/Response 对象，这样一个 web 应用看起来会像这样：</p>
+<pre><code>from somewhere import Response
+
+def application(request):
+    # ...
+    return Response(&apos;blablabla&apos;)
+</code></pre><p>这样做的好处就是概念上更加清晰，测试更加容易，大部分的 web 框架都采用了类似抽象。接下来我们看看 web 框架是如何映射 WSGI 到 Request/Response 对象的。我们的代码结构将类似这样：</p>
+<pre><code>class Request: ...
+class Response: ...
+
+def request_response_application(function):
+    def application(environ, start_response):
+    # ...
+    return application
+
+@request_response_application
+def application(request):
+    # ...
+    return Response(...)
+</code></pre><p>先来实现 Request 对象，思路是这样的，我们把 environ 作为构造函数的参数传过去，这样我们就能利用各种子函数来获取我们需要的值。<br>比如请求地址(HTTP_HOST)，请求参数(QUERY_STRING) 等。比如我们可以用一个函数把 QUERY_STRING 字符串解析后作为 请求参数字典返回，这样使用的时候就方便很多。</p>
+<pre><code>import urllib.parse
+
+class Request:
+    def __init__(self, environ):
+        self.environ = environ
+
+    @property
+    def args(self):
+        &quot;&quot;&quot; 把查询参数转成字典形式 &quot;&quot;&quot;
+        get_arguments = urllib.parse.parse_qs(self.environ[&apos;QUERY_STRING&apos;])
+        return {k: v[0] for k, v in get_arguments.items()}
+</code></pre><p>Response 对象需要返回的值有返回内容，状态码，字符编码，返回类型等。大概如下:</p>
+<pre><code>import http.client
+from wsgiref.headers import Headers
+
+
+class Response:
+    def __init__(self, response=None, status=200, charset=&apos;utf-8&apos;, content_type=&apos;text/html&apos;):
+        self.response = [] if response is None else response
+        self.charset = charset
+        self.headers = Headers()
+        content_type = &apos;{content_type}; charset={charset}&apos;.format(content_type=content_type, charset=charset)
+        self.headers.add_header(&apos;content-type&apos;, content_type)
+        self._status = status
+
+    @property
+    def status(self):
+        status_string = http.client.responses.get(self._status, &apos;UNKNOWN&apos;)
+        return &apos;{status} {status_string}&apos;.format(status=self._status, status_string=status_string)
+
+    def __iter__(self):
+        for val in self.response:
+            if isinstance(val, bytes):
+                yield val
+            else:
+                yield val.encode(self.charset)
+</code></pre><p>现在 Request/Response 对象都有啦，还差一个转换函数，用来把之前的 WSGI 函数转换成使用我们的 Request/Response 对象的函数，我们写个装饰器来实现这个功能：</p>
+<pre><code>def request_response_application(func):
+    def application(environ, start_response):
+        request = Request(environ)
+        response = func(request)
+        start_response(response.status, response.headers.items())
+        return iter(response)
+    return application
+</code></pre><p>大功告成，来试一把：</p>
+<pre><code>@request_response_application
+def application(request):
+    name = request.args.get(&apos;name&apos;, &apos;default_name&apos;)    # 获取查询字符串中的 name
+    return Response([&apos;&lt;h1&gt;hello {name}&lt;/h1&gt;&apos;.format(name=name)])
+
+if __name__ == &apos;__main__&apos;:
+    httpd = make_server(&apos;127.0.0.1&apos;, 8888, application)
+    httpd.serve_forever()
+</code></pre><p>其实如果你用过 flask 你一定知道 Werkzeug，一套 flask 依赖的 WSGI 工具集。我们换用 Werkzeug 来写上面的应用几乎一样（嗯，就是照葫芦画瓢）:</p>
+<pre><code>from werkzeug.wrappers import Request, Response
+
+@Request.application
+def application(request):
+    name = request.args.get(&apos;name&apos;, &apos;PyCon&apos;)
+    return Response([&apos;&lt;h1&gt;hello {name}&lt;/h1&gt;&apos;.format(name=name)])
+</code></pre><hr>
+<h2 id="路由-Routing"><a href="#路由-Routing" class="headerlink" title="路由 Routing"></a>路由 Routing</h2><p>前面我们实现了 Request/Response 对象，不过好像还缺点什么，似乎只能处理一个 url，web 框架都可以处理很多请求路径，然后把不同的请求路径映射到不同的处理逻辑。<br>比如:</p>
+<ul>
+<li><a href="https://www.instagram.com/{username}/" target="_blank" rel="noopener">https://www.instagram.com/{username}/</a> 获取某个用户的个人页</li>
+<li><a href="https://www.instagram.com/p/{id}/" target="_blank" rel="noopener">https://www.instagram.com/p/{id}/</a> 获取某个图片</li>
+</ul>
+<p>大部分 web 框架实现了基于匹配的路由，将 url 模式与一个可调用对象匹配，比如 flask 的路由方式：</p>
+<pre><code>@app.route(&quot;/user/&lt;username&gt;/photos/&lt;int:photo_id&gt;&quot;)
+def photo_detail(username, photo_id):
+    # ...
+</code></pre><p>我们也来写个 Router 实现路由功能：</p>
+<pre><code>def hello(request, name):
+    return Response(f&quot;&lt;h1&gt;Hello, {name}&lt;/h1&gt;&quot;)
+
+def goodbye(request, name):
+    return Response(f&quot;&lt;h1&gt;Goodbye, {name}&lt;/h1&gt;&quot;)
+
+routes = Router()
+routes.add_route(r&apos;/hello/(.*)/$&apos;, hello)
+routes.add_route(r&apos;/goodbye/(.*)/$&apos;, goodbye)
+</code></pre><p>Router 实现方式如下，维护一个请求路径到可调用对象的 tuple 列表，每次从列表中查找请求路径是否满足当前 pattern，<br>满足则调用当前 pattern 对应的可调用对象进行处理。否则抛个异常返回 404 response。实现代码:</p>
+<pre><code>class NotFoundError(Exception):
+    &quot;&quot;&quot; url pattern not found &quot;&quot;&quot;
+    pass
+
+
+class Router:
+    def __init__(self):
+        self.routing_table = []    # 保存 url pattern 和 可调用对象
+
+    def add_route(self, pattern, callback):
+        self.routing_table.append((pattern, callback))
+
+    def match(self, path):
+        for (pattern, callback) in self.routing_table:
+            m = re.match(pattern, path)
+            if m:
+                return (callback, m.groups())
+        raise NotFoundError()
+
+
+def hello(request, name):
+    return Response(&quot;&lt;h1&gt;Hello, {name}&lt;/h1&gt;&quot;.format(name=name))
+
+
+def goodbye(request, name):
+    return Response(&quot;&lt;h1&gt;Goodbye, {name}&lt;/h1&gt;&quot;.format(name=name))
+
+
+routers = Router()
+routers.add_route(r&apos;/hello/(.*)/$&apos;, hello)
+routers.add_route(r&apos;/goodbye/(.*)/$&apos;, goodbye)
+
+
+def application(environ, start_response):
+    try:
+        request = Request(environ)
+        callback, args = routers.match(request.path)
+        response = callback(request, *args)
+    except NotFoundError:
+        response = Response(&quot;&lt;h1&gt;Not found&lt;/h1&gt;&quot;, status=404)
+    start_response(response.status, response.headers.items())
+    return iter(response)
+
+
+if __name__ == &apos;__main__&apos;:
+    httpd = make_server(&apos;127.0.0.1&apos;, 8888, application)
+    httpd.serve_forever()
+</code></pre><p>当然了，如果你喜欢类似 flask 那样的装饰器实现，我们也可以使用类的 <code>__call__</code> 方法:</p>
+<pre><code>class DecoratorRouter:
+    def __init__(self):
+        self.routing_table = []    # 保存 url pattern 和 可调用对象
+
+    def match(self, path):
+        for (pattern, callback) in self.routing_table:
+            m = re.match(pattern, path)
+            if m:
+                return (callback, m.groups())
+        raise NotFoundError()
+
+    def __call__(self, pattern):
+        def _(func):
+            self.routing_table.append((pattern, func))
+        return _
+
+routers = DecoratorRouter()
+
+
+@routers(r&apos;/hello/(.*)/$&apos;)
+def hello(request, name):
+    return Response(&quot;&lt;h1&gt;Hello, {name}&lt;/h1&gt;&quot;.format(name=name))
+
+
+@routers(r&apos;/goodbye/(.*)/$&apos;)
+def goodbye(request, name):
+    return Response(&quot;&lt;h1&gt;Goodbye, {name}&lt;/h1&gt;&quot;.format(name=name))
+</code></pre><p>我们运行下这个文件，然后执行 <code>curl http://127.0.0.1:8888/hello/laowang/</code> 和 <code>curl http://127.0.0.1:8888/goodbye/laowang/</code> 就能看到不同结果了，是不是挺简单。</p>
+<hr>
+<h2 id="MVC-模式"><a href="#MVC-模式" class="headerlink" title="MVC 模式"></a>MVC 模式</h2><p>上面我们差不多实现了一个简单的 web 框架，现代 web 框架大部分都是使用的 MVC 模式：</p>
+<ul>
+<li>Model: 数据存储、验证逻辑</li>
+<li>Controller: 行为和业务逻辑</li>
+<li>View: 展示层 (html)。大部分 web 框架都会提供一个模板引擎用来渲染页面(mako, Jinja2等)，如果是做前后端分离或者仅提供 api 接口就不需要了(貌似这是个趋势，越来越多渲染放在了非服务端)。这个时候通常需要一个数据格式化层(Formatter)，一个开源实现是 marshmallow 库，用来决定返回什么样的数据和格式。</li>
+</ul>
+<p>实际上我个人习惯这么分层次，http 请求 -&gt; 表单验证层(wtforms 等库) -&gt; views -&gt; controllers (业务逻辑层) -&gt; models (ORM 层) -&gt; formatters (marshmallow 等格式化输出)。大概就是一个请求到了，先用表单验证等库校验参数的类型、范围等，接下来调用 controllers 里的业务逻辑，controllers 层会调用 orm 层获取数据后处理，之后返回的数据使用 marshmallow 等格式化库输出 json 数据。总体来说还是比较清晰的，之前碰到很多项目都是校验、业务逻辑、数据获取揉在一起，代码相当难看。</p>
+<p>MVC 模式常用的几种方式:</p>
+<pre><code>def hello(request, name):
+    t = load_template(&quot;say_hello.html&quot;)
+    return Response(t.render(name=name))
+
+def hello(request, name)
+    return TemplateResponse(&quot;say_hello.html&quot;, name=name)
+
+@app.route(&quot;/hello/&lt;name&gt;&quot;, template=&quot;say_hello.html&quot;)
+def hello(request, name):
+    return {&quot;name&quot;: name}
+</code></pre><p>模板引擎大致的原理就是使用标记符号等替换填充的数据(content)，格式化成字符串后返回。有点类似于 format 函数， 比如</p>
+<pre><code>&quot;&lt;h1&gt;hello {name}&lt;/h1&gt;&quot;.format(name=name)
+</code></pre><hr>
+<h2 id="ORM-To-ORM-or-not-to-ORM"><a href="#ORM-To-ORM-or-not-to-ORM" class="headerlink" title="ORM : To ORM or not to ORM ?"></a>ORM : To ORM or not to ORM ?</h2><p>ORM(Object Relatetional Mapping): 对象关系映射，就是把关系数据库中的表映射到程序语言中的一个对象，这样我们就能以更加面向对象的方式操作数据库中的数据。在 python 中比较著名的 ORM 框架就是 sqlalchemy，还有轻量点的 peewee，以及 django 自带的 ORM等。笔者所经历过的项目中基本上都用了 sqlalchemy，直接使用其 ORM 或者抽象层次更低一些的 core。包括知乎、reddit 等也是使用了 sqlalchemy。ORM 的编写需要使用元类的知识，如果你感兴趣，可以参考这篇文章。<a href="https://zhuanlan.zhihu.com/p/28333506" target="_blank" rel="noopener">『简单』的 python 元类</a></p>
+<hr>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>上面基本列举了一个 web 框架的基础结构，当然实现一个 web 应用还有很多需要做，比如表单验证，用户认证、国际化、测试、部署、web 服务器等。笔者曾经用过 flask 全家桶（各种插件），感觉开发效率还是比较高的。这篇文章只是为了让大家了解下一个基础的 web 框架如何实现，有兴趣的可以看看 django、flask、tornado 等比较著名的开源 web 框架实现。</p>
+<hr>
+<h1 id="Ref"><a href="#Ref" class="headerlink" title="Ref"></a>Ref</h1><p><a href="http://www.letiantian.me/2015-09-10-understand-python-wsgi/" target="_blank" rel="noopener">理解Python WSGI</a></p>
+<p><a href="https://jacobian.github.io/pycon2017/#/" target="_blank" rel="noopener">LET’S BUILD A WEB FRAMEWORK!</a></p>
+<p><a href="http://www.bingtel.wang/2017/03/05/PEP-333-Python-Web-Server-Gateway-Interface-v1-0/" target="_blank" rel="noopener">PEP-333-Python-Web-Server-Gateway-Interface-v1-0</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2017/10/14/tools/from-vim-to-neovim/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2017/07/22/软件工程/the-art-of-readable-code/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

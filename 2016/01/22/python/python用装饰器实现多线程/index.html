@@ -1,0 +1,314 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>python用装饰器实现多线程 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="python用装饰器实现多线程"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-01-22T07:44:09.000Z"><a href="/2016/01/22/python/python用装饰器实现多线程/">周五, 1月 22 2016, 3:44:09 下午</a></time>
+
+  
+    <h1 class="title">python用装饰器实现多线程</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>###Tomorrow.py<br>无意中发现github上这么个库<a href="https://github.com/madisonmay/Tomorrow" target="_blank" rel="noopener">tomorrow.py, Magic decorator syntax for asynchronous code in Python 2.7</a>，使用装饰器就可以实现多线程，看起来很神奇。示例如下:<br><a id="more"></a></p>
+<pre><code>urls = [
+    &apos;http://google.com&apos;,
+    &apos;http://facebook.com&apos;,
+    &apos;http://youtube.com&apos;,
+    &apos;http://baidu.com&apos;,
+    &apos;http://yahoo.com&apos;,
+]
+
+import time
+import requests
+
+def download(url):
+    return requests.get(url)
+
+if __name__ == &quot;__main__&quot;:
+    start = time.time()
+    responses = [download(url) for url in urls]
+    html = [response.text for response in responses]
+    end = time.time()
+    print &quot;Time: %f seconds&quot; % (end - start)
+</code></pre><p>这是传统的方式，用tomorrow可以怎么做呢，先pip install tomorrow，注意到会安装依赖concurrent库。这个库在python3.2版本中引入到了标准库，在2.7版本中注意到安装tomorrow的时候会先安装concurrent库。下边是多线程版本，仅仅多了一行：</p>
+<pre><code>import time
+import requests
+
+from tomorrow import threads
+
+@threads(5)
+def download(url):
+    return requests.get(url)
+
+if __name__ == &quot;__main__&quot;:
+    start = time.time()
+    responses = [download(url) for url in urls]
+    html = [response.text for response in responses]
+    end = time.time()
+    print &quot;Time: %f seconds&quot; % (end - start)
+</code></pre><p>只是加了一个装饰器<code>@thread(5)</code>，就可以多线程执行requests函数了，非常方便，还用个毛线程池。来看一下tomorrow.py源代码，一共才不到50行，其源码如下：</p>
+<pre><code>from functools import wraps
+
+from concurrent.futures import ThreadPoolExecutor
+
+
+class Tomorrow():
+
+    def __init__(self, future, timeout):
+        self._future = future
+        self._timeout = timeout
+
+    def __getattr__(self, name):
+        result = self._wait()
+        return result.__getattribute__(name)
+
+    def _wait(self):
+        return self._future.result(self._timeout)
+
+
+def async(n, base_type, timeout=None):
+    def decorator(f):
+        if isinstance(n, int):
+            pool = base_type(n)
+        elif isinstance(n, base_type):
+            pool = n
+        else:
+            raise TypeError(
+                &quot;Invalid type: %s&quot;
+                % type(base_type)
+            )
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            return Tomorrow(
+                pool.submit(f, *args, **kwargs),  # 创建future对象
+                timeout=timeout
+            )
+        return wrapped
+    return decorator
+
+
+def threads(n, timeout=None):
+    return async(n, ThreadPoolExecutor, timeout)
+</code></pre><p>实际上可以看出就是以下官方示例的一个装饰器封装，原始的版本是这么写的（稍微改了python文档上的示例）：</p>
+<pre><code>import requests
+import concurrent.futures
+
+URLS = [&apos;http://www.baidu.com&apos;] * 10
+
+
+def load_url(url, timeout):
+    return requests.get(url, timeout=timeout).content
+
+# We can use a with statement to ensure threads are cleaned up promptly
+with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    # Start the load operations and mark each future with its URL
+    future_to_url = {executor.submit(load_url, url, 60): url for url in URLS}
+    for future in concurrent.futures.as_completed(future_to_url):
+        url = future_to_url[future]
+        try:
+            data = future.result()
+        except Exception as exc:
+            print(&apos;%r generated an exception: %s&apos; % (url, exc))
+        else:
+            print(&apos;%r page is %d bytes&apos; % (url, len(data)))
+</code></pre><p>暂时这个用得不多，以后有时间再慢慢研究下吧，不清楚工程上是不是有直接应用了，不过写个小脚本可以用用。</p>
+<p>###几个参考:<br><a href="https://docs.python.org/3/library/concurrent.futures.html" target="_blank" rel="noopener">current.futures</a></p>
+<p><a href="http://xiaorui.cc/2014/11/15/%E4%BD%BF%E7%94%A8python%E7%9A%84%E4%B8%8A%E5%B1%82%E5%B0%81%E8%A3%85%E5%B9%B6%E5%8F%91%E5%BA%93concurrent-futures%E5%AE%9E%E7%8E%B0%E5%BC%82%E6%AD%A5/" target="_blank" rel="noopener">使用python的并发库concurrent.futures实现异步</a></p>
+<p><a href="http://leejia.blog.51cto.com/4356849/1407249" target="_blank" rel="noopener">简单实现并发：python concurrent模块</a></p>
+<p><a href="https://github.com/klen/python-mode" target="_blank" rel="noopener">Vim python-mode. PyLint, Rope, Pydoc, breakpoints from box.</a> 最后推荐这个vim插件，叫做python-mode,集成了众多python插件，包括语法检查，补全等，非常方便，直接相当于一个python的IDE了。</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/01/26/python/understanding-python-GIL/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/01/18/python/获取拉勾指定地区职位的小脚本/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

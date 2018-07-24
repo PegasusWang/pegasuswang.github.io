@@ -1,0 +1,239 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>为什么c++不提倡使用宏#define | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="为什么c++不提倡使用宏#define"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2014-09-16T14:52:48.000Z"><a href="/2014/09/16/c++/为什么c-不提倡使用宏/">周二, 9月 16 2014, 10:52:48 晚上</a></time>
+
+  
+    <h1 class="title">为什么c++不提倡使用宏#define</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/c/">c++</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/c/">c++</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>C++ 的书上常说，尽量不要用 #define 来定义常量。这究竟是为什么呢？<br>其实 C++ 并不仅仅不提倡用宏来定义常量，而且还不提倡用宏来定义“函数”。事实上 C++ 并不是很喜欢预处理宏，在很多很多方面，如果不是必需，尽量不要使用预处理宏。</p>
+<a id="more"></a>
+<p>为什么 C++ 不喜欢预处理宏？<br>首先，预处理宏是“全局”的。所以，在 C++ 这样如此强调命名空间、类这样的东西的语言中，全局的东西真是越少越好。但是其实预处理宏的全局并不是语义上的全局，之所以叫预处理宏，是因为预处理宏会在编译器编译代码之前被简单地替换成代码。<br>然后，正因为预处理宏会被简单替换，所以替换的结果是不可预料的。这些说起来还是比较模糊，所以下面将举一些实际的例子。<br>#define 会把其后的注释也简单地替换</p>
+<pre><code>#define PI 3.14159 // This is a constant.
+/* Some harmonious code */
+double radius = 2.0;
+double area = PI * radius * radius;
+cout &lt;&lt; area &lt;&lt; endl;
+
+</code></pre><p>某些编译器的结果会输出 3.14159 . 但是使用了 g++ 的测试结果却是正确的。在输出错误结果的编译器下，是因为上面使用了 PI 的那行被替换成了：<br><code>double area = 3.14159 // This is a constant. * radius * radius</code><br>其实这种情况可以用下面的方法解决：<br><code>#define PI 3.14159 /* This is a constant */</code><br>尽管可以如此解决，我们还是不提倡使用 #define 定义常量。我们还是有一万个理由，尽量不用 #define .<br>宏并不能正确地指定类型<br>我们知道 #define 定义的常量并不需要指定类型，而用 const 修饰的常量是必须指定类型的。这个方面其实没有太多的例子可以举，而且我也没有想出一些明显的错误的例子，所以就提一下吧。<br>C 里必须用宏定义常数而 C++ 并不一定<br>考虑以下这段代码：<br><code>const int n = 256;</code><br><code>char a[n] = {0};</code><br>这段代码如果以 .c 作为后缀保存，会提示定义数组时需要一个常量作下标，因为在 C 语言中，const 只是“不可修改的变量”之意。所以在 C 里只能用 #define 定义常量。但是在 C++ 中却可以用 const.<br>这些代码在 VC6 和 gcc 中测试过，都是如上所述。<br>用 #define 定义字面常量可能会浪费很多空间<br>比如在代码中使用 #define 定义了一个比较长的常量字符串，如果这个宏被使用了很多次，那么这个字面常量将会遍地开花，如果编译器没有那么聪明的话，可能会耗费很多不需要耗费的空间。<br>用 #define 定义常量对象可能会执行多次构造函数而降低时间效率<br>参见如下代码：<br>#define WELCOME_MESSAGE string(“Welcome!”)<br>如果多次使用 WELCOME_MESSAGE 宏的话，将有可能每次遇到它们的时候都调用 class string 的 string(const char *) 构造函数。这样的话，不仅空间会被浪费，而且也会影响执行效率。#define 定义的“函数”“参数”也只是简单替换<br>考虑如下代码:</p>
+<pre><code>
+#define max(a,b) (a &gt; b ? a : b)
+/* Some harmonious code */
+int x = 5, y = 6;
+int n = max(++x, ++y);
+
+</code></pre><p>这样之后，n 不会是 7. 因为那个调用 max 宏的那行被替换成了：<br><code>int n = (++x &gt; ++y ? ++x : ++y);</code><br>所以 n 的值会是 8. 其实这种小错误还算不错了，还有更错的。<br>#define 定义的函数不“认识” C++ 里的 template<br>当 #define 出生的时候，还没有 template, 似乎也没有 // 开头的注释。考虑如下代码:</p>
+<pre><code>#define max(a,b) (a &gt; b ? a : b)
+template
+class example {
+/* ... */
+public:
+bool operator&gt;(const example &amp;foo) const {
+/* ... */
+}
+};
+/* ... */
+template x, y;
+/* ... */
+template n = max(example(x), example(y));
+
+</code></pre><p>这里的最后一行的 max 宏会把 example(x) 视为 b. 后面的东西就会报错了。在 C 语言里只考虑到了括号内的逗号，而没考虑大小于号里的括号。<br>但是为什么 C++ 又没有放弃支持 #define<br>C 语言里有一个 assert.h , 是必须要用宏来实现的。除此之外，C++ 似乎有一种在运行时获取“类”的名字的思路，就是使用宏。还有，宏可以避免头文件被多次包含。而且有的时候需要一些预定义的宏，来控制代码在不同的环境下的编译。<br>有的时候，对于一些要重复多次，并且比较长的代码，可以在局部启用宏。但是在用完的地方一定要使用 #undef 将其取消。但是大多时候，尽量不要用宏来定义常数和“函数”。<br>那在 C++ 中应该怎么办才能替代 #define 的一些功能<br>C++ 不但能替代一些 #define 没有完善的功能，而且能做得更好。对于常数定义，在 C++ 中使用 const 就可以了。对于一些简单的“函数”，可以使用 C++ 的 inline 修饰符，使用这个修饰符，效果上会和一般的函数一样，但是实际上编译器会把函数中的代码根据语义替换到调用函数的地方，所以运行效率不会受到太大影响。而且在使用 max(++i, ++j) 之类的函数的时候，不会是简单替换，所以 ++i 和 ++j 分别只被计算一次。</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2014/09/17/tools/Linux-unix用valgrind检测内存泄漏/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2014/09/16/Linux/Linux库的创建和使用/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

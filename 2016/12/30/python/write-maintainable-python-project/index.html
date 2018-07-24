@@ -1,0 +1,328 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>编写易维护的python项目 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="编写易维护的python项目"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-12-30T12:47:31.000Z"><a href="/2016/12/30/python/write-maintainable-python-project/">周五, 12月 30 2016, 8:47:31 晚上</a></time>
+
+  
+    <h1 class="title">编写易维护的python项目</h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>从实习到现在使用python也快两年了，虽然经验依旧不多，不过维护旧项目和开发新项目好歹也都经历过，记录下想法就当年终总结吧。很多东西是之前没参与项目协作的时候没有注意到的，要不就是踩了坑才知道的。和人协作项目以后才真正意识到代码首先是写给人看的，其次才是让机器执行的。</p>
+<h2 id="易编写，难维护"><a href="#易编写，难维护" class="headerlink" title="易编写，难维护"></a>易编写，难维护</h2><blockquote>
+<p>Always code as if the person who ends up maintaining your code is a violent psychopath who knows where you live.- John Woods</p>
+</blockquote>
+<p>python做项目给我的感觉就是易编写，难维护。一方面是动态语言本身的特性，比如没有类型声明，难以重构等；另一方面就是团队流程和规范的问题，没有严格的流程控制提交代码的质量。目前很多使用python的公司都是小公司，很多流程不正规，没有编码规范，没有文档，没有注释，没有静态检测(pylint)，没有code review，没有单元测试，没有持续集成等等，最终的代码质量可想而知，维护和新人上手成本很高，代码仓库很容易失控(野蛮开发技术债会越积越多)。一开始我认为python号称『伪代码』语言，应该是更易读易理解的，后来发现我错了。python给你一种代码很好写的错觉，很容易就写出烂代码。</p>
+<a id="more"></a>
+<hr>
+<h2 id="难以维护的Python代码"><a href="#难以维护的Python代码" class="headerlink" title="难以维护的Python代码"></a>难以维护的Python代码</h2><pre><code># python
+def isRankingBetter(self, customer,topranking):
+    testranking = getRanking(customer)
+    return testranking &gt; topranking
+
+// java
+public boolean isRankingBetter(Customer customer, int topranking) {
+    int testranking = getRanking(customer);
+    return testranking &gt; topranking;
+}
+</code></pre><p>上面是一段java和python的对比，用来说明为什么python难以维护。java版本一眼就能看出来传入参数的类型和返回值，但是遗憾的是python看不出来，在python中基本只有通过docstring你才能知道传入参数的类型。当项目大了以后，维护一份没有文档和注释的python项目基本就是灾难。笔者曾很喜欢python语言，认为python是“伪代码”语言，但是有了维护python旧代码的经验后，我开始怀疑python是不是适合构建大型项目。当然很多知名应用是python构建的，我觉得老外们软件工程做得还是不错的，把控好代码质量和单元测试（比如Quora创始人曾经解释过他们为什么选择了python）。但是我经历的一些使用python的项目工程方面却比较糟糕，代码维护起来非常吃力，开始让我对python产生严重怀疑。java虽然写起来繁琐，但是不容易出错，动态语言写起来爽，但是维护和重构起来吃力，并且容易出错。我个人感觉就是使用动态语言要严格把控代码质量和文档，用好pylint对代码静态检测。</p>
+<hr>
+<h2 id="什么导致了代码不好维护"><a href="#什么导致了代码不好维护" class="headerlink" title="什么导致了代码不好维护"></a>什么导致了代码不好维护</h2><blockquote>
+<p>软件构建的核心就是管理复杂度。 - 《Code Complete》</p>
+</blockquote>
+<p>仅仅从我经历过的项目来说明下一些导致代码不好维护的原因：</p>
+<ul>
+<li>没有编码规范，没有code review，代码风格很混乱。python老手，新手，其他语言转过来的等写出来的代码风格迥异。（定义编码规范,pep8）</li>
+<li>没有单元测试，不敢改动代码，不敢重构。只能堆砌逻辑。（保证基本的，必要的单元测试，我遇到的很多写python的表现不够专业，写个函数print下就感觉正确了，没有单元测试）</li>
+<li>没有最基本的文档和注释，导致理解成本高，接口易用性差，『代码黑洞』比较多。（必要的docstring，注释，需求文档归档地址)</li>
+<li>业务逻辑太复杂。很多时候难度在于理解业务，而不是技术问题，但是业务逻辑写得比较ugly。(及时小规模重构，不要放任代码腐化)</li>
+<li>python动态语言自身特性，比如灵活，没有类型提示，难以重构等，容易写出烂代码。（我是主张强制使用pyflake，pylint静态检测代码的，可以尝试python3的type hint特性，消除基本的错误和缺陷）</li>
+<li>项目管理流程不正规，程序员太随意。高质量的项目需要规范流程，开发、测试、产品、客户之间的良好沟通和反馈。 (规范化流程)</li>
+<li>防范离职风险：任何时候需求至少两个人一起对（对需求），代码完成后至少经过一个人review，公司经常为了压榨每个程序员的生产力只放手放一个人做，我觉得这是危险的。每个程序员的解决方案至少要让另一个人能看懂。</li>
+</ul>
+<p>如果你维护过一个风格混乱，没有单元测试，没有文档，没有注释，没有持续集成，经历了几代人员(各种python老鸟菜鸟)更替的项目，就会明白维护项目是一件多么痛苦的事情(为此可能会早死几年)。这也是最近我一直关注项目和代码质量的原因，之前维护这块我是没啥经验的，刚毕业那会都是写新项目比较happy（虽然项目都死了），有很强的掌控感。维护代码虽然踩了坑，不过终究涨了点维护代码和提升代码质量的经验。很多时候程序员会偷懒，比如没有文档和注释，没有单元测试等，理由基本都是时间紧，任务重，（我称之为职业素养不够，项目流程管理不利，当然这话不能当面撕逼），最终导致项目质量下降 ，bug不断，维护和修改成本高，没人想去碰那些恶心的代码。</p>
+<hr>
+<h2 id="需要编码规范吗？"><a href="#需要编码规范吗？" class="headerlink" title="需要编码规范吗？"></a>需要编码规范吗？</h2><p>我个人觉得是必要的，放任各种程序员最终会让项目代码变成一坨shit。之前公司虽然没有编码规范，但是采用了一致的开发环境(vim)和代码检测插件(pep8+pylint)，写出来的代码风格还是很一致的，加上同事大多都是比我经验丰富地多的python老手，即使违反了规范基本也是我…囧。但是目前公司是没有编码规范的，结果也看到了，代码风格极其混乱，用我的vim打开之后满眼都是警告（vim的python-mode打开pep8,pyflake和pylint检测），不忍直视啊。我觉得程序员需要一定限制，不能绝对自由(如果项目组有个经验丰富的高手负责review代码会很好)，我也经常犯傻逼错误，需要一定规范来限制，自由的前提是不能违反一些基本原则，否则给别人代码擦屁股是一件很痛苦的事。google把自己的代码规范放出来了，我们可以参考下（比如我觉得google python的docstring风格就很好），规范并且风格一致的代码维护起来就要爽很多，至少在情绪上。同事如果能用好pyflake和pylint检测，能保证代码格式规范，pylint还能帮助你检测出很多小bug（比如一段永远也不会执行到的代码段），挺强大的。</p>
+<ul>
+<li>参考pep8或者google的python编码规范定义自己团队的规范，最好是团队经验最丰富的人，最有话语权的人。</li>
+<li>保证规范大部分人是认可并且会遵守的。</li>
+<li>规范是经过良好实践的。</li>
+<li>引导pytonic的写法。甚至可以细化一些，避免一些前人踩过的坑。</li>
+<li>docstring写法。我觉得python没有类型声明，docstring比较必要，传入参数和返回值类型和格式写清楚，即使内部复杂，docstring写清楚了函数易用性就高。</li>
+<li>强制使用pyflake和pylint检测代码（定义一个检查子集，pylint还是很强大的，类的内聚性不够，或者函数圈复杂度过高都会有提示的）(建议在编辑器里加上pylint插件，一开始用可能比较恼人，各种提示，用多了代码就写规范了)</li>
+<li>强制在docstring中记录需求文档和jira等地址，方便后人接手和了解需求。</li>
+</ul>
+<hr>
+<h2 id="应对复杂的业务逻辑"><a href="#应对复杂的业务逻辑" class="headerlink" title="应对复杂的业务逻辑"></a>应对复杂的业务逻辑</h2><blockquote>
+<p>“Any fool can write code that a computer can understand. Good programmers write code that humans can understand.” – Martin Fowler, “Refactoring: Improving the Design of Existing Code”</p>
+</blockquote>
+<p>笔者经历过的几个项目没啥并发，但是业务逻辑比较复杂，比如CRM系统。笔者经常在代码编写过程中担心代码过于复杂导致以后接手和维护困难。比如复杂的逻辑嵌套就是一种比较危险的信号，函数圈复杂度太高，难以测试和维护。尽量保持代码简单易维护，比如使用表驱动代替过多的if/else，不要写长代码（单一职责），长逻辑拆分等。</p>
+<hr>
+<h2 id="为什么我觉得code-review很重要"><a href="#为什么我觉得code-review很重要" class="headerlink" title="为什么我觉得code review很重要"></a>为什么我觉得code review很重要</h2><p>笔者目前所在团队一直没有坚持下来进行code review，一方面leader没有强制规定，一方面有成员认为code review是给人挑刺，不愿意执行。老实说我觉得没有code review后果是灾难性的，各种糟糕的个人风格，没有任何注释和文档的难以让其他人维护的代码，以及不合理的代码设计。因为目前团队很多成员并没有太多python经验，很多还是刚毕业的学生，code review实际上能让彼此学到很多，如果团队还能有一个经验丰富的老大负责code review，对团队来说还是大有裨益的。</p>
+<hr>
+<h2 id="单元测试"><a href="#单元测试" class="headerlink" title="单元测试"></a>单元测试</h2><blockquote>
+<p>测试只能证明缺陷存在，而无法证明缺陷不存在。</p>
+</blockquote>
+<p>我之前写了两篇博客讲单元测试的重要性和flask单元测试的实践，很多东西也是在项目中自己慢慢摸索的，慢慢也摸索出了一点门道，单元测试对于减少缺陷还是很有帮助的，这里不再浪费口舌了。<br>但是遗憾的是，很多自学python的程序员似乎不怎么重视。要么是偷懒、要么是因为工期紧张不写。虽然我不是个处女座，但是我还是坚持不要因为工期违背原则，与其将来修修补补，不如现在就减少错误，我觉得这是个职业程序员的基本素养。当你改了代码捅娄子了才会发现单元测试对于保证旧代码正常执行多么重要。不要还停留在写个函数print下就觉得结果对了的阶段。没有单元测试还有个弊端，一个小更改可能就需要测试工程师重新走整个流程。</p>
+<hr>
+<h2 id="需求更改是怎样导致代码腐化的？代码黑洞"><a href="#需求更改是怎样导致代码腐化的？代码黑洞" class="headerlink" title="需求更改是怎样导致代码腐化的？代码黑洞"></a>需求更改是怎样导致代码腐化的？代码黑洞</h2><blockquote>
+<p>Keep knowledge in plain text. Plain text won’t become obsolete. It helps leverage your work and simplifies debugging and testing.</p>
+</blockquote>
+<p>最近经常碰到的情况就是，很多需求的更改都是口头进行的，这些需求变更导致往代码里插入一些很tricky的逻辑。但是没有注释，需求文档又没有说明，这样就对维护代码的人产生了『代码黑洞』。我一直想强调的就是，需求文档及时更新，有迹可循，好让后来维护项目的人快速熟悉需求。</p>
+<hr>
+<h2 id="命名"><a href="#命名" class="headerlink" title="命名"></a>命名</h2><blockquote>
+<p>计算机科学两大难题：缓存失败和命名。——Phil Karlton</p>
+</blockquote>
+<p>不知道你是否遇到和我一样的问题，同样的命名”date”有些地方是个string，有些地方是个datetime.date对象。以至于我后来不得不用date_str和date_obj来区分，当然你也可以到处都用恶心的isinstance判断。<br>我一直怀疑鸭子类型是否真的那么有用，如果是的话，python3为何要加上type hint？有时候我觉得动态语言的命名真的恶心，尤其是你的词汇量匮乏的情况下，很难通过一个变量的命名看出其类型，之前维护的代码没有什么注释和文档，没有单元测试，几乎每个函数都要从头到尾看一遍才可以理解，维护起来相当吃力（尤其是中间复杂的数据结构）。我现在一直有个习惯，用data_obj_list, name_set等后缀命名，虽然冗余，至少看起来清晰。</p>
+<hr>
+<h2 id="灵活性与可读性"><a href="#灵活性与可读性" class="headerlink" title="灵活性与可读性"></a>灵活性与可读性</h2><blockquote>
+<p>I think a lot of new programmers like to use advanced data structures and advanced language features as a way of demonstrating their ability. I call it the lion-tamer syndrome. Such demonstrations are impressive, but unless they actually translate into real wins for the project, avoid them. - Glyn Williams</p>
+</blockquote>
+<p>python语言相对灵活，但是真的需要那么多技巧吗？很多新手初次尝试了args和kwargs的便捷之后，开始滥用，但是灵活的代价就是牺牲可读性。没有文档的话，对于这种函数我甚至传入什么参数都不知道。<br>还有经常见到偷懒使用幻数，而不是枚举，是啊，写个数字多方便。。。虽然我觉得不用幻数是个常识，但是甚至工作多年的工程师依旧偷懒这么写，你作为个刚入职场的人有些话又不被采纳，又没有老手给所有人code review改正。<br>灵活性与可读性，总得适当斟酌，合适的地方使用合适的技巧，google的python编码规范就特意规避了一些容易出错的特性。</p>
+<hr>
+<h2 id="为什么我不喜欢不规范的团队"><a href="#为什么我不喜欢不规范的团队" class="headerlink" title="为什么我不喜欢不规范的团队?"></a>为什么我不喜欢不规范的团队?</h2><blockquote>
+<p>Organize teams around functionality. Don’t separate designers from coders, testers from data modelers. Build teams the way you build code.</p>
+</blockquote>
+<p>可能我有些处女座的特质吧，但是我真不喜欢维护别人写的代码，尤其是没有注释，没有文档，没有单元测试，编码风格混乱的代码。老实说我不太清楚别人的团队如何，但是我个人不太喜欢不规范的团队，我觉得代码规范、codereview、单元测试是一个高质量团队最基本的东西，然而很多小团队并不是很重视，代码质量可想而知。(现公司代码后端代码规范还是我这个新手写的，不知道该高兴还是。。)<br>我一直觉得python适合构建小而美的团队，没有规范，就等着维护噩梦吧。</p>
+<hr>
+<h2 id="什么是程序员的职业素养"><a href="#什么是程序员的职业素养" class="headerlink" title="什么是程序员的职业素养?"></a>什么是程序员的职业素养?</h2><blockquote>
+<p>A good programmer is someone who always looks both ways before crossing a one-way street. - Doug Linder</p>
+</blockquote>
+<p>大部分招聘都是看算法，我也是这么做着笔试题进公司的。做了几个无聊的素数判断，合并列表，还有被问到千篇一律的快排。（我也因为基础不好被拒绝过很多）<br>我一直在想，究竟什么是程序员的职业素养?算法？数据结构？数据库？计算机网络?好像大部分时间用不到。<br>直到我工作了一年多，做了几个新项目同时也维护了个恶心的旧项目后，我的看法慢慢改变了。我发现有些东西只能说是知识，有些东西才能叫做素养。良好的规范，自解释的代码，主动写单元测试构建高质量项目等，我觉得除了基本知识外，这些才能称之为素养，不是每个人都是技术高手，但是还是可以做一个合格的代码工。经常有人调侃后端就是增删改查，对啊，你不重构、不写测试、不思考设计、不考虑可读性和可维护性，写再多代码也没啥进步。很多技术老手会有意识地控制复杂度，写的代码让人看着确实舒服。</p>
+<hr>
+<h2 id="和不同类型的程序员协作"><a href="#和不同类型的程序员协作" class="headerlink" title="和不同类型的程序员协作"></a>和不同类型的程序员协作</h2><blockquote>
+<p>If programmers were electricians, parallel programmers would be bomb disposal experts. Both cut wires. - Bartosz Milewski</p>
+</blockquote>
+<p>团队里什么人都有，经验丰富的工程师，技术高手，实习生，从别的语言转过来写python等，还有些混日子的老菜鸟等。我的感觉就是，对于项目管理不善的团队，做好自己事，代码规范，docstring，单元测试等，别人不写你又无权强制要求的时候，写好自己的就行。改变自己远比改变他人容易，而且用python的时候大部分是小团队，小公司，可能还会遇到很多这种类似的问题。不过建议就是找一个好的团队，大家互相学习成长，提高自己的能力，在公司里的大部分时间你都在和人协作，所以队友还是重要的。</p>
+<hr>
+<h2 id="为什么理解别人代码这么难？"><a href="#为什么理解别人代码这么难？" class="headerlink" title="为什么理解别人代码这么难？"></a>为什么理解别人代码这么难？</h2><blockquote>
+<p>Don’t use wizard code you don’t understand. Wizards can generate reams of code. Make sure you understand all of it before you incorporate it into your project.</p>
+</blockquote>
+<p>我个人感觉读代码很多时候难度大于写代码，因为你是在不知道需求和作者用意的情况下读代码，理解起来比较吃力，尤其是代码还没有文档和注释的时候。当我参与维护代码的坑后，我也遇到了这个问题，尤其是当你被告知『这些都是业务逻辑，就是这么写的』时候。遗憾的是当时的需求文档已经找不到，理解代码的唯一方式只能是一行行走查和断点调试(没有文档，注释，风格混乱)。我发现有时候不是理解代码困难，而是看到不好的代码产生的负面情绪让我压根没心思去维护别人的代码。后来我又养成了一个习惯，python函数和类的docstring里我会习惯性地把需求文档地址附上，如果解决问题的过程中参考了github或者哪个stackoverflow地址我也会附上，帮助理解代码的人快速上手(你需要消除为什么我TM自己能看懂，就是别人看不懂的幻觉，甚至自己看着都费劲，还让别人理解)。我发现很多习惯都是我不断才坑才总结出来的，吃一堑，长一智。。。。。。</p>
+<ul>
+<li>简化需求，我觉得如果功能过于复杂，代码写出来肯定很难理解，同时用户使用起来也不容易。</li>
+<li>需求归档，在代码里记录文档地址，让后来维护者能够看到当时的需求，更好理解代码用意。</li>
+<li>隐藏复杂性。即使做不到KISS，对于不可避免的复杂性，也应该让其隐藏在内部，暴露的接口应该是易用的。你不必使用requests写个爬虫就得把人家源码立即都搞透彻吧。</li>
+<li>及时重构不良代码。为了实现功能代码可能只编写一次，但是后来却可能无数次被修改和查看，烂代码会消耗自己和他人很多时间。</li>
+</ul>
+<hr>
+<h2 id="需求需要归档吗？"><a href="#需求需要归档吗？" class="headerlink" title="需求需要归档吗？"></a>需求需要归档吗？</h2><p>理解需求是我认为接手项目最难的地方之一，也是维护他人代码最难的地方之一。当然我不能奢求产品经理用版本控制维护需求文档，以便我查看频繁的需求变更，但是如果将来哪个人需要接手别人的代码了，我希望可以快速上手了解需求。有些项目的特点就是逻辑比较复杂，代码中间用了很多小trick，同时又随着频繁的需求变更修修补补，代码越写越难看，没有单元测试又不敢重构，即使是一坨屎一样的代码也只能继续堆逻辑。。。维护这种代码总有一种想离职的冲动。我的想法就是在代码里反应出来需求文档，jira等地址，让接手的人方便熟悉需求。</p>
+<hr>
+<h2 id="文档"><a href="#文档" class="headerlink" title="文档"></a>文档</h2><blockquote>
+<p>If you can be a 10x developer by making 10 people 2x as productive, then you can be a /10 dev by making 10 people go at half speed.</p>
+</blockquote>
+<p>笔者目前从工作到现在都是在小公司，几乎没见过代码里有人写文档的，大家都比较懒吧。我个人比较推崇代码即文档，推荐的工具就是 sphinx + readthedocs，我们只需要把每个源文件，类、函数等的 docstring 写好就直接能生成文档站点了，而不用专门去维护一个文档项目，同时代码更新后还能及时更新文档。 比如 tornado 和 flask 的官方文档都是用 sphinx+readthedocs 生成的，并且都是直接在源码里书写的。文档的作用应该是用于交流和维护，帮助同事和新人能够快速上手，不是所有系统都是能简单通过阅读代码就迅速上手的，尤其是比较 ugly 的代码仓库。</p>
+<hr>
+<h2 id="docstring"><a href="#docstring" class="headerlink" title="docstring"></a>docstring</h2><blockquote>
+<p>English is just a programming language. Write documents as you would write code: honor the DRY principle, use metadata, MVC, automatic generation, and so on.</p>
+</blockquote>
+<p>python有个特色的注释叫做docstring，怎么写docstring我之前也总结了，只是希望程序员都能重视下文档吧，这也是练习写作能力的好机会，说不定你就是将来的池建强。你看虽然我的写作能力拙劣，病句不断，但我就是脸皮厚，甚至之前我从我博客复制粘贴的答案还在知乎获得几百个赞呢，这就是写博客的好处。对于复杂函数的docstring，函数的意图、功能简介、传入和传出参数及类型最好要写上，即使函数内部很复杂，但是通过文档你能直接拿来用，docstring的目的就达到了。之前维护的代码经常传入一个dict，甚至是一个嵌套的dict都没有注释，通过命名又看不出类型，好家伙，几乎只能打断点然后每一步输出变量查看值，看别人代码和理解业务逻辑几乎就成了最困难的任务。再比如一个简单的函数定义def when_to_fuck(date=None)，没有docstring和单元测试用例，请问date传对象还是字符串，字符串请问传什么格式的字符串？很多时候写代码不注意这些细节就难以让别人使用，就好比想使用下requests库就得把整个requests源码读一遍一样，维护和使用别人代码代价极高。没有类型声明真是维护代码一超级大障碍。 如果不能写出自解释的代码，建议还是用java吧，python大项目真心不好维护，不好排错，开发省的那点时间全用在维护上了。</p>
+<hr>
+<h2 id="什么是好code"><a href="#什么是好code" class="headerlink" title="什么是好code?"></a>什么是好code?</h2><blockquote>
+<p>Don’t live with broken windows. Fix bad designs, wrong decisions, and poor code when you see them.</p>
+</blockquote>
+<p>可以正确高效完成业务功能；格式规范，经过pylint和pep8检测；docstring较为完善，接口易用性高；易读易维护，控制复杂度。看似简单，人多了时候保证每个人都能做到是非常困难的。或许衡量代码好不好的唯一标准就是别人看你代码的时候想骂人的次数。而且与直觉相反的是，越是高手写出来的代码反而更易读，反倒是很多新手写的代码像一坨面条。</p>
+<hr>
+<h2 id="敏捷就是快？"><a href="#敏捷就是快？" class="headerlink" title="敏捷就是快？"></a>敏捷就是快？</h2><blockquote>
+<p>The Agile movement is not anti-methodology, in fact many of us want to restore credibility to the word methodology. We want to restore a balance. We embrace modeling, but not in order to file some diagram in a dusty corporate repository. We embrace documentation, but not hundreds of pages of never-maintained and rarely-used tomes. We plan, but recognize the limits of planning in a turbulent environment. Those who would brand proponents of XP or SCRUM or any of the other Agile Methodologies as “hackers” are ignorant of both the methodologies and the original definition of the term hacker.  — Jim Highsmit</p>
+</blockquote>
+<p>很多团队学到的敏捷除了”快”以外，诸如TDD，结对编程，代码复查等好的实践似乎都没学到。当然敏捷这个词也是我走出校门之后才知道的，我没管理过项目，只是最近学了点TDD的东西才开始用pytest在最近做的项目上尝试，自我感觉还是比较良好的。用个监控文件的命令行工具，每次代码更改通过了就能看到齐刷刷的绿线，多了点心理安慰。当然单元测试还有个好处，我可以『破坏性』重构，之前没有单元测试的时候，再恶心的地方你都不敢改，但是现在我敢放肆地改代码，快速修正恶心到我的地方。</p>
+<hr>
+<h2 id="客户思维"><a href="#客户思维" class="headerlink" title="客户思维"></a>客户思维</h2><blockquote>
+<p>真正行动之前，考虑多个可能的方案，权衡利弊，根据对需求的理解和客户提供的信息给出可操作的、有价值的建议，而不是立马闷头写代码，后来却发现需求理解有误，导致无意义的返工。接到一个新需求，首先要思考为什么有这个需求产生，它解决了什么问题，提供了什么价值。</p>
+</blockquote>
+<h2 id="总-tu-结-cao"><a href="#总-tu-结-cao" class="headerlink" title="总(tu)结(cao)"></a>总(tu)结(cao)</h2><blockquote>
+<p>我不是个伟大的程序员，我只是个有着一些优秀习惯的好程序员”。 —Kent Beck</p>
+</blockquote>
+<p>凡事都有两面性，维护过一个恶心的代码仓库后，虽然没学到什么东西，但是也开始关注代码质量、软件工程、流程控制等以前没注意过的东西，也算是吸取教训了。<br>代码之外还是有很多需要学习的吧，很多东西认识还比较肤浅，有时候技术问题反而不是主要问题，很多坑只有亲自踩一踩才知道。一个人的生产力是有限的，项目协作的时候有很多不可控、不可抗的因素，有时候我有点理想化，对于实现不了的东西也要学会慢慢接受，同时用行动去影响它。少点抱怨，技术能力不等于工作能力，真正厉害的是那些技术过硬又能帮助整个团队达成目标的人。性格上有些缺陷希望可以慢慢克服，多和人交流，团队协作最重要。接受你所不能改变的，改变你所不能接受的</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2017/01/03/python/master-python-design-patterns/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/12/10/python/data-structures-and-algorithms-using-python/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

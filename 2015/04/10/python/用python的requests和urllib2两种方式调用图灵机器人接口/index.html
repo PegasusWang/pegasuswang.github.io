@@ -1,0 +1,232 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>python用requests和urllib2两种方式调用图灵机器人接口 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="python用requests和urllib2两种方式调用图灵机器人接口"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-04-10T12:53:42.000Z"><a href="/2015/04/10/python/用python的requests和urllib2两种方式调用图灵机器人接口/">周五, 4月 10 2015, 8:53:42 晚上</a></time>
+
+  
+    <h1 class="title">python用requests和urllib2两种方式调用图灵机器人接口</h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/funny/">funny</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>最近从网上看见个有意思的<a href="http://www.tuling123.com/openapi/" target="_blank" rel="noopener">图灵机器人</a>，可以根据不同的信息智能回复，比如你发送一个“讲个笑话”，它就会给你回复一个笑话，或者“北京天气”就可以回复天气情况，或者英文单词然后给你回复中文释义。官方文档中有php和java的调用方式，我就弄个python的吧。</p>
+<p>###注册获取API KEY<br>这一步很简单，直接注册一个账号就可以看到你的API KEY。这个KEY我们以后发送get请求的时候需要用到。</p>
+<a id="more"></a>
+<p>###Pythoh调用示例<br>掉用也比较简单，主要是模拟post 请求。然后解析 json 数据。可以使用 requests，也可以使用 urllib 和 urllib2。你可能没有安装<a href="http://requests-docs-cn.readthedocs.org/zh_CN/latest/user/quickstart.html" target="_blank" rel="noopener">requests</a>，可以点击这个链接查看官方文档并安装，request大大简化了发送http请求的步骤。</p>
+<pre><code>import json
+import requests
+import urllib
+import urllib2
+
+KEY = &apos;***********************&apos;    # change to your API KEY
+url = &apos;http://www.tuling123.com/openapi/api&apos;
+
+req_info = u&apos;讲个笑话&apos;.encode(&apos;utf-8&apos;)
+
+
+query = {&apos;key&apos;: KEY, &apos;info&apos;: req_info}
+headers = {&apos;Content-type&apos;: &apos;text/html&apos;, &apos;charset&apos;: &apos;utf-8&apos;}
+
+
+# 方法一、用requests模块已get方式获取内容
+r = requests.get(url, params=query, headers=headers)
+res = r.text
+print json.loads(res).get(&apos;text&apos;).replace(&apos;&lt;br&gt;&apos;, &apos;\n&apos;)
+
+
+# 方法二、用urllib和urllib2库获取内容
+data = urllib.urlencode(query)
+req = urllib2.Request(url, data)
+f = urllib2.urlopen(req).read()
+print json.loads(f).get(&apos;text&apos;).replace(&apos;&lt;br&gt;&apos;, &apos;\n&apos;)
+</code></pre><p>输出的内容就是解析后的text内容，比如这个发送的是“讲个笑话”， 然后运行这个脚本就会输出笑话啦。你可以把它放到你的微信公众平台上当一个生活助手。</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/04/14/python/用python画一颗心/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/04/03/funny/你用什么写简历/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

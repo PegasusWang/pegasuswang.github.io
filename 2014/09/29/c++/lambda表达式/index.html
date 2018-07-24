@@ -1,0 +1,228 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>lambda表达式 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="lambda表达式"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2014-09-29T00:52:20.000Z"><a href="/2014/09/29/c++/lambda表达式/">周一, 9月 29 2014, 8:52:20 早上</a></time>
+
+  
+    <h1 class="title">lambda表达式</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/c/">c++</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/c/">c++</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>##c++中的lambda表达式</p>
+<hr>
+<p>#####什么是lambda表达式<br>c++中，一个lambda表达式表示一个可调用的代码单元。可以将其理解为一个未命名的内联函数。与函数类似，一个lambda具有一个返回类型、一个参数列表、和一个函数体。但lambda可以定义在函数内部。一个lambda表达式具有如下形式：<br><code>[capture list](parameter list) -&gt; return type { function body }</code><br>capture list（捕获列表）是一个lambda所在函数中定义的局部变量的列表（通常为空）；parameter list, return type和function body和任何普通函数一样，分别表示参数列表、返回类型和函数体。与普通函数不同，lambda必须使用尾置返回来指定返回类型。<br><a id="more"></a></p>
+<hr>
+<p>#####应用<br>在c++中，lambda主要作为算法的可调用对象。可以向算法传递的可调用对象(callable object)包括函数和函数指针，重载了函数调用运算符的类以及lambda表达式。<br>假如现在想把一个vector<int>中的元素按照逆序排序，可以向sort算法传递函数：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bool cmp(const int a, const int b) &#123; return a &gt; b; &#125;</span><br><span class="line">sort(ivec.begin(), ivec.end(), cmp);</span><br></pre></td></tr></table></figure></int></p>
+<p>也可以自己定义一个重载了函数调用运算符()的类<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">class Cmp &#123;</span><br><span class="line">pubilc:</span><br><span class="line">    bool operator() (const int a, const int b) const</span><br><span class="line">    &#123; return a &gt; b; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">sort(ivec.begin(), ivec.end(), Cmp());</span><br></pre></td></tr></table></figure></p>
+<p>当然也可以直接用头文件<functional>中的函数对象:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;functional&gt;</span><br><span class="line">sort(ivec.begin(), ivec.end(), greater&lt;int&gt;());</span><br></pre></td></tr></table></figure></functional></p>
+<p>最后一种方式就是使用lambda:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">//c++11</span><br><span class="line">sort(ivec.begin(), ivec.end(),</span><br><span class="line">         [](const int a, const int b) &#123; return a &gt; b; &#125;);</span><br></pre></td></tr></table></figure></p>
+<p>需要用g++ -std=c++11编译。lambda表达式很容易理解：<br><code>[](const int a, const int b) { return a &gt; b; }</code><br>捕获列表为空，之后是形参列表，后边是函数体。<br>什么时候需要用捕获列表呢？假如你想统计一个vector<string>中有多少string的长度大于sz，可以这么用:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int cnt = count_if(svec.begin(), svec.end(), </span><br><span class="line">                  [sz](const string &amp;s) &#123; return a.size() &gt;= sz; &#125;);</span><br></pre></td></tr></table></figure></string></p>
+<p>把sz放到捕获列表中就可以统计有多少长度大于sz的string。<br>可见c++解决问题的方法很多，lambda简化了可调用对象的构建。</p>
+<hr>
+<p>##python中的lambda表达式</p>
+<hr>
+<p>#####匿名函数与lambda<br>在python中，一个完整的lambda“语句”代表一个表达式，这个表达式的定义体必须和声明放在同一行。python中lambda语法如下：<br><code>lambda [arg1[, arg2, ... argN]]: experssion</code><br>中间的[, arg2, … argN]代表可选行参。python允许用lambda关键字创建匿名函数。lambda表达式返回可调用的函数对象。lambda运作起来就像一个函数，但被调用时，创建一个框架对象。</p>
+<hr>
+<p>#####示例<br>不带参数的lambda：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; def true(): return True  #定义一个函数,python中但单行函数可以和标题同行</span><br><span class="line">&gt;&gt;&gt; lambda: True             #等价的lambda表达式</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; fun = lambda: True       </span><br><span class="line">&gt;&gt;&gt; fun()                    #调用fun()</span><br><span class="line">True</span><br></pre></td></tr></table></figure>
+<p>带参数的lambda：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; def add(x, y): return x + y</span><br><span class="line">&gt;&gt;&gt; lambda x, y: x + y              #add的等价lambda</span><br><span class="line">&gt;&gt;&gt; fun1 = lambda x, y: x + y</span><br><span class="line">&gt;&gt;&gt; fun1(1, 2)</span><br><span class="line">3</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; def add2(x, y=2) : return x + y</span><br><span class="line">&gt;&gt;&gt; lambda: x, y=2: x + y           #带默认行参的等价add2 lambda</span><br><span class="line">&gt;&gt;&gt; fun2 = lambda x, y = 2: x + y</span><br><span class="line">&gt;&gt;&gt; fun2(1)</span><br><span class="line">3</span><br><span class="line"></span><br><span class="line">&gt;&gt;&gt; def showTuple(*z); return z     # *z表示tuple型可变参数</span><br><span class="line">&gt;&gt;&gt; lambda: *z: z</span><br><span class="line">&gt;&gt;&gt; fun3 = lambda *z: z</span><br><span class="line">&gt;&gt;&gt; fun3(1, &apos;xyz&apos;)</span><br><span class="line">(1, &apos;xyz&apos;)</span><br><span class="line">&gt;&gt;&gt; fun3(42)</span><br><span class="line">(42,)</span><br></pre></td></tr></table></figure>
+<hr>
+<p>######参考<br>《c++ Primer Fifth Edition》<br>《Python核心编程》</p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2014/10/09/psychology/谈情商/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2014/09/20/读书/拖延心理学/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

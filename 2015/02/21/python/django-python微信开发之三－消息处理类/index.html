@@ -1,0 +1,339 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>django+python微信开发之三－消息处理类 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="django+python微信开发之三－消息处理类"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2015-02-21T01:50:49.000Z"><a href="/2015/02/21/python/django-python微信开发之三－消息处理类/">周六, 2月 21 2015, 9:50:49 上午</a></time>
+
+  
+    <h1 class="title">django+python微信开发之三－消息处理类</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/django/">django</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <p>###消息处理类wechatUtil.py<br>上一篇封装了三种消息类型，wechatMessage.py,wechatEvent.py和wechatReply.py。微信是以xml格式处理信息的，所以要处理xml得到相应的信息。这里用lxml库来处理，先贴上代码再解释：<br><a id="more"></a></p>
+<pre><code># -*- coding:utf-8 -*-
+&quot;&quot;&quot;
+# Author: Pegasus Wang (pegasuswang@qq.com, http://ningning.today)
+# Created Time : Wed Feb 18 18:18:10 2015
+
+# File Name: wechatUtil.py
+# Description:
+
+# :copyright: (c) 2015 by Pegasus Wang.
+# :license: MIT, see LICENSE for more details.
+&quot;&quot;&quot;
+
+import hashlib
+from lxml import etree
+
+
+def checkSignature(request):
+    &quot;&quot;&quot;check signature.
+
+    :param request: get method
+    :return: if success return True else False
+    &quot;&quot;&quot;
+    signature = request.GET.get(u&apos;signature&apos;, None)
+    timestamp = request.GET.get(u&apos;timestamp&apos;, None)
+    nonce = request.GET.get(u&apos;nonce&apos;, None)
+    token = u&apos;pegasuswang&apos;    # your wechat token
+
+    tmplist = [token, timestamp, nonce]
+    tmplist.sort()
+    tmpstr = &apos;%s%s%s&apos; % tuple(tmplist)
+    tmpstr = hashlib.sha1(tmpstr).hexdigest()
+
+    if tmpstr == signature:
+        return True
+    else:
+        return False
+
+
+class MessageUtil(object):
+    &quot;&quot;&quot;MessageUtil has some methods to process message.&quot;&quot;&quot;
+    # request message types
+    REQ_MESSAGE_TYPE_TEXT = u&apos;text&apos;
+    REQ_MESSAGE_TYPE_IMAGE = u&apos;image&apos;
+    REQ_MESSAGE_TYPE_VOICE = u&apos;voice&apos;
+    REQ_MESSAGE_TYPE_VIDEO = u&apos;video&apos;
+    REQ_MESSAGE_TYPE_LOCATION = u&apos;location&apos;
+    REQ_MESSAGE_TYPE_LINK = u&apos;link&apos;
+    REQ_MESSAGE_TYPE_EVENT = u&apos;event&apos;
+
+    # event types
+    EVENT_TYPE_SUBSCRIBE = u&apos;subscribe&apos;
+    EVENT_TYPE_UNSUBSCRIBE = u&apos;unsubscribe&apos;
+    EVENT_TYPE_SCAN = u&apos;scan&apos;
+    EVENT_TYPE_LOCATION = u&apos;LOCATION&apos;
+    EVENT_TYPE_CLICK = u&apos;CLICK&apos;
+
+    # reply message types
+    RESP_MESSAGE_TYPE_TEXT = u&apos;text&apos;
+    RESP_MESSAGE_TYPE_IMAGE = u&apos;image&apos;
+    RESP_MESSAGE_TYPE_VOICE = u&apos;voice&apos;
+    RESP_MESSAGE_TYPE_VIDEO = u&apos;video&apos;
+    RESP_MESSAGE_TYPE_MUSIC = u&apos;music&apos;
+    RESP_MESSAGE_TYPE_NEWS = u&apos;news&apos;
+
+    # message types
+    MESSAGETYPE = [u&apos;Image&apos;, u&apos;Voice&apos;, u&apos;Video&apos;, u&apos;Music&apos;, u&apos;Articles&apos;]
+
+    @staticmethod
+    def parseXml(request):
+        &quot;&quot;&quot;parse request post xml message.
+
+        :param request: post request
+        :return: dict of xml message
+        &quot;&quot;&quot;
+        raw_xml = request.body.decode(u&apos;UTF-8&apos;)
+        xmlstr = etree.fromstring(raw_xml)
+        dict_xml = {}
+        for child in xmlstr:
+            dict_xml[child.tag] = child.text.encode(u&apos;UTF-8&apos;)    # note
+        return dict_xml
+
+
+
+    @staticmethod
+    def class2xml(obj):
+        &quot;&quot;&quot;convert reply message class to xml.
+
+        :param obj: reply message class&apos; object
+        :return: xml of the object
+        &quot;&quot;&quot;
+        root = etree.Element(u&apos;xml&apos;)
+        for key, value in vars(obj).items():
+            if key in MessageUtil.MESSAGETYPE:
+                tmproot = etree.SubElement(root, key)
+                if key == u&apos;Articles&apos;:    # solve Article, it&apos;s special
+                    for eachArticle in value:
+                        etree.SubElement(tmproot, u&apos;item&apos;)
+                        for tmpkey, tmpvalue in vars(eachArticle).items():
+                            tmpkey_ele = etree.SubElement(tmproot, tmpkey)
+                            tmpkey_ele.text = etree.CDATA(unicode(tmpvalue))
+                else:
+                    for tmpkey, tmpvalue in vars(obj.__getattribute__(key)).items():
+                        tmpkey_ele = etree.SubElement(tmproot, tmpkey)
+                    if u&apos;time&apos; in tmpkey.lower() or u&apos;count&apos; in tmpkey.lower():
+                        tmpkey_ele.text = unicode(tmpvalue)
+                    else:    # CDATA tag for str
+                        tmpkey_ele.text = etree.CDATA(unicode(tmpvalue))
+            else:
+                if u&apos;time&apos; in key.lower() or u&apos;count&apos; in key.lower():
+                    etree.SubElement(root, key).text = unicode(value)
+                else:
+                    etree.SubElement(root, key).text = etree.CDATA(unicode(value))
+
+        return etree.tostring(root, pretty_print=True, xml_declaration=False, encoding=u&apos;utf-8&apos;)
+</code></pre><hr>
+<p>###checkSignature方法<br>参考:<a href="">验证消息真实性</a><a href="http://mp.weixin.qq.com/wiki/4/2ccadaef44fe1e4b0322355c2312bfa8.html" target="_blank" rel="noopener">http://mp.weixin.qq.com/wiki/4/2ccadaef44fe1e4b0322355c2312bfa8.html</a><br>开发文档给出的是php的代码，改写成python也很简单。</p>
+<blockquote>
+<p>加密/校验流程如下：</p>
+<ol>
+<li>将token、timestamp、nonce三个参数进行字典序排序</li>
+<li>将三个参数字符串拼接成一个字符串进行sha1加密</li>
+<li>开发者获得加密后的字符串可与signature对比，标识该请求来源于微信</li>
+</ol>
+</blockquote>
+<hr>
+<p>###消息处理类MessageUtil</p>
+<ul>
+<li>类型定义：定义了一些列变量标识消息类型</li>
+<li>parseXml方法：用来解析微信公众账号post过来的xml信息，得到发送人、发送时间、消息内容等信息，返回一个字典。使用lxml库。</li>
+<li>class2xml方法：没有找到相应的库把reply消息对应的类转换成xml格式，这个是我自己写的一个方法，用来把reply类转换成xml返回给微信公众账号。测试信息如下：<br><img src="http://pegasus.qiniudn.com/wechat3.png" alt="测试TextReply"></li>
+</ul>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2015/02/21/python/django-python微信开发之四-最后的工作:消息服务类/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2015/02/21/python/django-python微信开发之二－封装消息类/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,326 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>python单元测试 | Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="python单元测试"/>
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-08-27T01:05:42.000Z"><a href="/2016/08/27/python/python单元测试/">周六, 8月 27 2016, 9:05:42 上午</a></time>
+
+  
+    <h1 class="title">python单元测试</h1>
+  
+
+
+  
+  <div class="categories">
+  	<i class="fa fa-folder-open"></i>
+    <a href="/categories/python/">python</a>
+  </div>
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python/">python</a>, <a href="/tags/unittest/">unittest</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>Test your software, or your users will. “Test ruthlessly. Don’t make your users find bugs for you.”</p>
+</blockquote>
+<p>最近看了<a href="http://blog.2baxb.me/archives/1343" target="_blank" rel="noopener">Axb的自我修养</a>写的关于好代码，烂代码和单元测试的一些文章，挺受启发的，结合python讲一下自己对单元测试的理解和操作。</p>
+<h3 id="单元测试是什么"><a href="#单元测试是什么" class="headerlink" title="单元测试是什么"></a>单元测试是什么</h3><p>单元测试（又称为模块测试, Unit Testing）是针对程序模块（软件设计的最小单位）来进行正确性检验的测试工作。程序单元是应用的最小可测试部件。在过程化编程中，一个单元就是单个程序、函数、过程等；对于面向对象编程，最小单元就是方法，包括基类（超类）、抽象类、或者派生类（子类）中的方法。</p>
+<a id="more"></a>
+<hr>
+<h3 id="为什么要进行单元测试？"><a href="#为什么要进行单元测试？" class="headerlink" title="为什么要进行单元测试？"></a>为什么要进行单元测试？</h3><p>笔者最近接手公司项目发现之前是一行测试代码都没有的(很多小公司的三无代码,无规范、无文档、无单测)，其实自己以前也不是很了解单元测试的东西。但是感觉既然是公司的正规项目，就得有质量和流程上的保证，写一些单元测试还是必要的。但是我们不是为了测试而测试，我觉得测试除了保证程序的健壮性外，是可以让你重新思考代码的设计的。引用Axb博客的话：</p>
+<ul>
+<li>编写单元测试的难易程度能够直接反应出代码的设计水平，能写出单元测试和写不出单元测试之间体现了编程能力上的巨大的鸿沟。无论是什么样的程序员，坚持编写一段时间的单元测试之后，都会明显感受到代码设计能力的巨大提升。</li>
+</ul>
+<p>如果发现代码难以构造测试，很有可能就是接口设计不够优雅，或者耦合严重，尝试从测试的角度思考能够让我们更好地设计。单元测试同时也为重构提供了保证，比如我们想优化一个函数内部实现，更换更优的数据结构和算法，只需要重新跑一下测试就可以验证新的实现是否引入了错误或bug。而不用麻烦测试工程师给一些不负责的开发擦屁股。</p>
+<p>总的来说，单元测试有以下好处：</p>
+<ul>
+<li>确保代码质量</li>
+<li>改善代码设计，难以测试的代码一般是设计不够简洁的代码。</li>
+<li>保证重构不会引入新问题，以函数为单位进行重构的时候，只需要重新跑测试就基本可以保证重构没引入新问题。</li>
+</ul>
+<hr>
+<h3 id="测试如何影响代码设计"><a href="#测试如何影响代码设计" class="headerlink" title="测试如何影响代码设计"></a>测试如何影响代码设计</h3><p><img src="http://7ktuty.com1.z0.glb.clouddn.com/python-test-0.jpeg" alt=""><br><img src="http://7ktuty.com1.z0.glb.clouddn.com/python-test-1.jpeg" alt=""><br><img src="http://7ktuty.com1.z0.glb.clouddn.com/python-test-2.jpeg" alt=""></p>
+<p>以上来自《编写可读代码的艺术》，需要自己实践才有体会。</p>
+<hr>
+<h3 id="python测试相关库"><a href="#python测试相关库" class="headerlink" title="python测试相关库"></a>python测试相关库</h3><ul>
+<li>unittest，内置库，模仿PyUnit写的，简洁易用，缺点是比较繁琐。</li>
+<li>nose，测试发现，发现并运行测试。</li>
+<li>pytest，笔者目前喜欢用这个，写起来很方便，并且很多知名开源项目在用，推荐。</li>
+<li>mock, 替换掉网络调用或者 rpc 请求等</li>
+</ul>
+<hr>
+<h3 id="使用pytest进行python进行单元测试"><a href="#使用pytest进行python进行单元测试" class="headerlink" title="使用pytest进行python进行单元测试"></a>使用pytest进行python进行单元测试</h3><p>python内置了一个<a href="http://docs.python.org/2/library/unittest.html" target="_blank" rel="noopener">unittest</a>，但是写起来稍微繁琐，比如都要写一个TestCase类，还得用 assertEqual, assertNotEqual等断言方法。 而使用pytest运行测试统一用assert语句就行，兼容unittest，目前很多知名开源项目如PyPy，Sentry也都在用。关于pytest的使用可以参考其官方文档，虽然有很多高级特性，但是掌握其中一小部分基本就够用了。</p>
+<p>下面是py.test的基本用法，以常见的两种测试类型（验证返回值和抛出异常）为例:</p>
+<pre><code>def add(a, b):
+    &quot;&quot;&quot;return a + b
+
+    Args:
+        a (int): int
+        b (int): int
+
+    Returns:
+        a + b
+
+    Raises:
+        AssertionError: if a or b is not integer
+
+    &quot;&quot;&quot;
+    assert all([isinstance(a, int), isinstance(b, int)])
+    return a + b
+
+
+def test_add():
+    assert add(1, 2) == 3
+    assert isinstance(add(1, 2) , int)
+    with pytest.raises(Exception):    # test exception
+        add(&apos;1&apos;, 2)
+</code></pre><p>这是个脑残示例，不过基本使用就是这么简单。真实场景下远远比这个复杂，甚至有时候构造测试的时间比写业务逻辑的时间还要长。但是再复杂的逻辑也是一点点功能堆积，如果可以确保每一部分都正确，整体上是不会出错的。单元测试同时也提醒我们，函数完成的功能尽可能单一，这样才利于测试。</p>
+<p>下面几个是我常用的pytest命令:</p>
+<pre><code>py.test test_mod.py   # run tests in module
+py.test somepath      # run all tests below somepath
+py.test -q test_file_name.py    # quite输出
+py.test -s test_file_name.py    # -s参数可以打印测试代码中的输出，默认不打印，print没结果
+py.test test_mod.py::test_func  # only run tests that match the &quot;node ID&quot;,
+py.test test_mod.py::TestClass::test_method  # run a single method in
+</code></pre><hr>
+<h3 id="测试驱动开发-TDD-的流程"><a href="#测试驱动开发-TDD-的流程" class="headerlink" title="测试驱动开发(TDD)的流程"></a>测试驱动开发(TDD)的流程</h3><p>为了实现一个函数，很多人的流程是这样的：</p>
+<p>匆匆写代码-&gt;实现后print输出看结果-&gt;有逻辑或语法错误-&gt;修改-&gt;继续print输出看结果<br>循环往复。</p>
+<p>采用TDD的流程如下：<br><img src="https://cms-assets.tutsplus.com/uploads/users/34/posts/15738/image/tdd-cycle.jpg" alt="TDD"></p>
+<p>TDD三项法则:</p>
+<ol>
+<li>在编写失败的单元测试之前，不要编写任何产品代码</li>
+<li>只要有一个单元测试失败了，就不再写测试代码；</li>
+<li>产品代码能够让当前失败的单元测试成功通过即可，不要多写</li>
+</ol>
+<p>优点：确定性；大幅减少缺陷；增加重构勇气；单元测试即是文档；改善设计<br>(事后测试是防守，先行测试是进攻)<br>当然也不用完全采用tdd，先写测试有时候很繁琐，但是对于比较重要的api函数，最好还是要有单元测试。为了使项目质量得到保证，TDD中的一些思想还是值得借鉴的。很多东西也在摸索，推荐学习下flask，requests等开源项目的单元测试代码，以后再慢慢更新吧。<br>实际上，如果能把print的结果和预期结果落实到测试代码里，加几个assert语句，就是单元测试了。并且这些测试代码也成为很好的api手册，你看这些测试用例就知道怎么调用了。</p>
+<hr>
+<h3 id="我的TDD实践-2016-11-12更新"><a href="#我的TDD实践-2016-11-12更新" class="headerlink" title="我的TDD实践(2016-11-12更新)"></a>我的TDD实践(2016-11-12更新)</h3><p>最近在做新项目的时候(使用了flask cookiecutter生成项目模板)，基本上达到了凡是复杂函数或类都会写测试代码的程度。基本上都是用py.test，还是比较方便的。在项目跟目录下建立一个tests文件夹，相关测试代码都放在里边。之后我会装一个用来监控文件变化的命令，我会使用vim的分屏模式同时打开模块代码和其测试代码，然后开个tmux窗口用于边改代码边看测试结果输出，屏幕够宽的话一个屏幕就能搞定。例如：假如我在写一个模块叫做models.py，在tests里写个test_models.py，还有个很简单的shell脚本runtest.sh写上<code>py.test -s test_models.py</code><br>首先装一下监控文件变动的命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># for ubuntu</span><br><span class="line">sudo  pip install https://github.com/joh/when-changed/archive/master.zip</span><br><span class="line"># for mac</span><br><span class="line">brew install fswatch # http://stackoverflow.com/questions/1515730/is-there-a-command-like-watch-or-inotifywait-on-the-mac</span><br></pre></td></tr></table></figure>
+<p>然后在tests文件夹下执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># ubuntu</span><br><span class="line">when-changed  test_models.py  ./runtest.sh</span><br><span class="line"># mac</span><br><span class="line">fswatch -o ./*.py  | xargs -n1  ./runtest.sh    # 比如写单元测试的时候修改后就让测试执行</span><br></pre></td></tr></table></figure></p>
+<p>这样就能非常愉快地边改代码和测试(实际上一定程度上可以说是TDD,只不过我有时候后写测试代码,另外我也在尝试TDD是否真的能够提升代码质量并且不会降低开发效率，凡事只有自己试试才知道，过几个月我再继续更新本片的实践，到时候就知道TDD到底是不是在浪费时间)，边看单元测试的执行结果啦:).如果遵守pep8写不超过80列的代码的话，即使用mac air这种小屏幕依然可以改得很爽，效果如下:<br><img src="http://7ktuty.com1.z0.glb.clouddn.com/tdd.gif" alt="vim+tmux+py.test workflow"></p>
+<hr>
+<h3 id="如何处理测试中的数据库请求和网络请求？-2017-10-01更新"><a href="#如何处理测试中的数据库请求和网络请求？-2017-10-01更新" class="headerlink" title="如何处理测试中的数据库请求和网络请求？(2017-10-01更新)"></a>如何处理测试中的数据库请求和网络请求？(2017-10-01更新)</h3><p>看到评论区有同学问到如何处理和数据库的交互以及网络请求，结合自己之前写单测的一些经验说一下：</p>
+<ul>
+<li>处理数据库请求：目前我看到有两种方式。无论使用那种方式，尽量保证数据测试的时候插入，使用完成就销毁。这样换个平台依然很容易构造测试 ，也容易在 CI 系统跑。<ul>
+<li>使用 fixture 类装饰器在一个 TestCase 运行前插入数据到测试数据库。大概就是 fixture 接收一个参数 sql 文件名，然后读取数据插入数据库</li>
+<li>在 TestCase 的 setup 里插入数据，在 teardown 里销毁。</li>
+</ul>
+</li>
+</ul>
+<pre><code>@fixture(&apos;table.sql&apos;)
+class SomeTestCase:
+    pass
+
+class SomeTestCase:
+    def setUp(self):
+        # insert value
+    def tearDown(self):
+        # destroy value
+</code></pre><ul>
+<li>处理外部网络调用。依旧有两种方式<ul>
+<li>stub: 用来处理一些比较通用的请求，比如一个发号器代码</li>
+<li>mock: 使用最多的替换掉网络请求的方式，几乎所有场景下都可以用。个人推荐所有网络请求和 rpc 调用等都可以用 mock.patch 来模拟返回值</li>
+</ul>
+</li>
+</ul>
+<pre><code>@registry.stub
+class ZoneSeqStub(BaseStub):
+    def id(self):
+        return &apos;zone:///seqd&apos;
+
+    @stub(&apos;Seq.get_id&apos;)
+    def get_id(self, **kwargs):
+        return random.randint(1, 100)
+
+
+ class TestCase:
+    @mock.patch(&apos;somemodule.request&apos;)
+    def test_function(self, mock_request):
+        mock_request.return_value = {}    # 构造期望的返回值，我们默认外部调用按照约定是可以工作的，不会对其测试
+</code></pre><hr>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="http://blog.2baxb.me/archives/1343" target="_blank" rel="noopener">关于烂代码的那些事</a><br><a href="http://blog.2baxb.me/archives/1398" target="_blank" rel="noopener">使用Spock框架进行单元测试</a><br><a href="http://code.tutsplus.com/tutorials/beginning-test-driven-development-in-python--net-30137" target="_blank" rel="noopener">Beginning Test-Driven Development in Python</a><br><a href="http://blog.csdn.net/liuchunming033/article/details/46501653" target="_blank" rel="noopener">【Pytest】python单元测试框架pytest简介</a><br><a href="http://pythontesting.net/strategy/why-most-unit-testing-is-waste/" target="_blank" rel="noopener">http://pythontesting.net/strategy/why-most-unit-testing-is-waste/</a><br><a href="http://blog.thedigitalcatonline.com/blog/2015/05/13/python-oop-tdd-example-part1/" target="_blank" rel="noopener">http://blog.thedigitalcatonline.com/blog/2015/05/13/python-oop-tdd-example-part1/</a><br><a href="http://blog.thedigitalcatonline.com/blog/2015/05/13/python-oop-tdd-example-part1/#.WDb_xWR962w" target="_blank" rel="noopener">A simple example of Python OOP development (with TDD) - Part 1</a></p>
+
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/10/18/python/docker-sentry/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/08/20/python/fuck-python/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

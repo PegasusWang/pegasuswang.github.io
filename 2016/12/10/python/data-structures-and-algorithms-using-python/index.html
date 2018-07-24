@@ -1,0 +1,2038 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Pegasus&#39; Blog</title>
+  <meta name="author" content="PegasusWang">
+  
+  <meta name="description" content="PegasusWang 的日常记录">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+  <meta property="og:site_name" content="Pegasus&#39; Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Pegasus&#39; Blog" type="application/atom+xml">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css">
+<link rel="stylesheet" href="/css/style.css">
+  <script src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  
+</head>
+
+<body>
+  <header id="header" class='normal_mode'>
+    <nav id="main-nav">
+  <ul class='container'>
+    
+      <li><a href="/archives">Archives</a></li>
+    
+      <li><a href="/about">About</a></li>
+    
+      <li><a href="https://github.com/pegasuswang/vim-config">Neovim</a></li>
+    
+      <li><a href="https://www.zhihu.com/people/pegasus-wang/activities">知乎</a></li>
+    
+      <li><a href="http://python-web-guide.readthedocs.io/zh/latest/">Python入坑指南</a></li>
+    
+  </ul>
+  <div class="clearfix"></div>
+</nav>
+  </header>
+  <div id="content" class="container">
+    <article class="post">
+  
+    <div class="gallery">
+  <div class="photoset">
+    
+      <img src="">
+    
+  </div>
+  <div class="control">
+    <div class="prev"></div>
+    <div class="next"></div>
+  </div>
+</div>
+  
+  <div class="post-content">
+    <header>
+      
+      <time datetime="2016-12-10T13:52:38.000Z"><a href="/2016/12/10/python/data-structures-and-algorithms-using-python/">周六, 12月 10 2016, 9:52:38 晚上</a></time>
+
+  
+    <h1 class="title"></h1>
+  
+
+
+
+  
+  <div class="tags">
+  	<i class="fa fa-tag"></i>
+    <a href="/tags/python-algorithms/">python, algorithms</a>
+  </div>
+
+<div class="clear"></div>
+      
+    </header>
+    <div class="entry">
+      
+        <blockquote>
+<p>I think a lot of new programmers like to use advanced data structures and advanced language features as a way of demonstrating their ability. I call it the lion-tamer syndrome. Such demonstrations are impressive, but unless they actually translate into real wins for the project, avoid them. - Glyn Williams’</p>
+</blockquote>
+<p>最近重新复习下常用算法和数据结构，下边是看该书大致记的笔记和代码，纯手敲，有兴趣的可以参考下，都是基于python3.5 class实现，所以也算是复习了一下OOP。虽然思想都是通用的，但是使用的语言也会影响到我们的思维，我会结合一下使用python的经验来稍微分析下各种数据结构和其操作的复杂度，以便灵活选用。实现一个数据结构后最好写一些单元测试用例，否则没人知道你写的究竟对不对。坑爹的是本书有很多代码错误甚至实现错误，调试花了我很多时间。同时你还会发现很多坑爹的网络算法教程文章代码直接拷贝根本不能用，没有单元测试证明算法正确性的都是扯淡。</p>
+<a id="more"></a>
+<hr>
+<h2 id="1章：ADT抽象数据类型，定义数据和其操作"><a href="#1章：ADT抽象数据类型，定义数据和其操作" class="headerlink" title="1章：ADT抽象数据类型，定义数据和其操作"></a>1章：ADT抽象数据类型，定义数据和其操作</h2><p>什么是ADT: 抽象数据类型，学过数据结构的应该都知道。</p>
+<p>How to select datastructures for ADT</p>
+<ol>
+<li>Dose the data structure provie for the storage requirements as specified by the domain of the ADT?</li>
+<li>Does the data structure provide the data access and manipulation functionality to fully<br>implement the ADT?</li>
+<li>Effcient implemention? based on complexity analysis.</li>
+</ol>
+<p>下边代码是个简单的示例，比如实现一个简单的Bag类，先定义其具有的操作，然后我们再用类的magic method来实现这些方法：</p>
+<pre><code>class Bag:
+    &quot;&quot;&quot;
+    constructor: 构造函数
+    size
+    contains
+    append
+    remove
+    iter
+    &quot;&quot;&quot;
+    def __init__(self):
+        self._items = list()
+
+    def __len__(self):
+        return len(self._items)
+
+    def __contains__(self, item):
+        return item in self._items
+
+    def add(self, item):
+        self._items.append(item)
+
+    def remove(self, item):
+        assert item in self._items, &apos;item must in the bag&apos;
+        return self._items.remove(item)
+
+    def __iter__(self):
+        return _BagIterator(self._items)
+
+
+class _BagIterator:
+    &quot;&quot;&quot; 注意这里实现了迭代器类 &quot;&quot;&quot;
+    def __init__(self, seq):
+        self._bag_items = seq
+        self._cur_item = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._cur_item &lt; len(self._bag_items):
+            item = self._bag_items[self._cur_item]
+            self._cur_item += 1
+            return item
+        else:
+            raise StopIteration
+
+
+b = Bag()
+b.add(1)
+b.add(2)
+for i in b:     # for使用__iter__构建，用__next__迭代
+    print(i)
+
+
+&quot;&quot;&quot;
+# for 语句等价于
+i = b.__iter__()
+while True:
+    try:
+        item = i.__next__()
+        print(item)
+    except StopIteration:
+        break
+&quot;&quot;&quot;
+</code></pre><hr>
+<h2 id="2章：array-vs-list"><a href="#2章：array-vs-list" class="headerlink" title="2章：array vs list"></a>2章：array vs list</h2><h3 id="array-定长，操作有限，但是节省内存；貌似我的生涯中还没用过，不过python3-5中我试了确实有array类，可以用import-array直接导入"><a href="#array-定长，操作有限，但是节省内存；貌似我的生涯中还没用过，不过python3-5中我试了确实有array类，可以用import-array直接导入" class="headerlink" title="array: 定长，操作有限，但是节省内存；貌似我的生涯中还没用过，不过python3.5中我试了确实有array类，可以用import array直接导入"></a>array: 定长，操作有限，但是节省内存；貌似我的生涯中还没用过，不过python3.5中我试了确实有array类，可以用import array直接导入</h3><h3 id="list-会预先分配内存，操作丰富，但是耗费内存。我用sys-getsizeof做了实验。我个人理解很类似C-STL里的vector，是使用最频繁的数据结构。"><a href="#list-会预先分配内存，操作丰富，但是耗费内存。我用sys-getsizeof做了实验。我个人理解很类似C-STL里的vector，是使用最频繁的数据结构。" class="headerlink" title="list: 会预先分配内存，操作丰富，但是耗费内存。我用sys.getsizeof做了实验。我个人理解很类似C++ STL里的vector，是使用最频繁的数据结构。"></a>list: 会预先分配内存，操作丰富，但是耗费内存。我用sys.getsizeof做了实验。我个人理解很类似C++ STL里的vector，是使用最频繁的数据结构。</h3><ul>
+<li>list.append: 如果之前没有分配够内存，会重新开辟新区域，然后复制之前的数据，复杂度退化</li>
+<li>list.insert: 会移动被插入区域后所有元素,O(n)</li>
+<li>list.pop: pop不同位置需要的复杂度不同pop(0)是O(1)复杂度,pop()首位O(n)复杂度</li>
+<li>list[]: slice操作copy数据（预留空间）到另一个list</li>
+</ul>
+<p>来实现一个array的ADT:</p>
+<pre><code>import ctypes
+
+class Array:
+    def __init__(self, size):
+        assert size &gt; 0, &apos;array size must be &gt; 0&apos;
+        self._size = size
+        PyArrayType = ctypes.py_object * size
+        self._elements = PyArrayType()
+        self.clear(None)
+
+    def __len__(self):
+        return self._size
+
+    def __getitem__(self, index):
+        assert index &gt;= 0 and index &lt; len(self), &apos;out of range&apos;
+        return self._elements[index]
+
+    def __setitem__(self, index, value):
+        assert index &gt;= 0 and index &lt; len(self), &apos;out of range&apos;
+        self._elements[index] = value
+
+    def clear(self, value):
+        &quot;&quot;&quot; 设置每个元素为value &quot;&quot;&quot;
+        for i in range(len(self)):
+            self._elements[i] = value
+
+    def __iter__(self):
+        return _ArrayIterator(self._elements)
+
+
+class _ArrayIterator:
+    def __init__(self, items):
+        self._items = items
+        self._idx = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._idex &lt; len(self._items):
+            val = self._items[self._idx]
+            self._idex += 1
+            return val
+        else:
+            raise StopIteration
+</code></pre><h3 id="Two-Demensional-Arrays"><a href="#Two-Demensional-Arrays" class="headerlink" title="Two-Demensional Arrays"></a>Two-Demensional Arrays</h3><pre><code>class Array2D:
+    &quot;&quot;&quot; 要实现的方法
+    Array2D(nrows, ncols):    constructor
+    numRows()
+    numCols()
+    clear(value)
+    getitem(i, j)
+    setitem(i, j, val)
+    &quot;&quot;&quot;
+    def __init__(self, numrows, numcols):
+        self._the_rows = Array(numrows)     # 数组的数组
+        for i in range(numrows):
+            self._the_rows[i] = Array(numcols)
+
+    @property
+    def numRows(self):
+        return len(self._the_rows)
+
+    @property
+    def NumCols(self):
+        return len(self._the_rows[0])
+
+    def clear(self, value):
+        for row in range(self.numRows):
+            row.clear(value)
+
+    def __getitem__(self, ndx_tuple):    # ndx_tuple: (x, y)
+        assert len(ndx_tuple) == 2
+        row, col = ndx_tuple[0], ndx_tuple[1]
+        assert (row &gt;= 0 and row &lt; self.numRows and
+                col &gt;= 0 and col &lt; self.NumCols)
+
+        the_1d_array = self._the_rows[row]
+        return the_1d_array[col]
+
+    def __setitem__(self, ndx_tuple, value):
+        assert len(ndx_tuple) == 2
+        row, col = ndx_tuple[0], ndx_tuple[1]
+        assert (row &gt;= 0 and row &lt; self.numRows and
+                col &gt;= 0 and col &lt; self.NumCols)
+        the_1d_array = self._the_rows[row]
+        the_1d_array[col] = value
+</code></pre><h3 id="The-Matrix-ADT-m行，n列。这个最好用还是用pandas处理矩阵，自己实现比较-疼"><a href="#The-Matrix-ADT-m行，n列。这个最好用还是用pandas处理矩阵，自己实现比较-疼" class="headerlink" title="The Matrix ADT, m行，n列。这个最好用还是用pandas处理矩阵，自己实现比较*疼"></a>The Matrix ADT, m行，n列。这个最好用还是用pandas处理矩阵，自己实现比较*疼</h3><pre><code>class Matrix:
+    &quot;&quot;&quot; 最好用pandas的DataFrame
+    Matrix(rows, ncols): constructor
+    numCols()
+    getitem(row, col)
+    setitem(row, col, val)
+    scaleBy(scalar): 每个元素乘scalar
+    transpose(): 返回transpose转置
+    add(rhsMatrix):    size must be the same
+    subtract(rhsMatrix)
+    multiply(rhsMatrix)
+    &quot;&quot;&quot;
+    def __init__(self, numRows, numCols):
+        self._theGrid = Array2D(numRows, numCols)
+        self._theGrid.clear(0)
+
+    @property
+    def numRows(self):
+        return len(self._theGrid.numRows())
+
+    @property
+    def NumCols(self):
+        return len(self._theGrid.numCols())
+
+    def __getitem__(self, ndxTuple):
+        return self._theGrid[ndxTuple[0], ndxTuple[1]]
+
+    def __setitem__(self, ndxTuple, scalar):
+        self._theGrid[ndxTuple[0], ndxTuple[1]] = scalar
+
+    def scaleBy(self, scalar):
+        for r in range(self.numRows):
+            for c in range(self.numCols):
+                self[r, c] *= scalar
+
+    def __add__(self, rhsMatrix):
+        assert (rhsMatrix.numRows == self.numRows and
+                rhsMatrix.numCols == self.numCols)
+        newMartrix = Matrix(self.numRows, self.numCols)
+        for r in range(self.numRows):
+            for c in range(self.numCols):
+                newMartrix[r, c] = self[r, c] + rhsMatrix[r, c]
+</code></pre><hr>
+<h2 id="3章：Sets-and-Maps"><a href="#3章：Sets-and-Maps" class="headerlink" title="3章：Sets and Maps"></a>3章：Sets and Maps</h2><p>除了list之外，最常用的应该就是python内置的set和dict了。</p>
+<h3 id="sets-ADT"><a href="#sets-ADT" class="headerlink" title="sets ADT"></a>sets ADT</h3><p>A set is a container that stores a collection of unique values over a given comparable domain in which the stored values have no particular ordering.</p>
+<pre><code>class Set:
+    &quot;&quot;&quot; 使用list实现set ADT
+    Set()
+    length()
+    contains(element)
+    add(element)
+    remove(element)
+    equals(element)
+    isSubsetOf(setB)
+    union(setB)
+    intersect(setB)
+    difference(setB)
+    iterator()
+    &quot;&quot;&quot;
+    def __init__(self):
+        self._theElements = list()
+
+    def __len__(self):
+        return len(self._theElements)
+
+    def __contains__(self, element):
+        return element in self._theElements
+
+    def add(self, element):
+        if element not in self:
+            self._theElements.append(element)
+
+    def remove(self, element):
+        assert element in self, &apos;The element must be set&apos;
+        self._theElements.remove(element)
+
+    def __eq__(self, setB):
+        if len(self) != len(setB):
+            return False
+        else:
+            return self.isSubsetOf(setB)
+
+    def isSubsetOf(self, setB):
+        for element in self:
+            if element not in setB:
+                return False
+        return True
+
+    def union(self, setB):
+        newSet = Set()
+        newSet._theElements.extend(self._theElements)
+        for element in setB:
+            if element not in self:
+                newSet._theElements.append(element)
+        return newSet
+</code></pre><h3 id="Maps-or-Dict-键值对-python内部采用hash实现。"><a href="#Maps-or-Dict-键值对-python内部采用hash实现。" class="headerlink" title="Maps or Dict: 键值对,python内部采用hash实现。"></a>Maps or Dict: 键值对,python内部采用hash实现。</h3><pre><code>class Map:
+    &quot;&quot;&quot; Map ADT list implemention
+    Map()
+    length()
+    contains(key)
+    add(key, value)
+    remove(key)
+    valudOf(key)
+    iterator()
+    &quot;&quot;&quot;
+    def __init__(self):
+        self._entryList = list()
+
+    def __len__(self):
+        return len(self._entryList)
+
+    def __contains__(self, key):
+        ndx = self._findPosition(key)
+        return ndx is not None
+
+    def add(self, key, value):
+        ndx = self._findPosition(key)
+        if ndx is not None:
+            self._entryList[ndx].value = value
+            return False
+        else:
+            entry = _MapEntry(key, value)
+            self._entryList.append(entry)
+            return True
+
+    def valueOf(self, key):
+        ndx = self._findPosition(key)
+        assert ndx is not None, &apos;Invalid map key&apos;
+        return self._entryList[ndx].value
+
+    def remove(self, key):
+        ndx = self._findPosition(key)
+        assert ndx is not None, &apos;Invalid map key&apos;
+        self._entryList.pop(ndx)
+
+    def __iter__(self):
+        return _MapIterator(self._entryList)
+
+    def _findPosition(self, key):
+        for i in range(len(self)):
+            if self._entryList[i].key == key:
+                return i
+        return None
+
+
+class _MapEntry:    # or use collections.namedtuple(&apos;_MapEntry&apos;, &apos;key,value&apos;)
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+</code></pre><h3 id="The-multiArray-ADT-多维数组，一般是使用一个一维数组模拟，然后通过计算下标获取元素"><a href="#The-multiArray-ADT-多维数组，一般是使用一个一维数组模拟，然后通过计算下标获取元素" class="headerlink" title="The multiArray ADT, 多维数组，一般是使用一个一维数组模拟，然后通过计算下标获取元素"></a>The multiArray ADT, 多维数组，一般是使用一个一维数组模拟，然后通过计算下标获取元素</h3><pre><code>class MultiArray:
+    &quot;&quot;&quot; row-major or column-marjor ordering, this is row-major ordering
+    MultiArray(d1, d2, ...dn)
+    dims():   the number of dimensions
+    length(dim): the length of given array dimension
+    clear(value)
+    getitem(i1, i2, ... in), index(i1,i2,i3) = i1*(d2*d3) + i2*d3 + i3
+    setitem(i1, i2, ... in)
+    计算下标：index(i1,i2,...in) = i1*f1 + i2*f2 + ... + i(n-1)*f(n-1) + in*1
+    &quot;&quot;&quot;
+    def __init__(self, *dimensions):
+        # Implementation of MultiArray ADT using a 1-D # array,数组的数组的数组。。。
+        assert len(dimensions) &gt; 1, &apos;The array must have 2 or more dimensions&apos;
+        self._dims = dimensions
+        # Compute to total number of elements in the array
+        size = 1
+        for d in dimensions:
+            assert d &gt; 0, &apos;Dimensions must be &gt; 0&apos;
+            size *= d
+        # Create the 1-D array to store the elements
+        self._elements = Array(size)
+        # Create a 1-D array to store the equation factors
+        self._factors = Array(len(dimensions))
+        self._computeFactors()
+
+    @property
+    def numDims(self):
+        return len(self._dims)
+
+    def length(self, dim):
+        assert dim &gt; 0 and dim &lt; len(self._dims), &apos;Dimension component out of range&apos;
+        return self._dims[dim-1]
+
+    def clear(self, value):
+        self._elements.clear(value)
+
+    def __getitem__(self, ndxTuple):
+        assert len(ndxTuple) == self.numDims, &apos;Invalid # of array subscripts&apos;
+        index = self._computeIndex(ndxTuple)
+        assert index is not None, &apos;Array subscript out of range&apos;
+        return self._elements[index]
+
+    def __setitem__(self, ndxTuple, value):
+        assert len(ndxTuple) == self.numDims, &apos;Invalid # of array subscripts&apos;
+        index = self._computeIndex(ndxTuple)
+        assert index is not None, &apos;Array subscript out of range&apos;
+        self._elements[index] = value
+
+    def _computeIndex(self, ndxTuple):
+        # using the equation: i1*f1 + i2*f2 + ... + in*fn
+        offset = 0
+        for j in range(len(ndxTuple)):
+            if ndxTuple[j] &lt; 0 or ndxTuple[j] &gt;= self._dims[j]:
+                return None
+            else:
+                offset += ndexTuple[j] * self._factors[j]
+        return offset
+</code></pre><hr>
+<h1 id="4章：Algorithm-Analysis"><a href="#4章：Algorithm-Analysis" class="headerlink" title="4章：Algorithm Analysis"></a>4章：Algorithm Analysis</h1><p>一般使用大O标记法来衡量算法的平均时间复杂度, 1 &lt; log(n) &lt; n &lt; nlog(n) &lt; n^2 &lt; n^3 &lt; a^n。<br>了解常用数据结构操作的平均时间复杂度有利于使用更高效的数据结构，当然有时候需要在时间和空间上进行衡量，有些操作甚至还会退化，比如list的append操作，如果list空间不够，会去开辟新的空间，操作复杂度退化到O(n)，有时候还需要使用均摊分析(amortized)</p>
+<hr>
+<h1 id="5章：Searching-and-Sorting"><a href="#5章：Searching-and-Sorting" class="headerlink" title="5章：Searching and Sorting"></a>5章：Searching and Sorting</h1><p>排序和查找是最基础和频繁的操作，python内置了in操作符和bisect二分操作模块实现查找，内置了sorted方法来实现排序操作。二分和快排也是面试中经常考到的，本章讲的是基本的排序和查找。</p>
+<pre><code>def binary_search(sorted_seq, val):
+    &quot;&quot;&quot; 实现标准库中的bisect.bisect_left &quot;&quot;&quot;
+    low = 0
+    high = len(sorted_seq) - 1
+    while low &lt;= high:
+        mid = (high + low) // 2
+        if sorted_seq[mid] == val:
+            return mid
+        elif val &lt; sorted_seq[mid]:
+            high = mid - 1
+        else:
+            low = mid + 1
+    return low
+
+def bubble_sort(seq):    # O(n^2), n(n-1)/2 = 1/2(n^2 + n)
+    n = len(seq)
+    for i in range(n-1):
+        for j in range(i+n-1):    # 每一轮冒泡如果满足条件交换相邻的元素
+            if seq[j] &gt; seq[j+1]:
+                seq[j], seq[j+1] = seq[j+1], seq[j]    # swap seq[j], seq[j+1]
+    # 冒泡实际上可以优化，设置一个flag，如果有一轮没有交换操作就说明已经有序了
+
+def select_sort(seq):
+    &quot;&quot;&quot;可以看作是冒泡的改进，每次找一个最小的元素交换，每一轮只需要交换一次&quot;&quot;&quot;
+    n = len(seq)
+    for i in range(n-1):
+        min_idx = i    # assume the ith element is the smallest
+        for j in range(i+1, n):
+            if seq[j] &lt; seq[min_idx]:   # find the minist element index
+                min_idx = j
+        if min_idx != i:    # swap
+            seq[i] = seq[min_idx]
+
+
+def insertion_sort(seq):
+    &quot;&quot;&quot; 每次挑选下一个元素插入已经排序的数组中,初始时已排序数组只有一个元素&quot;&quot;&quot;
+    n = len(seq)
+    for i in range(1, n):
+        value = seq[i]    # save the value to be positioned
+        # find the position where value fits in the ordered part of the list
+        pos = i
+        while pos &gt; 0 and value &lt; seq[pos-1]:
+            # Shift the items to the right during the search
+            seq[pos] = seq[pos-1]
+            pos -= 1
+        seq[pos] = value
+
+
+def merge_sorted_list(listA, listB):
+    &quot;&quot;&quot; 归并两个有序数组 &quot;&quot;&quot;
+    new_list = list()
+    a = b = 0
+    while a &lt; len(listA) and b &lt; len(listB):
+        if listA[a] &lt; listB[b]:
+            new_list.append(listA[a])
+            a += 1
+        else:
+            new_list.append(listB[b])
+            b += 1
+
+    while a &lt; len(listA):
+        new_list.append(listA[a])
+        a += 1
+
+    while b &lt; len(listB):
+        new_list.append(listB[b])
+        b += 1
+
+    return new_list
+</code></pre><h2 id="6章-Linked-Structure"><a href="#6章-Linked-Structure" class="headerlink" title="6章:Linked Structure"></a>6章:Linked Structure</h2><p>list是最常用的数据结构，但是list在中间增减元素的时候效率会很低，这时候linked list会更适合，缺点就是获取元素的平均时间复杂度变成了O(n)</p>
+<pre><code># 单链表实现
+class ListNode:
+    def __init__(self, data):
+        self.data = data
+        self.next = None
+
+
+def travsersal(head, callback):
+    curNode = head
+    while curNode is not None:
+        callback(curNode.data)
+        curNode = curNode.next
+
+
+def unorderdSearch(head, target):
+    curNode = head
+    while curNode is not None and curNode.data != target:
+        curNode = curNode.next
+    return curNode is not None
+
+
+# Given the head pointer, prepend an item to an unsorted linked list.
+def prepend(head, item):
+    newNode = ListNode(item)
+    newNode.next = head
+    head = newNode
+
+
+# Given the head reference, remove a target from a linked list
+def remove(head, target):
+    predNode = None
+    curNode = head
+    while curNode is not None and curNode.data != target:
+        # 寻找目标
+        predNode = curNode
+        curNode = curNode.data
+    if curNode is not None:
+        if curNode is head:
+            head = curNode.next
+        else:
+            predNode.next = curNode.next
+</code></pre><hr>
+<h2 id="7章：Stacks"><a href="#7章：Stacks" class="headerlink" title="7章：Stacks"></a>7章：Stacks</h2><p>栈也是计算机里用得比较多的数据结构，栈是一种后进先出的数据结构，可以理解为往一个桶里放盘子，先放进去的会被压在地下，拿盘子的时候，后放的会被先拿出来。</p>
+<pre><code>class Stack:
+    &quot;&quot;&quot; Stack ADT, using a python list
+    Stack()
+    isEmpty()
+    length()
+    pop(): assert not empty
+    peek(): assert not empty, return top of non-empty stack without removing it
+    push(item)
+    &quot;&quot;&quot;
+    def __init__(self):
+        self._items = list()
+
+    def isEmpty(self):
+        return len(self) == 0
+
+    def __len__(self):
+        return len(self._items)
+
+    def peek(self):
+        assert not self.isEmpty()
+        return self._items[-1]
+
+    def pop(self):
+        assert not self.isEmpty()
+        return self._items.pop()
+
+    def push(self, item):
+        self._items.append(item)
+
+
+class Stack:
+    &quot;&quot;&quot; Stack ADT, use linked list
+    使用list实现很简单，但是如果涉及大量push操作，list的空间不够时复杂度退化到O(n)
+    而linked list可以保证最坏情况下仍是O(1)
+    &quot;&quot;&quot;
+    def __init__(self):
+        self._top = None    # top节点, _StackNode or None
+        self._size = 0    # int
+
+    def isEmpty(self):
+        return self._top is None
+
+    def __len__(self):
+        return self._size
+
+    def peek(self):
+        assert not self.isEmpty()
+        return self._top.item
+
+    def pop(self):
+        assert not self.isEmpty()
+        node = self._top
+        self.top = self._top.next
+        self._size -= 1
+        return node.item
+
+    def _push(self, item):
+        self._top = _StackNode(item, self._top)
+        self._size += 1
+
+
+class _StackNode:
+    def __init__(self, item, link):
+        self.item = item
+        self.next = link
+</code></pre><hr>
+<h2 id="8章：Queues"><a href="#8章：Queues" class="headerlink" title="8章：Queues"></a>8章：Queues</h2><p>队列也是经常使用的数据结构，比如发送消息等，celery可以使用redis提供的list实现消息队列。<br>本章我们用list和linked list来实现队列和优先级队列。</p>
+<pre><code>class Queue:
+    &quot;&quot;&quot; Queue ADT, use list。list实现，简单但是push和pop效率最差是O(n)
+    Queue()
+    isEmpty()
+    length()
+    enqueue(item)
+    dequeue()
+    &quot;&quot;&quot;
+    def __init__(self):
+        self._qList = list()
+
+    def isEmpty(self):
+        return len(self) == 0
+
+    def __len__(self):
+        return len(self._qList)
+
+    def enquue(self, item):
+        self._qList.append(item)
+
+    def dequeue(self):
+        assert not self.isEmpty()
+        return self._qList.pop(0)
+
+
+from array import Array    # Array那一章实现的Array ADT
+class Queue:
+    &quot;&quot;&quot;
+    circular Array ，通过头尾指针实现。list内置append和pop复杂度会退化，使用
+    环数组实现可以使得入队出队操作时间复杂度为O(1)，缺点是数组长度需要固定。
+    &quot;&quot;&quot;
+    def __init__(self, maxSize):
+        self._count = 0
+        self._front = 0
+        self._back = maxSize - 1
+        self._qArray = Array(maxSize)
+
+    def isEmpty(self):
+        return self._count == 0
+
+    def isFull(self):
+        return self._count == len(self._qArray)
+
+    def __len__(self):
+        return len(self._count)
+
+    def enqueue(self, item):
+        assert not self.isFull()
+        maxSize = len(self._qArray)
+        self._back = (self._back + 1) % maxSize     # 移动尾指针
+        self._qArray[self._back] = item
+        self._count += 1
+
+    def dequeue(self):
+        assert not self.isFull()
+        item = self._qArray[self._front]
+        maxSize = len(self._qArray)
+        self._front = (self._front + 1) % maxSize
+        self._count -= 1
+        return item
+
+class _QueueNode:
+    def __init__(self, item):
+        self.item = item
+
+
+class Queue:
+    &quot;&quot;&quot; Queue ADT, linked list 实现。为了改进环型数组有最大数量的限制，改用
+    带有头尾节点的linked list实现。
+    &quot;&quot;&quot;
+    def __init__(self):
+        self._qhead = None
+        self._qtail = None
+        self._qsize = 0
+
+    def isEmpty(self):
+        return self._qhead is None
+
+    def __len__(self):
+        return self._count
+
+    def enqueue(self, item):
+        node = _QueueNode(item)    # 创建新的节点并用尾节点指向他
+        if self.isEmpty():
+            self._qhead = node
+        else:
+            self._qtail.next = node
+        self._qtail = node
+        self._qcount += 1
+
+    def dequeue(self):
+        assert not self.isEmpty(), &apos;Can not dequeue from an empty queue&apos;
+        node = self._qhead
+        if self._qhead is self._qtail:
+            self._qtail = None
+        self._qhead = self._qhead.next    # 前移头节点
+        self._count -= 1
+        return node.item
+
+
+class UnboundedPriorityQueue:
+    &quot;&quot;&quot; PriorityQueue ADT: 给每个item加上优先级p，高优先级先dequeue
+    分为两种：
+    - bounded PriorityQueue: 限制优先级在一个区间[0...p)
+    - unbounded PriorityQueue: 不限制优先级
+
+    PriorityQueue()
+    BPriorityQueue(numLevels): create a bounded PriorityQueue with priority in range
+        [0, numLevels-1]
+    isEmpty()
+    length()
+    enqueue(item, priority): 如果是bounded PriorityQueue, priority必须在区间内
+    dequeue(): 最高优先级的出队，同优先级的按照FIFO顺序
+
+    - 两种实现方式：
+    1.入队的时候都是到队尾，出队操作找到最高优先级的出队，出队操作O(n)
+    2.始终维持队列有序，每次入队都找到该插入的位置，出队操作是O(1)
+    (注意如果用list实现list.append和pop操作复杂度会因内存分配退化)
+    &quot;&quot;&quot;
+    from collections import namedtuple
+    _PriorityQEntry = namedtuple(&apos;_PriorityQEntry&apos;, &apos;item, priority&apos;)
+
+    # 采用方式1，用内置list实现unbounded PriorityQueue
+    def __init__(self):
+        self._qlist = list()
+
+    def isEmpty(self):
+        return len(self) == 0
+
+    def __len__(self):
+        return len(self._qlist)
+
+    def enqueue(self, item, priority):
+        entry = UnboundedPriorityQueue._PriorityQEntry(item, priority)
+        self._qlist.append(entry)
+
+    def deque(self):
+        assert not self.isEmpty(), &apos;can not deque from an empty queue&apos;
+        highest = self._qlist[0].priority
+        for i in range(len(self)):    # 出队操作O(n)，遍历找到最高优先级
+            if self._qlist[i].priority &lt; highest:
+                highest = self._qlist[i].priority
+        entry = self._qlist.pop(highest)
+        return entry.item
+
+
+class BoundedPriorityQueue:
+    &quot;&quot;&quot; BoundedPriorityQueue ADT，用linked list实现。上一个地方提到了 BoundedPriorityQueue
+    但是为什么需要 BoundedPriorityQueue呢？ BoundedPriorityQueue 的优先级限制在[0, maxPriority-1]
+    对于 UnboundedPriorityQueue,出队操作由于要遍历寻找优先级最高的item，所以平均
+    是O(n)的操作，但是对于 BoundedPriorityQueue，用队列数组实现可以达到常量时间，
+    用空间换时间。比如要弹出一个元素，直接找到第一个非空队列弹出 元素就可以了。
+    (小数字代表高优先级，先出队)
+
+    qlist
+    [0] -&gt; [&quot;white&quot;]
+    [1]
+    [2] -&gt; [&quot;black&quot;, &quot;green&quot;]
+    [3] -&gt; [&quot;purple&quot;, &quot;yellow&quot;]
+    &quot;&quot;&quot;
+    # Implementation of the bounded Priority Queue ADT using an array of #
+    # queues in which the queues are implemented using a linked list.
+    from array import Array    #  第二章定义的ADT
+
+    def __init__(self, numLevels):
+        self._qSize = 0
+        self._qLevels = Array(numLevels)
+        for i in range(numLevels):
+            self._qLevels[i] = Queue()    # 上一节讲到用linked list实现的Queue
+
+    def isEmpty(self):
+        return len(self) == 0
+
+    def __len__(self):
+        return len(self._qSize)
+
+    def enqueue(self, item, priority):
+        assert priority &gt;= 0 and priority &lt; len(self._qLevels), &apos;invalid priority&apos;
+        self._qLevel[priority].enquue(item)    # 直接找到 priority 对应的槽入队
+
+    def deque(self):
+        assert not self.isEmpty(), &apos;can not deque from an empty queue&apos;
+        i = 0
+        p = len(self._qLevels)
+        while i &lt; p and not self._qLevels[i].isEmpty():    # 找到第一个非空队列
+            i += 1
+        return self._qLevels[i].dequeue()
+</code></pre><hr>
+<h2 id="9章：Advanced-Linked-Lists"><a href="#9章：Advanced-Linked-Lists" class="headerlink" title="9章：Advanced Linked Lists"></a>9章：Advanced Linked Lists</h2><p>之前曾经介绍过单链表，一个链表节点只有data和next字段，本章介绍高级的链表。</p>
+<p>Doubly Linked List，双链表，每个节点多了个prev指向前一个节点。双链表可以用来编写文本编辑器的buffer。</p>
+<pre><code>class DListNode:
+    def __init__(self, data):
+        self.data = data
+        self.prev = None
+        self.next = None
+
+
+def revTraversa(tail):
+    curNode = tail
+    while cruNode is not None:
+        print(curNode.data)
+        curNode = curNode.prev
+
+
+def search_sorted_doubly_linked_list(head, tail, probe, target):
+    &quot;&quot;&quot; probing technique探查法，改进直接遍历，不过最坏时间复杂度仍是O(n)
+    searching a sorted doubly linked list using the probing technique
+    Args:
+        head (DListNode obj)
+        tail (DListNode obj)
+        probe (DListNode or None)
+        target (DListNode.data): data to search
+    &quot;&quot;&quot;
+    if head is None:    # make sure list is not empty
+        return False
+    if probe is None:    # if probe is null, initialize it to first node
+        probe = head
+
+    # if the target comes before the probe node, we traverse backward, otherwise
+    # traverse forward
+    if target &lt; probe.data:
+        while probe is not None and target &lt;= probe.data:
+            if target == probe.dta:
+                return True
+            else:
+                probe = probe.prev
+    else:
+        while probe is not None and target &gt;= probe.data:
+            if target == probe.data:
+                return True
+            else:
+                probe = probe.next
+    return False
+
+
+def insert_node_into_ordered_doubly_linekd_list(value):
+    &quot;&quot;&quot; 最好画个图看，链表操作很容易绕晕，注意赋值顺序&quot;&quot;&quot;
+    newnode = DListNode(value)
+
+    if head is None:    # empty list
+        head = newnode
+        tail = head
+
+    elif value &lt; head.data:    # insert before head
+        newnode.next = head
+        head.prev = newnode
+        head = newnode
+
+    elif value &gt; tail.data:    # insert after tail
+        newnode.prev = tail
+        tail.next = newnode
+        tail = newnode
+
+    else:    # insert into middle
+        node = head
+        while node is not None and node.data &lt; value:
+            node = node.next
+        newnode.next = node
+        newnode.prev = node.prev
+        node.prev.next = newnode
+        node.prev = newnode
+</code></pre><p>循环链表</p>
+<pre><code>def travrseCircularList(listRef):
+    curNode = listRef
+    done = listRef is None
+    while not None:
+        curNode = curNode.next
+        print(curNode.data)
+        done = curNode is listRef   # 回到遍历起始点
+
+
+def searchCircularList(listRef, target):
+    curNode = listRef
+    done = listRef is None
+    while not done:
+        curNode = curNode.next
+        if curNode.data == target:
+            return True
+        else:
+            done = curNode is listRef or curNode.data &gt; target
+    return False
+
+
+def add_newnode_into_ordered_circular_linked_list(listRef, value):
+    &quot;&quot;&quot; 插入并维持顺序
+    1.插入空链表；2.插入头部；3.插入尾部；4.按顺序插入中间
+    &quot;&quot;&quot;
+    newnode = ListNode(value)
+    if listRef is None:    # empty list
+        listRef = newnode
+        newnode.next = newnode
+
+    elif value &lt; listRef.next.data:    # insert in front
+        newnode.next = listRef.next
+        listRef.next = newnode
+
+    elif value &gt; listRef.data:    # insert in back
+        newnode.next = listRef.next
+        listRef.next = newnode
+        listRef = newnode
+
+    else:    # insert in the middle
+        preNode = None
+        curNode = listRef
+        done = listRef is None
+        while not done:
+            preNode = curNode
+            preNode = curNode.next
+            done = curNode is listRef or curNode.data &gt; value
+
+        newnode.next = curNode
+        preNode.next = newnode
+</code></pre><hr>
+<h1 id="10章：Recursion"><a href="#10章：Recursion" class="headerlink" title="10章：Recursion"></a>10章：Recursion</h1><blockquote>
+<p>Recursion is a process for solving problems by subdividing a larger problem into smaller cases of the problem itself and then solving the smaller, more trivial parts.</p>
+</blockquote>
+<p>递归函数：调用自己的函数</p>
+<pre><code># 递归函数：调用自己的函数，看一个最简单的递归函数，倒序打印一个数
+def printRev(n):
+    if n &gt; 0:
+        print(n)
+        printRev(n-1)
+
+
+printRev(3)    # 从10输出到1
+
+
+# 稍微改一下，print放在最后就得到了正序打印的函数
+def printInOrder(n):
+    if n &gt; 0:
+        printInOrder(n-1)
+        print(n)    # 之所以最小的先打印是因为函数一直递归到n==1时候的最深栈，此时不再
+                    # 递归，开始执行print语句，这时候n==1，之后每跳出一层栈，打印更大的值
+
+printInOrder(3)    # 正序输出
+</code></pre><p>Properties of Recursion:  使用stack解决的问题都能用递归解决</p>
+<ul>
+<li>A recursive solution must contain a base case;    递归出口，代表最小子问题(n == 0退出打印)</li>
+<li>A recursive solution must contain a recursive case;  可以分解的子问题</li>
+<li>A recursive solution must make progress toward the base case.    递减n使得n像递归出口靠近</li>
+</ul>
+<p>Tail Recursion: occurs when a function includes a single recursive call as the last statement of the function. In this case, a stack is not needed to store values to te used upon the return of the recursive call and thus a solution can be implemented using a iterative loop instead.</p>
+<pre><code># Recursive Binary Search
+
+def recBinarySearch(target, theSeq, first, last):
+    # 你可以写写单元测试来验证这个函数的正确性
+    if first &gt; last:    # 递归出口1
+        return False
+    else:
+        mid = (first + last) // 2
+        if theSeq[mid] == target:
+            return True    # 递归出口2
+        elif theSeq[mid] &gt; target:
+            return recBinarySearch(target, theSeq, first, mid - 1)
+        else:
+            return recBinarySearch(target, theSeq, mid + 1, last)
+</code></pre><hr>
+<h1 id="11章：Hash-Tables"><a href="#11章：Hash-Tables" class="headerlink" title="11章：Hash Tables"></a>11章：Hash Tables</h1><p>基于比较的搜索（线性搜索，有序数组的二分搜索）最好的时间复杂度只能达到O(logn)，利用hash可以实现O(1)查找，python内置dict的实现方式就是hash，你会发现dict的key必须要是实现了<strong>hash</strong>和<strong>eq</strong>方法的。</p>
+<p>Hashing: hashing is the process of mapping a search a key to a limited range of array indeices with the goal of providing direct access to the keys.</p>
+<p>hash方法有个hash函数用来给key计算一个hash值，作为数组下标，放到该下标对应的槽中。当不同key根据hash函数计算得到的下标相同时，就出现了冲突。解决冲突有很多方式，比如让每个槽成为链表，每次冲突以后放到该槽链表的尾部，但是查询时间就会退化，不再是O(1)。还有一种探查方式，当key的槽冲突时候，就会根据一种计算方式去寻找下一个空的槽存放，探查方式有线性探查，二次方探查法等，cpython解释器使用的是二次方探查法。还有一个问题就是当python使用的槽数量大于预分配的2/3时候，会重新分配内存并拷贝以前的数据，所以有时候dict的add操作代价还是比较高的，牺牲空间但是可以始终保证O(1)的查询效率。如果有大量的数据，建议还是使用bloomfilter或者redis提供的HyperLogLog。</p>
+<p>如果你感兴趣，可以看看这篇文章，介绍c解释器如何实现的python dict对象：<a href="http://www.laurentluce.com/posts/python-dictionary-implementation/" target="_blank" rel="noopener">Python dictionary implementation</a>。我们使用Python来实现一个类似的hash结构。</p>
+<pre><code>import ctypes
+
+class Array:  # 第二章曾经定义过的ADT，这里当做HashMap的槽数组使用
+    def __init__(self, size):
+        assert size &gt; 0, &apos;array size must be &gt; 0&apos;
+        self._size = size
+        PyArrayType = ctypes.py_object * size
+        self._elements = PyArrayType()
+        self.clear(None)
+
+    def __len__(self):
+        return self._size
+
+    def __getitem__(self, index):
+        assert index &gt;= 0 and index &lt; len(self), &apos;out of range&apos;
+        return self._elements[index]
+
+    def __setitem__(self, index, value):
+        assert index &gt;= 0 and index &lt; len(self), &apos;out of range&apos;
+        self._elements[index] = value
+
+    def clear(self, value):
+        &quot;&quot;&quot; 设置每个元素为value &quot;&quot;&quot;
+        for i in range(len(self)):
+            self._elements[i] = value
+
+    def __iter__(self):
+        return _ArrayIterator(self._elements)
+
+
+class _ArrayIterator:
+    def __init__(self, items):
+        self._items = items
+        self._idx = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._idx &lt; len(self._items):
+            val = self._items[self._idx]
+            self._idx += 1
+            return val
+        else:
+            raise StopIteration
+
+
+class HashMap:
+    &quot;&quot;&quot; HashMap ADT实现，类似于python内置的dict
+    一个槽有三种状态：
+    1.从未使用 HashMap.UNUSED。此槽没有被使用和冲突过，查找时只要找到UNUSEd就不用再继续探查了
+    2.使用过但是remove了，此时是 HashMap.EMPTY，该探查点后边的元素扔可能是有key
+    3.槽正在使用 _MapEntry节点
+    &quot;&quot;&quot;
+
+    class _MapEntry:    # 槽里存储的数据
+        def __init__(self, key, value):
+            self.key = key
+            self.value = value
+
+    UNUSED = None    # 没被使用过的槽，作为该类变量的一个单例，下边都是is 判断
+    EMPTY = _MapEntry(None, None)     # 使用过但是被删除的槽
+
+    def __init__(self):
+        self._table = Array(7)    # 初始化7个槽
+        self._count = 0
+        # 超过2/3空间被使用就重新分配，load factor = 2/3
+        self._maxCount = len(self._table) - len(self._table) // 3
+
+    def __len__(self):
+        return self._count
+
+    def __contains__(self, key):
+        slot = self._findSlot(key, False)
+        return slot is not None
+
+    def add(self, key, value):
+        if key in self:    # 覆盖原有value
+            slot = self._findSlot(key, False)
+            self._table[slot].value = value
+            return False
+        else:
+            slot = self._findSlot(key, True)
+            self._table[slot] = HashMap._MapEntry(key, value)
+            self._count += 1
+            if self._count == self._maxCount:    # 超过2/3使用就rehash
+                self._rehash()
+            return True
+
+    def valueOf(self, key):
+        slot = self._findSlot(key, False)
+        assert slot is not None, &apos;Invalid map key&apos;
+        return self._table[slot].value
+
+    def remove(self, key):
+        &quot;&quot;&quot; remove操作把槽置为EMPTY&quot;&quot;&quot;
+        assert key in self, &apos;Key error %s&apos; % key
+        slot = self._findSlot(key, forInsert=False)
+        value = self._table[slot].value
+        self._count -= 1
+        self._table[slot] = HashMap.EMPTY
+        return value
+
+    def __iter__(self):
+        return _HashMapIteraotr(self._table)
+
+    def _slot_can_insert(self, slot):
+        return (self._table[slot] is HashMap.EMPTY or
+                self._table[slot] is HashMap.UNUSED)
+
+    def _findSlot(self, key, forInsert=False):
+        &quot;&quot;&quot; 注意原书有错误，代码根本不能运行，这里我自己改写的
+        Args:
+            forInsert (bool): if the search is for an insertion
+        Returns:
+            slot or None
+        &quot;&quot;&quot;
+        slot = self._hash1(key)
+        step = self._hash2(key)
+        _len = len(self._table)
+
+        if not forInsert:    # 查找是否存在key
+            while self._table[slot] is not HashMap.UNUSED:
+                # 如果一个槽是UNUSED，直接跳出
+                if self._table[slot] is HashMap.EMPTY:
+                    slot = (slot + step) % _len
+                    continue
+                elif self._table[slot].key == key:
+                    return slot
+                slot = (slot + step) % _len
+            return None
+
+        else:    # 为了插入key
+            while not self._slot_can_insert(slot):    # 循环直到找到一个可以插入的槽
+                slot = (slot + step) % _len
+            return slot
+
+    def _rehash(self):    # 当前使用槽数量大于2/3时候重新创建新的table
+        origTable = self._table
+        newSize = len(self._table) * 2 + 1    # 原来的2*n+1倍
+        self._table = Array(newSize)
+
+        self._count = 0
+        self._maxCount = newSize - newSize // 3
+
+        # 将原来的key value添加到新的table
+        for entry in origTable:
+            if entry is not HashMap.UNUSED and entry is not HashMap.EMPTY:
+                slot = self._findSlot(entry.key, True)
+                self._table[slot] = entry
+                self._count += 1
+
+    def _hash1(self, key):
+        &quot;&quot;&quot; 计算key的hash值&quot;&quot;&quot;
+        return abs(hash(key)) % len(self._table)
+
+    def _hash2(self, key):
+        &quot;&quot;&quot; key冲突时候用来计算新槽的位置&quot;&quot;&quot;
+        return 1 + abs(hash(key)) % (len(self._table)-2)
+
+
+class _HashMapIteraotr:
+    def __init__(self, array):
+        self._array = array
+        self._idx = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._idx &lt; len(self._array):
+            if self._array[self._idx] is not None and self._array[self._idx].key is not None:
+                key = self._array[self._idx].key
+                self._idx += 1
+                return key
+            else:
+                self._idx += 1
+        else:
+            raise StopIteration
+
+
+def print_h(h):
+    for idx, i in enumerate(h):
+        print(idx, i)
+    print(&apos;\n&apos;)
+
+
+def test_HashMap():
+    &quot;&quot;&quot; 一些简单的单元测试，不过测试用例覆盖不是很全面 &quot;&quot;&quot;
+    h = HashMap()
+    assert len(h) == 0
+    h.add(&apos;a&apos;, &apos;a&apos;)
+    assert h.valueOf(&apos;a&apos;) == &apos;a&apos;
+    assert len(h) == 1
+
+    a_v = h.remove(&apos;a&apos;)
+    assert a_v == &apos;a&apos;
+    assert len(h) == 0
+
+    h.add(&apos;a&apos;, &apos;a&apos;)
+    h.add(&apos;b&apos;, &apos;b&apos;)
+    assert len(h) == 2
+    assert h.valueOf(&apos;b&apos;) == &apos;b&apos;
+    b_v = h.remove(&apos;b&apos;)
+    assert b_v == &apos;b&apos;
+    assert len(h) == 1
+    h.remove(&apos;a&apos;)
+    assert len(h) == 0
+
+    n = 10
+    for i in range(n):
+        h.add(str(i), i)
+    assert len(h) == n
+    print_h(h)
+    for i in range(n):
+        assert str(i) in h
+    for i in range(n):
+        h.remove(str(i))
+    assert len(h) == 0
+</code></pre><hr>
+<h2 id="12章-Advanced-Sorting"><a href="#12章-Advanced-Sorting" class="headerlink" title="12章:Advanced Sorting"></a>12章:Advanced Sorting</h2><p>第5章介绍了基本的排序算法，本章介绍高级排序算法。</p>
+<p>归并排序(mergesort): 分治法</p>
+<pre><code>def merge_sorted_list(listA, listB):
+    &quot;&quot;&quot; 归并两个有序数组，O(max(m, n)) ,m和n是数组长度&quot;&quot;&quot;
+    print(&apos;merge left right list&apos;, listA, listB, end=&apos;&apos;)
+    new_list = list()
+    a = b = 0
+    while a &lt; len(listA) and b &lt; len(listB):
+        if listA[a] &lt; listB[b]:
+            new_list.append(listA[a])
+            a += 1
+        else:
+            new_list.append(listB[b])
+            b += 1
+
+    while a &lt; len(listA):
+        new_list.append(listA[a])
+        a += 1
+
+    while b &lt; len(listB):
+        new_list.append(listB[b])
+        b += 1
+
+    print(&apos; -&gt;&apos;, new_list)
+    return new_list
+
+
+def mergesort(theList):
+    &quot;&quot;&quot; O(nlogn)，log层调用，每层n次操作
+    mergesort: divided and conquer 分治
+    1. 把原数组分解成越来越小的子数组
+    2. 合并子数组来创建一个有序数组
+    &quot;&quot;&quot;
+    print(theList)    # 我把关键步骤打出来了，你可以运行下看看整个过程
+    if len(theList) &lt;= 1:    # 递归出口
+        return theList
+    else:
+        mid = len(theList) // 2
+
+        # 递归分解左右两边数组
+        left_half = mergesort(theList[:mid])
+        right_half = mergesort(theList[mid:])
+
+        # 合并两边的有序子数组
+        newList = merge_sorted_list(left_half, right_half)
+        return newList
+
+&quot;&quot;&quot; 这是我调用一次打出来的排序过程
+[10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+[10, 9, 8, 7, 6]
+[10, 9]
+[10]
+[9]
+merge left right list [10] [9] -&gt; [9, 10]
+[8, 7, 6]
+[8]
+[7, 6]
+[7]
+[6]
+merge left right list [7] [6] -&gt; [6, 7]
+merge left right list [8] [6, 7] -&gt; [6, 7, 8]
+merge left right list [9, 10] [6, 7, 8] -&gt; [6, 7, 8, 9, 10]
+[5, 4, 3, 2, 1]
+[5, 4]
+[5]
+[4]
+merge left right list [5] [4] -&gt; [4, 5]
+[3, 2, 1]
+[3]
+[2, 1]
+[2]
+[1]
+merge left right list [2] [1] -&gt; [1, 2]
+merge left right list [3] [1, 2] -&gt; [1, 2, 3]
+merge left right list [4, 5] [1, 2, 3] -&gt; [1, 2, 3, 4, 5]
+&quot;&quot;&quot;
+</code></pre><p>快速排序</p>
+<pre><code>def quicksort(theSeq, first, last):
+    &quot;&quot;&quot;
+    quicksort :也是分而治之，但是和归并排序不同的是，采用选定主元（pivot）而不是从中间
+    进行数组划分
+    1. 第一步选定pivot用来划分数组，pivot左边元素都比它小，右边元素都大于等于它
+    2. 对划分的左右两边数组递归，直到递归出口（数组元素数目小于2）
+    3. 对pivot和左右划分的数组合并成一个有序数组
+    &quot;&quot;&quot;
+    if first &lt; last:
+        pos = partitionSeq(theSeq, first, last)
+        # 对划分的子数组递归操作
+        quicksort(theSeq, first, pos - 1)
+        quicksort(theSeq, pos + 1, last)
+
+
+def partitionSeq(theSeq, first, last):
+    &quot;&quot;&quot; 快排中的划分操作，把比pivot小的挪到左边，比pivot大的挪到右边&quot;&quot;&quot;
+    pivot = theSeq[first]
+    print(&apos;before partitionSeq&apos;, theSeq)
+
+    left = first + 1
+    right = last
+
+    while True:
+        # 找到第一个比pivot大的
+        while left &lt;= right and theSeq[left] &lt; pivot:
+            left += 1
+
+        # 从右边开始找到比pivot小的
+        while right &gt;= left and theSeq[right] &gt;= pivot:
+            right -= 1
+
+        if right &lt; left:
+            break
+        else:
+            theSeq[left], theSeq[right] = theSeq[right], theSeq[left]
+
+    # 把pivot放到合适的位置
+    theSeq[first], theSeq[right] = theSeq[right], theSeq[first]
+
+    print(&apos;after partitionSeq {}: {}\t&apos;.format(theSeq, pivot))
+    return right    # 返回pivot的位置
+
+
+def test_partitionSeq():
+    l = [0,1,2,3,4]
+    assert partitionSeq(l, 0, len(l)-1) == 0
+    l = [4,3,2,1,0]
+    assert partitionSeq(l, 0, len(l)-1) == 4
+    l = [2,3,0,1,4]
+    assert partitionSeq(l, 0, len(l)-1) == 2
+
+test_partitionSeq()
+
+
+def test_quicksort():
+    def _is_sorted(seq):
+        for i in range(len(seq)-1):
+            if seq[i] &gt; seq[i+1]:
+                return False
+        return True
+
+    from random import randint
+    for i in range(100):
+        _len = randint(1, 100)
+        to_sort = []
+        for i in range(_len):
+            to_sort.append(randint(0, 100))
+        quicksort(to_sort, 0, len(to_sort)-1)    # 注意这里用了原地排序，直接更改了数组
+        print(to_sort)
+        assert _is_sorted(to_sort)
+
+test_quicksort()
+</code></pre><p>利用快排中的partitionSeq操作，我们还能实现另一个算法，nth_element，快速查找一个无序数组中的第k大元素</p>
+<pre><code>def nth_element(seq, beg, end, k):
+    if beg == end:
+        return seq[beg]
+    pivot_index = partitionSeq(seq, beg, end)
+    if pivot_index == k:
+        return seq[k]
+    elif pivot_index &gt; k:
+        return nth_element(seq, beg, pivot_index-1, k)
+    else:
+        return nth_element(seq, pivot_index+1, end, k)
+
+def test_nth_element():
+    from random import shuffle
+    n = 10
+    l = list(range(n))
+    shuffle(l)
+    print(l)
+    for i in range(len(l)):
+        assert nth_element(l, 0, len(l)-1, i) == i
+
+test_nth_element()
+</code></pre><hr>
+<h1 id="13章-Binary-Tree"><a href="#13章-Binary-Tree" class="headerlink" title="13章:Binary Tree"></a>13章:Binary Tree</h1><p>The binary Tree: 二叉树，每个节点做多只有两个子节点</p>
+<pre><code>class _BinTreeNode:
+    def __init__(self, data):
+        self.data = data
+        self.left = None
+        self.right = None
+
+
+# 三种depth-first遍历
+def preorderTrav(subtree):
+    &quot;&quot;&quot; 先（根）序遍历&quot;&quot;&quot;
+    if subtree is not None:
+        print(subtree.data)
+        preorderTrav(subtree.left)
+        preorderTrav(subtree.right)
+
+
+def inorderTrav(subtree):
+    &quot;&quot;&quot; 中(根)序遍历&quot;&quot;&quot;
+    if subtree is not None:
+        preorderTrav(subtree.left)
+        print(subtree.data)
+        preorderTrav(subtree.right)
+
+
+def postorderTrav(subtree):
+    &quot;&quot;&quot; 后（根）序遍历&quot;&quot;&quot;
+    if subtree is not None:
+        preorderTrav(subtree.left)
+        preorderTrav(subtree.right)
+        print(subtree.data)
+
+
+# 宽度优先遍历(bradth-First Traversal): 一层一层遍历, 使用queue
+def breadthFirstTrav(bintree):
+    from queue import Queue    # py3
+    q = Queue()
+    q.put(bintree)
+    while not q.empty():
+        node = q.get()
+        print(node.data)
+        if node.left is not None:
+            q.put(node.left)
+        if node.right is not None:
+            q.put(node.right)
+
+
+class _ExpTreeNode:
+    __slots__ = (&apos;element&apos;, &apos;left&apos;, &apos;right&apos;)
+
+    def __init__(self, data):
+        self.element = data
+        self.left = None
+        self.right = None
+
+    def __repr__(self):
+        return &apos;&lt;_ExpTreeNode: {} {} {}&gt;&apos;.format(
+            self.element, self.left, self.right)
+
+from queue import Queue
+class ExpressionTree:
+    &quot;&quot;&quot;
+    表达式树: 操作符存储在内节点操作数存储在叶子节点的二叉树。(符号树真难打出来)
+        *
+       / \
+      +   -
+     / \  / \
+     9  3 8   4
+    (9+3) * (8-4)
+
+    Expression Tree Abstract Data Type，可以实现二元操作符
+    ExpressionTree(expStr): user string as constructor param
+    evaluate(varDict): evaluates the expression and returns the numeric result
+    toString(): constructs and retutns a string represention of the expression
+
+    Usage:
+        vars = {&apos;a&apos;: 5, &apos;b&apos;: 12}
+        expTree = ExpressionTree(&quot;(a/(b-3))&quot;)
+        print(&apos;The result = &apos;, expTree.evaluate(vars))
+    &quot;&quot;&quot;
+
+    def __init__(self, expStr):
+        self._expTree = None
+        self._buildTree(expStr)
+
+    def evaluate(self, varDict):
+        return self._evalTree(self._expTree, varDict)
+
+    def __str__(self):
+        return self._buildString(self._expTree)
+
+    def _buildString(self, treeNode):
+        &quot;&quot;&quot; 在一个子树被遍历之前添加做括号，在子树被遍历之后添加右括号 &quot;&quot;&quot;
+        # print(treeNode)
+        if treeNode.left is None and treeNode.right is None:
+            return str(treeNode.element)    # 叶子节点是操作数直接返回
+        else:
+            expStr = &apos;(&apos;
+            expStr += self._buildString(treeNode.left)
+            expStr += str(treeNode.element)
+            expStr += self._buildString(treeNode.right)
+            expStr += &apos;)&apos;
+            return expStr
+
+    def _evalTree(self, subtree, varDict):
+        # 是不是叶子节点, 是的话说明是操作数，直接返回
+        if subtree.left is None and subtree.right is None:
+            # 操作数是合法数字吗
+            if subtree.element &gt;= &apos;0&apos; and subtree.element &lt;= &apos;9&apos;:
+                return int(subtree.element)
+            else:    # 操作数是个变量
+                assert subtree.element in varDict, &apos;invalid variable.&apos;
+                return varDict[subtree.element]
+        else:    # 操作符则计算其子表达式
+            lvalue = self._evalTree(subtree.left, varDict)
+            rvalue = self._evalTree(subtree.right, varDict)
+            print(subtree.element)
+            return self._computeOp(lvalue, subtree.element, rvalue)
+
+    def _computeOp(self, left, op, right):
+        assert op
+        op_func = {
+            &apos;+&apos;: lambda left, right: left + right,    # or import operator, operator.add
+            &apos;-&apos;: lambda left, right: left - right,
+            &apos;*&apos;: lambda left, right: left * right,
+            &apos;/&apos;: lambda left, right: left / right,
+            &apos;%&apos;: lambda left, right: left % right,
+        }
+        return op_func[op](left, right)
+
+    def _buildTree(self, expStr):
+        expQ = Queue()
+        for token in expStr:    # 遍历表达式字符串的每个字符
+            expQ.put(token)
+        self._expTree = _ExpTreeNode(None)    # 创建root节点
+        self._recBuildTree(self._expTree, expQ)
+
+    def _recBuildTree(self, curNode, expQ):
+        token = expQ.get()
+        if token == &apos;(&apos;:
+            curNode.left = _ExpTreeNode(None)
+            self._recBuildTree(curNode.left, expQ)
+
+            # next token will be an operator: + = * / %
+            curNode.element = expQ.get()
+            curNode.right = _ExpTreeNode(None)
+            self._recBuildTree(curNode.right, expQ)
+
+            # the next token will be &apos;)&apos;, remmove it
+            expQ.get()
+
+        else:  # the token is a digit that has to be converted to an int.
+            curNode.element = token
+
+
+vars = {&apos;a&apos;: 5, &apos;b&apos;: 12}
+expTree = ExpressionTree(&quot;((2*7)+8)&quot;)
+print(expTree)
+print(&apos;The result = &apos;, expTree.evaluate(vars))
+</code></pre><p>Heap（堆）：二叉树最直接的一个应用就是实现堆。堆就是一颗完全二叉树，最大堆的非叶子节点的值都比孩子大，最小堆的非叶子结点的值都比孩子小。 python内置了heapq模块帮助我们实现堆操作，比如用内置的heapq模块实现个堆排序:</p>
+<pre><code># 使用python内置的heapq实现heap sort
+def heapsort(iterable):
+    from heapq import heappush, heappop
+    h = []
+    for value in iterable:
+        heappush(h, value)
+    return [heappop(h) for i in range(len(h))]
+</code></pre><p>但是一般实现堆的时候实际上并不是用数节点来实现的，而是使用数组实现，效率比较高。为什么可以用数组实现呢?因为完全二叉树的性质，<br>可以用下标之间的关系表示节点之间的关系，MaxHeap的docstring中已经说明了</p>
+<pre><code>class MaxHeap:
+    &quot;&quot;&quot;
+    Heaps:
+    完全二叉树，最大堆的非叶子节点的值都比孩子大，最小堆的非叶子结点的值都比孩子小
+    Heap包含两个属性，order property 和 shape property(a complete binary tree)，在插入
+    一个新节点的时候，始终要保持这两个属性
+    插入操作：保持堆属性和完全二叉树属性, sift-up 操作维持堆属性
+    extract操作：只获取根节点数据，并把树最底层最右节点copy到根节点后，sift-down操作维持堆属性
+
+    用数组实现heap，从根节点开始，从上往下从左到右给每个节点编号，则根据完全二叉树的
+    性质，给定一个节点i， 其父亲和孩子节点的编号分别是:
+        parent = (i-1) // 2
+        left = 2 * i + 1
+        rgiht = 2 * i + 2
+    使用数组实现堆一方面效率更高，节省树节点的内存占用，一方面还可以避免复杂的指针操作，减少
+    调试难度。
+
+    &quot;&quot;&quot;
+
+    def __init__(self, maxSize):
+        self._elements = Array(maxSize)    # 第二章实现的Array ADT
+        self._count = 0
+
+    def __len__(self):
+        return self._count
+
+    def capacity(self):
+        return len(self._elements)
+
+    def add(self, value):
+        assert self._count &lt; self.capacity(), &apos;can not add to full heap&apos;
+        self._elements[self._count] = value
+        self._count += 1
+        self._siftUp(self._count - 1)
+        self.assert_keep_heap()    # 确定每一步add操作都保持堆属性
+
+    def extract(self):
+        assert self._count &gt; 0, &apos;can not extract from an empty heap&apos;
+        value = self._elements[0]    # save root value
+        self._count -= 1
+        self._elements[0] = self._elements[self._count]    # 最右下的节点放到root后siftDown
+        self._siftDown(0)
+        self.assert_keep_heap()
+        return value
+
+    def _siftUp(self, ndx):
+        if ndx &gt; 0:
+            parent = (ndx - 1) // 2
+            # print(ndx, parent)
+            if self._elements[ndx] &gt; self._elements[parent]:    # swap
+                self._elements[ndx], self._elements[parent] = self._elements[parent], self._elements[ndx]
+                self._siftUp(parent)    # 递归
+
+    def _siftDown(self, ndx):
+        left = 2 * ndx + 1
+        right = 2 * ndx + 2
+        # determine which node contains the larger value
+        largest = ndx
+        if (left &lt; self._count and
+            self._elements[left] &gt;= self._elements[largest] and
+            self._elements[left] &gt;= self._elements[right]):  # 原书这个地方没写实际上找的未必是largest
+            largest = left
+        elif right &lt; self._count and self._elements[right] &gt;= self._elements[largest]:
+            largest = right
+        if largest != ndx:
+            self._elements[ndx], self._elements[largest] = self._elements[largest], self._elements[ndx]
+            self._siftDown(largest)
+
+    def __repr__(self):
+        return &apos; &apos;.join(map(str, self._elements))
+
+    def assert_keep_heap(self):
+        &quot;&quot;&quot; 我加了这个函数是用来验证每次add或者extract之后，仍保持最大堆的性质&quot;&quot;&quot;
+        _len = len(self)
+        for i in range(0, int((_len-1)/2)):    # 内部节点（非叶子结点）
+            l = 2 * i + 1
+            r = 2 * i + 2
+            if l &lt; _len and r &lt; _len:
+                assert self._elements[i] &gt;= self._elements[l] and self._elements[i] &gt;= self._elements[r]
+
+def test_MaxHeap():
+    &quot;&quot;&quot; 最大堆实现的单元测试用例 &quot;&quot;&quot;
+    _len = 10
+    h = MaxHeap(_len)
+    for i in range(_len):
+        h.add(i)
+        h.assert_keep_heap()
+    for i in range(_len):
+        # 确定每次出来的都是最大的数字，添加的时候是从小到大添加的
+        assert h.extract() == _len-i-1
+
+test_MaxHeap()
+
+def simpleHeapSort(theSeq):
+    &quot;&quot;&quot; 用自己实现的MaxHeap实现堆排序，直接修改原数组实现inplace排序&quot;&quot;&quot;
+    if not theSeq:
+        return theSeq
+    _len = len(theSeq)
+    heap = MaxHeap(_len)
+    for i in theSeq:
+        heap.add(i)
+    for i in reversed(range(_len)):
+        theSeq[i] = heap.extract()
+    return theSeq
+
+
+def test_simpleHeapSort():
+    &quot;&quot;&quot; 用一些测试用例证明实现的堆排序是可以工作的 &quot;&quot;&quot;
+    def _is_sorted(seq):
+        for i in range(len(seq)-1):
+            if seq[i] &gt; seq[i+1]:
+                return False
+        return True
+
+    from random import randint
+    assert simpleHeapSort([]) == []
+    for i in range(1000):
+        _len = randint(1, 100)
+        to_sort = []
+        for i in range(_len):
+            to_sort.append(randint(0, 100))
+        simpleHeapSort(to_sort)    # 注意这里用了原地排序，直接更改了数组
+        assert _is_sorted(to_sort)
+
+
+test_simpleHeapSort()
+</code></pre><hr>
+<h1 id="14章-Search-Trees"><a href="#14章-Search-Trees" class="headerlink" title="14章:Search Trees"></a>14章:Search Trees</h1><p>二叉差找树性质：对每个内部节点V，</p>
+<ol>
+<li>所有key小于V.key的存储在V的左子树。</li>
+<li>所有key大于V.key的存储在V的右子树<br>对BST进行中序遍历会得到升序的key序列</li>
+</ol>
+<pre><code>class _BSTMapNode:
+    __slots__ = (&apos;key&apos;, &apos;value&apos;, &apos;left&apos;, &apos;right&apos;)
+
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+        self.left = None
+        self.right = None
+
+    def __repr__(self):
+        return &apos;&lt;{}:{}&gt; left:{}, right:{}&apos;.format(
+            self.key, self.value, self.left, self.right)
+
+    __str__ = __repr__
+
+
+class BSTMap:
+    &quot;&quot;&quot; BST，树节点包含key可payload。用BST来实现之前用hash实现过的Map ADT.
+    性质：对每个内部节点V，
+    1.对于节点V，所有key小于V.key的存储在V的左子树。
+    2.所有key大于V.key的存储在V的右子树
+    对BST进行中序遍历会得到升序的key序列
+    &quot;&quot;&quot;
+    def __init__(self):
+        self._root = None
+        self._size = 0
+        self._rval = None     # 作为remove的返回值
+
+    def __len__(self):
+        return self._size
+
+    def __iter__(self):
+        return _BSTMapIterator(self._root, self._size)
+
+    def __contains__(self, key):
+        return self._bstSearch(self._root, key) is not None
+
+    def valueOf(self, key):
+        node = self._bstSearch(self._root, key)
+        assert node is not None, &apos;Invalid map key.&apos;
+        return node.value
+
+    def _bstSearch(self, subtree, target):
+        if subtree is None:    # 递归出口，遍历到树底没有找到key或是空树
+            return None
+        elif target &lt; subtree.key:
+            return self._bstSearch(subtree.left, target)
+        elif target &gt; subtree.key:
+            return self._bstSearch(subtree.right, target)
+        return subtree    # 返回引用
+
+    def _bstMinumum(self, subtree):
+        &quot;&quot;&quot; 顺着树一直往左下角递归找就是最小的,向右下角递归就是最大的 &quot;&quot;&quot;
+        if subtree is None:
+            return None
+        elif subtree.left is None:
+            return subtree
+        else:
+            return subtree._bstMinumum(self, subtree.left)
+
+    def add(self, key, value):
+        &quot;&quot;&quot; 添加或者替代一个key的value, O(N) &quot;&quot;&quot;
+        node = self._bstSearch(self._root, key)
+        if node is not None:    # if key already exists, update value
+            node.value = value
+            return False
+        else:   # insert a new entry
+            self._root = self._bstInsert(self._root, key, value)
+            self._size += 1
+            return True
+
+    def _bstInsert(self, subtree, key, value):
+        &quot;&quot;&quot; 新的节点总是插入在树的叶子结点上 &quot;&quot;&quot;
+        if subtree is None:
+            subtree = _BSTMapNode(key, value)
+        elif key &lt; subtree.key:
+            subtree.left = self._bstInsert(subtree.left, key, value)
+        elif key &gt; subtree.key:
+            subtree.right = self._bstInsert(subtree.right, key, value)
+        # 注意这里没有else语句了，应为在被调用处add函数里先判断了是否有重复key
+        return subtree
+
+    def remove(self, key):
+        &quot;&quot;&quot; O(N)
+        被删除的节点分为三种:
+        1.叶子结点:直接把其父亲指向该节点的指针置None
+        2.该节点有一个孩子: 删除该节点后，父亲指向一个合适的该节点的孩子
+        3.该节点有俩孩子:
+            (1)找到要删除节点N和其后继S（中序遍历后该节点下一个）
+            (2)复制S的key到N
+            (3)从N的右子树中删除后继S（即在N的右子树中最小的）
+        &quot;&quot;&quot;
+        assert key in self, &apos;invalid map key&apos;
+        self._root = self._bstRemove(self._root, key)
+        self._size -= 1
+        return self._rval
+
+    def _bstRemove(self, subtree, target):
+        # search for the item in the tree
+        if subtree is None:
+            return subtree
+        elif target &lt; subtree.key:
+            subtree.left = self._bstRemove(subtree.left, target)
+            return subtree
+        elif target &gt; subtree.key:
+            subtree.right = self._bstRemove(subtree.right, target)
+            return subtree
+
+        else:    # found the node containing the item
+            self._rval = subtree.value
+            if subtree.left is None and subtree.right is None:
+                # 叶子node
+                return None
+            elif subtree.left is None or subtree.right is None:
+                # 有一个孩子节点
+                if subtree.left is not None:
+                    return subtree.left
+                else:
+                    return subtree.right
+            else:   # 有俩孩子节点
+                successor = self._bstMinumum(subtree.right)
+                subtree.key = successor.key
+                subtree.value = successor.value
+                subtree.right = self._bstRemove(subtree.right, successor.key)
+                return subtree
+
+    def __repr__(self):
+        return &apos;-&gt;&apos;.join([str(i) for i in self])
+
+    def assert_keep_bst_property(self, subtree):
+        &quot;&quot;&quot; 写这个函数为了验证add和delete操作始终维持了bst的性质 &quot;&quot;&quot;
+        if subtree is None:
+            return
+        if subtree.left is not None and subtree.right is not None:
+            assert subtree.left.value &lt;= subtree.value
+            assert subtree.right.value &gt;= subtree.value
+            self.assert_keep_bst_property(subtree.left)
+            self.assert_keep_bst_property(subtree.right)
+
+        elif subtree.left is None and subtree.right is not None:
+            assert subtree.right.value &gt;= subtree.value
+            self.assert_keep_bst_property(subtree.right)
+
+        elif subtree.left is not None and subtree.right is None:
+            assert subtree.left.value &lt;= subtree.value
+            self.assert_keep_bst_property(subtree.left)
+
+
+class _BSTMapIterator:
+    def __init__(self, root, size):
+        self._theKeys = Array(size)
+        self._curItem = 0
+        self._bstTraversal(root)
+        self._curItem = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._curItem &lt; len(self._theKeys):
+            key = self._theKeys[self._curItem]
+            self._curItem += 1
+            return key
+        else:
+            raise StopIteration
+
+    def _bstTraversal(self, subtree):
+        if subtree is not None:
+            self._bstTraversal(subtree.left)
+            self._theKeys[self._curItem] = subtree.key
+            self._curItem += 1
+            self._bstTraversal(subtree.right)
+
+
+def test_BSTMap():
+    l = [60, 25, 100, 35, 17, 80]
+    bst = BSTMap()
+    for i in l:
+        bst.add(i)
+
+def test_HashMap():
+    &quot;&quot;&quot; 之前用来测试用hash实现的map，改为用BST实现的Map测试 &quot;&quot;&quot;
+    # h = HashMap()
+    h = BSTMap()
+    assert len(h) == 0
+    h.add(&apos;a&apos;, &apos;a&apos;)
+    assert h.valueOf(&apos;a&apos;) == &apos;a&apos;
+    assert len(h) == 1
+
+    a_v = h.remove(&apos;a&apos;)
+    assert a_v == &apos;a&apos;
+    assert len(h) == 0
+
+    h.add(&apos;a&apos;, &apos;a&apos;)
+    h.add(&apos;b&apos;, &apos;b&apos;)
+    assert len(h) == 2
+    assert h.valueOf(&apos;b&apos;) == &apos;b&apos;
+    b_v = h.remove(&apos;b&apos;)
+    assert b_v == &apos;b&apos;
+    assert len(h) == 1
+    h.remove(&apos;a&apos;)
+
+    assert len(h) == 0
+
+    _len = 10
+    for i in range(_len):
+        h.add(str(i), i)
+    assert len(h) == _len
+    for i in range(_len):
+        assert str(i) in h
+    for i in range(_len):
+        print(len(h))
+        print(&apos;bef&apos;, h)
+        _ = h.remove(str(i))
+        assert _ == i
+        print(&apos;aft&apos;, h)
+        print(len(h))
+    assert len(h) == 0
+
+test_HashMap()
+</code></pre>
+      
+    </div>
+    <footer>
+      
+          
+          <div class="clearfix"></div>
+          <nav id="pagination">
+  
+    <a href="/2016/12/30/python/write-maintainable-python-project/" class="alignleft prev"><i class="fa fa-long-arrow-left"></i>Next</a>
+  
+  
+    <a href="/2016/11/22/python/flask-unittest/" class="alignright next">Prev<i class="fa fa-long-arrow-right"></i></a>
+  
+  <div class="clearfix"></div>
+</nav>
+      
+      <div class="clearfix"></div>
+    </footer>
+  </div>
+</article>
+
+
+<section id="comment">
+  <h1 class="title">留言</h1>
+
+  
+</section>
+
+
+
+    <div class="clearfix"></div>
+  </div>
+  <footer id="footer" class="inner"><div>
+  
+  &copy; 2018 PegasusWang
+  
+</div>
+Powered by <a href="http://zespia.tw/hexo/" title="Hexo" target="_blank" rel="noopener">Hexo</a> and <a href="http://pages.github.com/" title="GitHub Pages" target="_blank" rel="noopener">GitHub Pages</a>
+
+<div class="clearfix"></div>
+
+
+<!--
+<span id="busuanzi_container_site_pv">
+    您是第<span id="busuanzi_value_site_pv"></span>次访问滴童鞋
+</span>
+
+<script async
+src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+-->
+</footer>
+  
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+
+
+
+    <script type="text/javascript">
+        (function(){
+
+            $(window).scroll(function(){
+
+                var scrollTop = $(window).scrollTop();
+                if ( scrollTop >200 ){
+                    $("#main-nav").removeClass('normal_mode').addClass('top_mode');
+                } else{
+                    $("#main-nav").removeClass('top_mode').addClass('normal_mode');
+                }
+
+            });
+
+        })();
+    </script>
+
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript">
+  (function($){
+    $('.fancybox').fancybox({
+      'titlePosition': 'inside'
+    });
+  })(jQuery);
+  </script>
+
+
+
+
+<script type="text/javascript">
+  
+  $(function(){
+
+    $('.title').hover(
+      function() {      
+        $(this).stop().animate(
+          {'marginLeft': '10px'}, 200
+        );   
+      }, 
+      function() {       
+        $(this).stop().animate({'marginLeft': '0px'}, 200);      
+      
+    });   
+
+  });
+
+</script>
+
+
+</body>
+</html>

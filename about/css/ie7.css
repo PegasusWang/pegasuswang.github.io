@@ -1,0 +1,9 @@
+@charset "UTF-8";
+
+.self {
+	padding-top: 4px;
+}
+
+h1 span {
+	margin-top:-15px;
+}
