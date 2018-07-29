@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://ningning.today/2018/07/29/mylife/%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E4%BD%A0%E7%9A%84%E8%B4%9F%E9%9D%A2%E6%83%85%E7%BB%AA/</loc>
+    <loc>http://ningning.today/2014/08/25/mylife/%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E4%BD%A0%E7%9A%84%E8%B4%9F%E9%9D%A2%E6%83%85%E7%BB%AA/</loc>
     
-    <lastmod>2018-07-29T03:11:51.000Z</lastmod>
+    <lastmod>2018-07-29T03:49:41.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://ningning.today/2016/08/20/python/fuck-python/</loc>
+    
+    <lastmod>2018-07-29T03:40:49.000Z</lastmod>
     
   </url>
   
@@ -124,13 +131,6 @@
     <loc>http://ningning.today/2016/11/09/tools/vim-tmux-zsh-autojump/</loc>
     
     <lastmod>2017-06-07T12:08:58.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://ningning.today/2016/08/20/python/fuck-python/</loc>
-    
-    <lastmod>2017-05-27T13:37:46.000Z</lastmod>
     
   </url>
   
