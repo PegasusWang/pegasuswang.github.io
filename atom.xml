@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://ningning.today/"/>
-  <updated>2018-12-19T09:16:46.000Z</updated>
+  <updated>2018-12-19T09:19:26.000Z</updated>
   <id>http://ningning.today/</id>
   
   <author>
@@ -21,16 +21,16 @@
     <link href="http://ningning.today/2018/07/25/web/%E5%BC%80%E4%BA%86%E4%BF%A9%E7%9F%A5%E4%B9%8E%E4%B8%93%E6%A0%8F/"/>
     <id>http://ningning.today/2018/07/25/web/开了俩知乎专栏/</id>
     <published>2018-07-25T00:51:09.000Z</published>
-    <updated>2018-12-19T09:16:46.000Z</updated>
+    <updated>2018-12-19T09:19:26.000Z</updated>
     
-    <content type="html"><![CDATA[<blockquote><p>First, solve the problem. Then, write the code. - John Johnson</p></blockquote><p>很久没有更新自己的博客了，最近编写和录制了一些 vim 和 python 的视频教程，感兴趣的可以看看，奉上链接。<br>自己的博客看的人比较少，没有做过 SEO。放在专栏里看到的人会多一些。</p><a id="more"></a><p>以下是我的一些博客链接，还有写的一些小书，自己记性不太好，习惯用 mkdos+readthedocs<br>工具来记录，好处就是可以直接发表在网上成为电子书，方便自己查看和别人参考，文档都是基于<br>markdown，可以使用自己喜欢的编辑器编写，同时也能用 git 进行版本管理。（缺点是不如笔记软件功能那么丰富）</p><ul><li><p><a href="https://zhuanlan.zhihu.com/python-web" target="_blank" rel="noopener">Python学习之路(视频)</a></p></li><li><p><a href="https://zhuanlan.zhihu.com/vim-video" target="_blank" rel="noopener">玩转 vim 与 Terminal (视频)</a></p></li></ul>]]></content>
+    <content type="html"><![CDATA[<blockquote><p>First, solve the problem. Then, write the code. - John Johnson</p></blockquote><p>很久没有更新自己的博客了(还是大学的时候接触 nodejs 用 hexo 搭的)，最近编写和录制了一些 vim 和 python 的视频教程，感兴趣的可以看看，奉上链接。自己的博客看的人比较少，没有做过 SEO。放在专栏里看到的人会多一些。</p><a id="more"></a><p>以下是我的一些博客链接，还有写的一些小书，自己记性不太好，习惯用 mkdos+readthedocs<br>工具来记录，好处就是可以直接发表在网上成为电子书，方便自己查看和别人参考，文档都是基于<br>markdown，可以使用自己喜欢的编辑器编写，同时也能用 git 进行版本管理。（缺点是不如笔记软件功能那么丰富）</p><ul><li><p><a href="https://zhuanlan.zhihu.com/python-web" target="_blank" rel="noopener">Python学习之路(视频)</a></p></li><li><p><a href="https://zhuanlan.zhihu.com/vim-video" target="_blank" rel="noopener">玩转 vim 与 Terminal (视频)</a></p></li></ul>]]></content>
     
     <summary type="html">
     
       &lt;blockquote&gt;
 &lt;p&gt;First, solve the problem. Then, write the code. - John Johnson&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;很久没有更新自己的博客了，最近编写和录制了一些 vim 和 python 的视频教程，感兴趣的可以看看，奉上链接。&lt;br&gt;自己的博客看的人比较少，没有做过 SEO。放在专栏里看到的人会多一些。&lt;/p&gt;
+&lt;p&gt;很久没有更新自己的博客了(还是大学的时候接触 nodejs 用 hexo 搭的)，最近编写和录制了一些 vim 和 python 的视频教程，感兴趣的可以看看，奉上链接。自己的博客看的人比较少，没有做过 SEO。放在专栏里看到的人会多一些。&lt;/p&gt;
     
     </summary>
     
