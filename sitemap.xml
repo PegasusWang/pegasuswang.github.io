@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://ningning.today/about/index.html</loc>
+    
+    <lastmod>2018-12-19T08:33:19.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://ningning.today/2014/08/25/mylife/%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E4%BD%A0%E7%9A%84%E8%B4%9F%E9%9D%A2%E6%83%85%E7%BB%AA/</loc>
     
     <lastmod>2018-07-29T03:49:41.000Z</lastmod>
@@ -40,13 +47,6 @@
     <loc>http://ningning.today/2016/12/30/python/write-maintainable-python-project/</loc>
     
     <lastmod>2018-01-21T14:08:50.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://ningning.today/2018/01/14/%E7%90%86%E8%B4%A2/%E8%81%8C%E5%9C%BA%E5%B0%8F%E7%99%BD%E6%8C%87%E6%95%B0%E5%9F%BA%E9%87%91%E6%87%92%E4%BA%BA%E5%AE%9A%E6%8A%95%E6%8C%87%E5%8D%97/</loc>
-    
-    <lastmod>2018-01-21T02:57:01.000Z</lastmod>
     
   </url>
   
@@ -131,13 +131,6 @@
     <loc>http://ningning.today/2016/11/09/tools/vim-tmux-zsh-autojump/</loc>
     
     <lastmod>2017-06-07T12:08:58.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://ningning.today/about/index.html</loc>
-    
-    <lastmod>2017-05-25T00:34:10.000Z</lastmod>
     
   </url>
   
